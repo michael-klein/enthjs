@@ -262,6 +262,14 @@ function _wrapNativeSuper(Class) {
   return _wrapNativeSuper(Class);
 }
 
+function _assertThisInitialized(self) {
+  if (self === void 0) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return self;
+}
+
 var IS_PROXY =
 /*#__PURE__*/
 Symbol('$P');
@@ -295,7 +303,7 @@ var setUpState = function setUpState(cb, onChange) {
   onStateChanged = undefined;
   return result;
 };
-var state = function state(initialState) {
+var $state = function $state(initialState) {
   if (initialState === void 0) {
     initialState = {};
   }
@@ -375,6 +383,45 @@ var schedule = function schedule(cb, priority) {
   return Promise.resolve();
 };
 
+var getOnlySetupError = function getOnlySetupError(subject) {
+  return subject + " can only be used during setup!";
+};
+
+var global = window;
+var setUpContext = function setUpContext(context, cb) {
+  global.__$c = context;
+  cb();
+  global.__$c = undefined;
+};
+var getElement = function getElement() {
+  if (global.__$c) {
+    return global.__$c;
+  } else {
+    throw getOnlySetupError('getElement');
+  }
+};
+
+var sideEffectsMap =
+/*#__PURE__*/
+new WeakMap();
+var sideEffect = function sideEffect(effect) {
+  var element = getElement();
+  sideEffectsMap.set(element, (sideEffectsMap.get(element) || []).concat(effect));
+};
+var runSideEffects = function runSideEffects(element) {
+  var sideEffects = sideEffectsMap.get(element) || [];
+
+  if (sideEffects.length > 0) {
+    return Promise.all(sideEffects.map(function (effect) {
+      return schedule(function () {
+        return effect();
+      }, PriorityLevel.USER_BLOCKING);
+    }));
+  } else {
+    return Promise.resolve([]);
+  }
+};
+
 var component = function component(name, setup) {
   customElements.define(name,
   /*#__PURE__*/
@@ -386,15 +433,18 @@ var component = function component(name, setup) {
 
       _this = _HTMLElement.call(this) || this;
       _this.renderQueued = false;
+      _this.nextRenderQueued = false;
 
       _this.attachShadow({
         mode: 'open'
       });
 
-      setUpState(function () {
-        return _this.render = setup().render;
-      }, function () {
-        _this.performRender();
+      setUpContext(_assertThisInitialized(_this), function () {
+        return setUpState(function () {
+          return _this.render = setup().render;
+        }, function () {
+          _this.performRender();
+        });
       });
 
       _this.performRender();
@@ -405,6 +455,8 @@ var component = function component(name, setup) {
     var _proto = _class.prototype;
 
     _proto.performRender = function performRender() {
+      var _this3 = this;
+
       var _this2 = this;
 
       if (!this.renderQueued) {
@@ -412,13 +464,115 @@ var component = function component(name, setup) {
         schedule(function () {
           render(_this2.shadowRoot, _this2.render());
         }, PriorityLevel.USER_BLOCKING).then(function () {
-          return _this2.renderQueued = false;
+          try {
+            return Promise.resolve(runSideEffects(_this3));
+          } catch (e) {
+            return Promise.reject(e);
+          }
+        }).then(function () {
+          _this2.renderQueued = false;
+
+          if (_this2.nextRenderQueued) {
+            _this2.nextRenderQueued = false;
+
+            _this2.performRender();
+          }
         });
+      } else {
+        this.nextRenderQueued = true;
       }
     };
 
     return _class;
   }(_wrapNativeSuper(HTMLElement)));
+};
+
+var attributeCallbackMap =
+/*#__PURE__*/
+new Map();
+var observerMap =
+/*#__PURE__*/
+new WeakMap();
+
+var addObserver = function addObserver(element) {
+  if (!observerMap.has(element)) {
+    var observer = new MutationObserver(function (mutationsList) {
+      for (var _iterator = mutationsList, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+        var _ref;
+
+        if (_isArray) {
+          if (_i >= _iterator.length) break;
+          _ref = _iterator[_i++];
+        } else {
+          _i = _iterator.next();
+          if (_i.done) break;
+          _ref = _i.value;
+        }
+
+        var mutation = _ref;
+
+        if (mutation.type === 'attributes') {
+          var callbacks = (attributeCallbackMap.get(element) || {})[mutation.attributeName] || [];
+          callbacks.forEach(function (cb) {
+            return cb();
+          });
+        }
+      }
+    });
+    observerMap.set(element, observer);
+  }
+};
+
+var startObserving = function startObserving(element) {
+  if (observerMap.has(element)) {
+    observerMap.get(element).observe(element, {
+      attributes: true
+    });
+  }
+};
+
+var stopObserving = function stopObserving(element) {
+  if (observerMap.has(element)) {
+    observerMap.get(element).disconnect();
+  }
+};
+
+var observeAttribute = function observeAttribute(element, name, cb) {
+  if (!attributeCallbackMap.has(element)) {
+    attributeCallbackMap.set(element, {});
+  }
+
+  if (!attributeCallbackMap.get(element)[name]) {
+    attributeCallbackMap.get(element)[name] = [];
+  }
+
+  attributeCallbackMap.get(element)[name].push(cb);
+};
+
+var $attr = function $attr(name, initialValue) {
+  if (initialValue === void 0) {
+    initialValue = '';
+  }
+
+  var element = getElement();
+  addObserver(element);
+  observeAttribute(element, name, function () {
+    var value = element.getAttribute(name);
+
+    if (state.value !== value) {
+      state.value = element.getAttribute(name);
+    }
+  });
+  element.setAttribute(name, initialValue);
+  var state = $state({
+    value: element.getAttribute(name)
+  });
+  sideEffect(function () {
+    stopObserving(element);
+    element.setAttribute(name, state.value);
+    startObserving(element);
+  });
+  return state;
 };
 
 function createDirective(handler) {
@@ -466,12 +620,14 @@ createDirective(function (node, schedule, cb) {
   }
 });
 
+exports.$attr = $attr;
+exports.$state = $state;
 exports.component = component;
 exports.createDirective = createDirective;
 exports.html = html;
 exports.input = input;
 exports.render = render;
 exports.setUpState = setUpState;
-exports.state = state;
+exports.sideEffect = sideEffect;
 exports.text = text;
 //# sourceMappingURL=view.cjs.development.js.map

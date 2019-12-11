@@ -32,7 +32,7 @@ export const setUpState = <CB extends () => any>(
   onStateChanged = undefined;
   return result;
 };
-export const state = <S extends {} = {}>(initialState: Partial<S> = {}): S => {
+export const $state = <S extends {} = {}>(initialState: Partial<S> = {}): S => {
   let onChange = onStateChanged;
   return proxify(initialState, () => onChange && onChange());
 };

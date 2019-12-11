@@ -1,17 +1,27 @@
 import 'react-app-polyfill/ie11';
-import { html, render, text, input, state, setUpState, component } from '../.';
+import { html, $attr, text, input, $state, sideEffect, component } from '../.';
 
 // this is (currently) how you define a component
 component("test-component", () => {
-  // state creates a reactive object
+  // this method is the "setup" of the component
+  // it will only run once!
+
+  // $state creates a reactive object
   // any changes to the object (even nested) will trigger a re-render
-  const s = state({ value: "" });
+  const state = $state({ inputValue: "" });
+  const $test = $attr('test', 'initialValue');
+
+  sideEffect(() => {
+    console.log("I will run after ever render!");
+    $test.value = state.inputValue;
+  })
+
   return {
     render: () => html`<div>
-      <div >input value: ${text(s.value)}</div>
+      <div >input value: ${text(state.inputValue)}</div>
       <input id="in" type="text" ${input(value => {
-      s.value = value // simply re-assign value to re-render
-    })}></input>
+      state.inputValue = value // simply re-assign inputValue to re-render
+    })} />
     </div>`
   }
 })
