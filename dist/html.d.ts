@@ -8,6 +8,7 @@ export interface DirectiveData {
     t?: DirectiveType;
     a?: string;
     n?: Node;
+    c?: () => void;
 }
 export declare const getTextMarker: (id: number) => string;
 export declare const getAttributeMarker: (id: number) => string;

@@ -8,4 +8,5 @@ export { $state, setUpState } from './reactivity';
 export { Directive, DirectiveHandler, createDirective } from './directive';
 export { text } from './directives/text';
 export { input } from './directives/input';
+export { on } from './directives/on';
 export { getElement } from './context';

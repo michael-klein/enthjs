@@ -12,6 +12,7 @@ export interface DirectiveData {
   t?: DirectiveType;
   a?: string;
   n?: Node;
+  c?: () => void;
 }
 const insertAttributeMarker = (
   marker: string,

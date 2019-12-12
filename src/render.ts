@@ -10,10 +10,9 @@ export const render = (
   container: HTMLElement,
   htmlResult: HTMLResult
 ): void => {
+  let fragment: DocumentFragment;
   if (!childNodesMap.has(container)) {
-    const fragment: DocumentFragment = htmlResult.template.content.cloneNode(
-      true
-    ) as DocumentFragment;
+    fragment = htmlResult.template.content.cloneNode(true) as DocumentFragment;
     htmlResult.directives.forEach((directiveData, id) => {
       switch (directiveData.t) {
         case DirectiveType.TEXT:
@@ -31,9 +30,11 @@ export const render = (
       }
     });
     childNodesMap.set(container, fragment.childNodes);
-    container.appendChild(fragment);
   }
   htmlResult.directives.forEach(directiveData => {
     directiveData.d(directiveData.n);
   });
+  if (fragment) {
+    container.appendChild(fragment);
+  }
 };

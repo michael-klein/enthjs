@@ -142,8 +142,10 @@ var childNodesMap =
 /*#__PURE__*/
 new WeakMap();
 var render = function render(container, htmlResult) {
+  var fragment;
+
   if (!childNodesMap.has(container)) {
-    var fragment = htmlResult.template.content.cloneNode(true);
+    fragment = htmlResult.template.content.cloneNode(true);
     htmlResult.directives.forEach(function (directiveData, id) {
       switch (directiveData.t) {
         case DirectiveType.TEXT:
@@ -162,12 +164,15 @@ var render = function render(container, htmlResult) {
       }
     });
     childNodesMap.set(container, fragment.childNodes);
-    container.appendChild(fragment);
   }
 
   htmlResult.directives.forEach(function (directiveData) {
     directiveData.d(directiveData.n);
   });
+
+  if (fragment) {
+    container.appendChild(fragment);
+  }
 };
 
 function _inheritsLoose(subClass, superClass) {
@@ -329,12 +334,10 @@ var MAX_ELAPSED = 17;
 var processJobQueue = function processJobQueue(queue, now) {
   return queue.filter(function (_ref) {
     var cb = _ref[0],
-        startTime = _ref[1],
-        timeout = _ref[2];
+        latestEndTime = _ref[1];
     var totalElapsed = Date.now() - now;
-    var jobElapsed = Date.now() - startTime;
 
-    if (jobElapsed > timeout || totalElapsed < MAX_ELAPSED) {
+    if (now >= latestEndTime || totalElapsed < MAX_ELAPSED) {
       cb();
       return false;
     } else {
@@ -347,7 +350,9 @@ var processScheduledJobs = function processScheduledJobs() {
   var now = Date.now();
   var jobsToRun = scheduledJobs;
   scheduledJobs = [];
-  var remainingJobs = processJobQueue(jobsToRun, now);
+  var remainingJobs = processJobQueue(jobsToRun.sort(function (a, b) {
+    return a[1] < b[1] ? -1 : 1;
+  }), now);
   scheduledJobs = remainingJobs.concat(scheduledJobs);
 
   if (scheduledJobs.length > 0) {
@@ -369,7 +374,7 @@ var schedule = function schedule(cb, priority) {
       scheduledJobs.push([function () {
         cb();
         resolve();
-      }, Date.now(), priority]);
+      }, Date.now() + priority]);
 
       if (!schedulerRunning) {
         requestAnimationFrame(processScheduledJobs);
@@ -668,28 +673,37 @@ createDirective(function (node, schedule, value) {
   }
 });
 
-var valueMap =
+var handlerMap =
 /*#__PURE__*/
 new WeakMap();
-var input =
-/*#__PURE__*/
-createDirective(function (node, schedule, cb) {
+var onHandler = function onHandler(node, schedule, name, cb) {
   if (node instanceof HTMLInputElement) {
-    if (!valueMap.has(node)) {
-      valueMap.set(node, node.value);
-      node.addEventListener('input', function (e) {
-        var value = e.target.value;
-
-        if (value !== valueMap.get(node)) {
-          schedule(function () {
-            return cb(value);
-          }, PriorityLevel.USER_BLOCKING);
-          valueMap.set(node, value);
-        }
+    if (!handlerMap.has(node) && !(handlerMap.get(node) || []).includes(name)) {
+      handlerMap.set(node, [].concat(name, handlerMap.get(node)).filter(function (n) {
+        return n;
+      }));
+      node.addEventListener(name, function (e) {
+        schedule(function () {
+          return cb(e);
+        }, PriorityLevel.IMMEDIATE);
       });
     }
   }
+};
+var on =
+/*#__PURE__*/
+createDirective(onHandler);
+
+var input =
+/*#__PURE__*/
+createDirective(function (node, schedule, cb) {
+  return onHandler(node, schedule, 'input', function (e) {
+    var value = e.target.value;
+    schedule(function () {
+      return cb(value);
+    }, PriorityLevel.USER_BLOCKING);
+  });
 });
 
-export { $attr, $prop, $state, component, createDirective, getElement, html, input, render, setUpState, sideEffect, text };
+export { $attr, $prop, $state, component, createDirective, getElement, html, input, on, render, setUpState, sideEffect, text };
 //# sourceMappingURL=view.esm.js.map

@@ -23,7 +23,6 @@ component("test-component", () => {
     () => [state.inputValue]); // only runs when values in array change
 
   console.log(getElement())
-
   return {
     render: () => html`<div>
       <div >input value: ${text(state.inputValue)}</div>
