@@ -1,5 +1,6 @@
 export { html, HTMLResult } from './html';
 export { render } from './render';
+export { sub } from './directives/sub';
 export { component } from './component';
 export { $prop } from './properties';
 export { $attr } from './attributes';

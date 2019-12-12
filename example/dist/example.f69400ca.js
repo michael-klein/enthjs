@@ -3626,14 +3626,23 @@ var html = function html(staticParts) {
   return result;
 };
 
-var childNodesMap =
+var renderedNodesMap =
 /*#__PURE__*/
 new WeakMap();
+
+var clear = function clear(container) {
+  if (renderedNodesMap.has(container)) {
+    renderedNodesMap.get(container).forEach(function (node) {
+      return container.removeChild(node);
+    });
+    renderedNodesMap["delete"](container);
+  }
+};
 
 var render = function render(container, htmlResult) {
   var fragment;
 
-  if (!childNodesMap.has(container)) {
+  if (!renderedNodesMap.has(container)) {
     fragment = htmlResult.template.content.cloneNode(true);
     htmlResult.directives.forEach(function (directiveData, id) {
       switch (directiveData.t) {
@@ -3652,17 +3661,119 @@ var render = function render(container, htmlResult) {
           directiveData.n = node;
       }
     });
-    childNodesMap.set(container, fragment.childNodes);
+    renderedNodesMap.set(container, Array.from(fragment.childNodes));
   }
 
   htmlResult.directives.forEach(function (directiveData) {
-    directiveData.d(directiveData.n);
+    var node = directiveData.d(directiveData.n);
+
+    if (node) {
+      directiveData.n = node;
+    }
   });
 
   if (fragment) {
     container.appendChild(fragment);
   }
 };
+
+var PriorityLevel;
+
+(function (PriorityLevel) {
+  PriorityLevel[PriorityLevel["IMMEDIATE"] = 0] = "IMMEDIATE";
+  PriorityLevel[PriorityLevel["USER_BLOCKING"] = 250] = "USER_BLOCKING";
+  PriorityLevel[PriorityLevel["NORMAL"] = 5000] = "NORMAL";
+  PriorityLevel[PriorityLevel["LOW"] = 10000] = "LOW";
+  PriorityLevel[PriorityLevel["IDLE"] = 99999999] = "IDLE";
+})(PriorityLevel || (PriorityLevel = {}));
+
+var scheduledJobs = [];
+var schedulerRunning = false;
+var MAX_ELAPSED = 17;
+
+var processJobQueue = function processJobQueue(queue, now) {
+  return queue.filter(function (_ref) {
+    var cb = _ref[0],
+        latestEndTime = _ref[1];
+    var totalElapsed = Date.now() - now;
+
+    if (now >= latestEndTime || totalElapsed < MAX_ELAPSED) {
+      cb();
+      return false;
+    } else {
+      return true;
+    }
+  });
+};
+
+var processScheduledJobs = function processScheduledJobs() {
+  var now = Date.now();
+  var jobsToRun = scheduledJobs;
+  scheduledJobs = [];
+  var remainingJobs = processJobQueue(jobsToRun.sort(function (a, b) {
+    return a[1] < b[1] ? -1 : 1;
+  }), now);
+  scheduledJobs = remainingJobs.concat(scheduledJobs);
+
+  if (scheduledJobs.length > 0) {
+    requestAnimationFrame(processScheduledJobs);
+  } else {
+    schedulerRunning = false;
+  }
+};
+
+var schedule = function schedule(cb, priority) {
+  if (priority === void 0) {
+    priority = PriorityLevel.NORMAL;
+  }
+
+  if (priority === PriorityLevel.IMMEDIATE) {
+    cb();
+  } else {
+    return new Promise(function (resolve) {
+      scheduledJobs.push([function () {
+        cb();
+        resolve();
+      }, Date.now() + priority]);
+
+      if (!schedulerRunning) {
+        requestAnimationFrame(processScheduledJobs);
+        schedulerRunning = true;
+      }
+    });
+  }
+
+  return Promise.resolve();
+};
+
+function createDirective(handler) {
+  return function () {
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    return function (node) {
+      return handler.apply(void 0, [node, schedule].concat(args));
+    };
+  };
+}
+
+var sub =
+/*#__PURE__*/
+createDirective(function (node, schedule, cb) {
+  if (node.nodeType === 3) {
+    var span = document.createElement('span');
+    node.parentElement.insertBefore(span, node);
+    node.parentElement.removeChild(node);
+    node = span;
+  }
+
+  schedule(function () {
+    clear(node);
+    render(node, cb());
+  }, PriorityLevel.USER_BLOCKING);
+  return node;
+});
 
 function _inheritsLoose(subClass, superClass) {
   subClass.prototype = Object.create(superClass.prototype);
@@ -3806,75 +3917,6 @@ var $state = function $state(initialState) {
   return proxify(initialState, function () {
     return onChange && onChange();
   });
-};
-
-var PriorityLevel;
-
-(function (PriorityLevel) {
-  PriorityLevel[PriorityLevel["IMMEDIATE"] = 0] = "IMMEDIATE";
-  PriorityLevel[PriorityLevel["USER_BLOCKING"] = 250] = "USER_BLOCKING";
-  PriorityLevel[PriorityLevel["NORMAL"] = 5000] = "NORMAL";
-  PriorityLevel[PriorityLevel["LOW"] = 10000] = "LOW";
-  PriorityLevel[PriorityLevel["IDLE"] = 99999999] = "IDLE";
-})(PriorityLevel || (PriorityLevel = {}));
-
-var scheduledJobs = [];
-var schedulerRunning = false;
-var MAX_ELAPSED = 17;
-
-var processJobQueue = function processJobQueue(queue, now) {
-  return queue.filter(function (_ref) {
-    var cb = _ref[0],
-        latestEndTime = _ref[1];
-    var totalElapsed = Date.now() - now;
-
-    if (now >= latestEndTime || totalElapsed < MAX_ELAPSED) {
-      cb();
-      return false;
-    } else {
-      return true;
-    }
-  });
-};
-
-var processScheduledJobs = function processScheduledJobs() {
-  var now = Date.now();
-  var jobsToRun = scheduledJobs;
-  scheduledJobs = [];
-  var remainingJobs = processJobQueue(jobsToRun.sort(function (a, b) {
-    return a[1] < b[1] ? -1 : 1;
-  }), now);
-  scheduledJobs = remainingJobs.concat(scheduledJobs);
-
-  if (scheduledJobs.length > 0) {
-    requestAnimationFrame(processScheduledJobs);
-  } else {
-    schedulerRunning = false;
-  }
-};
-
-var schedule = function schedule(cb, priority) {
-  if (priority === void 0) {
-    priority = PriorityLevel.NORMAL;
-  }
-
-  if (priority === PriorityLevel.IMMEDIATE) {
-    cb();
-  } else {
-    return new Promise(function (resolve) {
-      scheduledJobs.push([function () {
-        cb();
-        resolve();
-      }, Date.now() + priority]);
-
-      if (!schedulerRunning) {
-        requestAnimationFrame(processScheduledJobs);
-        schedulerRunning = true;
-      }
-    });
-  }
-
-  return Promise.resolve();
 };
 
 var getOnlySetupError = function getOnlySetupError(subject) {
@@ -4145,18 +4187,6 @@ var $attr = function $attr(name, initialValue) {
   return state;
 };
 
-function createDirective(handler) {
-  return function () {
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    return function (node) {
-      handler.apply(void 0, [node, schedule].concat(args));
-    };
-  };
-}
-
 var text =
 /*#__PURE__*/
 createDirective(function (node, schedule, value) {
@@ -4171,17 +4201,15 @@ var handlerMap =
 new WeakMap();
 
 var onHandler = function onHandler(node, schedule, name, cb) {
-  if (node instanceof HTMLInputElement) {
-    if (!handlerMap.has(node) && !(handlerMap.get(node) || []).includes(name)) {
-      handlerMap.set(node, [].concat(name, handlerMap.get(node)).filter(function (n) {
-        return n;
-      }));
-      node.addEventListener(name, function (e) {
-        schedule(function () {
-          return cb(e);
-        }, PriorityLevel.IMMEDIATE);
-      });
-    }
+  if (!handlerMap.has(node) && !(handlerMap.get(node) || []).includes(name)) {
+    handlerMap.set(node, [].concat(name, handlerMap.get(node)).filter(function (n) {
+      return n;
+    }));
+    node.addEventListener(name, function (e) {
+      schedule(function () {
+        return cb(e);
+      }, PriorityLevel.IMMEDIATE);
+    });
   }
 };
 
@@ -4210,6 +4238,7 @@ exports.on = on;
 exports.render = render;
 exports.setUpState = setUpState;
 exports.sideEffect = sideEffect;
+exports.sub = sub;
 exports.text = text;
 },{}],"../dist/index.js":[function(require,module,exports) {
 'use strict';
@@ -4244,7 +4273,8 @@ var _1 = require("../.");
 
 _1.component("test-component", function () {
   var state = _1.$state({
-    inputValue: ""
+    inputValue: "",
+    swap: true
   });
 
   var $test = _1.$attr('test');
@@ -4263,16 +4293,27 @@ _1.component("test-component", function () {
   });
 
   console.log(_1.getElement());
+
+  var renderSub = function renderSub() {
+    if (state.swap) {
+      return _1.html(templateObject_1 || (templateObject_1 = __makeTemplateObject(["\n          <div>this text</div>\n        "], ["\n          <div>this text</div>\n        "])));
+    } else {
+      return _1.html(templateObject_2 || (templateObject_2 = __makeTemplateObject(["\n          <div>can be changed</div>\n          <div>just like this</div>\n        "], ["\n          <div>can be changed</div>\n          <div>just like this</div>\n        "])));
+    }
+  };
+
   return {
     render: function render() {
-      return _1.html(templateObject_1 || (templateObject_1 = __makeTemplateObject(["<div>\n      <div >input value: ", "</div>\n      <div >test value: ", "</div>\n      <div >toast value: ", "</div>\n\n      <input id=\"in\" type=\"text\" ", " />\n    </div>"], ["<div>\n      <div >input value: ", "</div>\n      <div >test value: ", "</div>\n      <div >toast value: ", "</div>\n\n      <input id=\"in\" type=\"text\" ", " />\n    </div>"])), _1.text(state.inputValue), _1.text($test.value), _1.text($toast.value), _1.input(function (value) {
+      return _1.html(templateObject_3 || (templateObject_3 = __makeTemplateObject(["<div>\n      <div >input value: ", "</div>\n      <div >test attribute value: ", "</div>\n      <div >toast prop value: ", "</div>\n      <input id=\"in\" type=\"text\" ", " />\n    <br />\n      ", "\n      <button ", ">swap</button>\n    </div>"], ["<div>\n      <div >input value: ", "</div>\n      <div >test attribute value: ", "</div>\n      <div >toast prop value: ", "</div>\n      <input id=\"in\" type=\"text\" ", " />\n    <br />\n      ", "\n      <button ", ">swap</button>\n    </div>"])), _1.text(state.inputValue), _1.text($test.value), _1.text($toast.value), _1.input(function (value) {
         state.inputValue = value;
+      }), _1.sub(renderSub), _1.on("click", function () {
+        state.swap = !state.swap;
       }));
     }
   };
 });
 
-var templateObject_1;
+var templateObject_1, templateObject_2, templateObject_3;
 },{"react-app-polyfill/ie11":"node_modules/react-app-polyfill/ie11.js","../.":"../dist/index.js"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';

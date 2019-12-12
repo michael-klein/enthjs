@@ -6,7 +6,7 @@ export type Directive<N extends Node = Node, Args extends any[] = any[]> = (
 export type DirectiveHandler<
   N extends Node = any,
   Args extends any[] = any[]
-> = (node: N, schedule: Schedule, ...args: Args) => void;
+> = (node: N, schedule: Schedule, ...args: Args) => void | Node;
 export function createDirective<
   Args extends any[] = any[],
   N extends Node = any,
@@ -18,7 +18,7 @@ export function createDirective<
   : never {
   return ((...args: Args) => {
     return (node: N) => {
-      handler(node, schedule, ...args);
+      return handler(node, schedule, ...args);
     };
   }) as D extends (node: N, schedule: Schedule, ...args: infer A) => void
     ? Directive<N, A>

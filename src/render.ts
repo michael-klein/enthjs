@@ -5,13 +5,21 @@ import {
   getAttributeMarker,
 } from './html';
 
-const childNodesMap: WeakMap<HTMLElement, NodeList> = new WeakMap();
+const renderedNodesMap: WeakMap<HTMLElement, Node[]> = new WeakMap();
+export const clear = (container: HTMLElement) => {
+  if (renderedNodesMap.has(container)) {
+    renderedNodesMap
+      .get(container)
+      .forEach(node => container.removeChild(node));
+    renderedNodesMap.delete(container);
+  }
+};
 export const render = (
   container: HTMLElement,
   htmlResult: HTMLResult
 ): void => {
   let fragment: DocumentFragment;
-  if (!childNodesMap.has(container)) {
+  if (!renderedNodesMap.has(container)) {
     fragment = htmlResult.template.content.cloneNode(true) as DocumentFragment;
     htmlResult.directives.forEach((directiveData, id) => {
       switch (directiveData.t) {
@@ -29,10 +37,13 @@ export const render = (
           directiveData.n = node;
       }
     });
-    childNodesMap.set(container, fragment.childNodes);
+    renderedNodesMap.set(container, Array.from(fragment.childNodes));
   }
   htmlResult.directives.forEach(directiveData => {
-    directiveData.d(directiveData.n);
+    const node = directiveData.d(directiveData.n);
+    if (node) {
+      directiveData.n = node;
+    }
   });
   if (fragment) {
     container.appendChild(fragment);
