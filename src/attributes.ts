@@ -67,11 +67,14 @@ export const $attr = (
 
   const state = $state({ value: element.getAttribute(name) });
 
-  sideEffect(() => {
-    stopObserving(element);
-    element.setAttribute(name, state.value);
-    startObserving(element);
-  });
+  sideEffect(
+    () => {
+      stopObserving(element);
+      element.setAttribute(name, state.value);
+      startObserving(element);
+    },
+    () => [state.value]
+  );
 
   return state;
 };

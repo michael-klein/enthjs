@@ -404,19 +404,74 @@ var getElement = function getElement() {
 var sideEffectsMap =
 /*#__PURE__*/
 new WeakMap();
-var sideEffect = function sideEffect(effect) {
+var sideEffect = function sideEffect(effect, dependencies) {
   var element = getElement();
-  sideEffectsMap.set(element, (sideEffectsMap.get(element) || []).concat(effect));
+  sideEffectsMap.set(element, (sideEffectsMap.get(element) || []).concat({
+    e: effect,
+    d: dependencies
+  }));
 };
+
+var shouldEffectRun = function shouldEffectRun(effectMapItem) {
+  var d = effectMapItem.d,
+      p = effectMapItem.p;
+  var shouldRun = true;
+
+  if (d) {
+    var deps = d();
+
+    if (p && (deps === p || deps.length === p.length && deps.findIndex(function (dep, index) {
+      return p[index] !== dep;
+    })) === -1) {
+      shouldRun = false;
+    }
+  }
+
+  return shouldRun;
+};
+
 var runSideEffects = function runSideEffects(element) {
   var sideEffects = sideEffectsMap.get(element) || [];
 
   if (sideEffects.length > 0) {
-    return Promise.all(sideEffects.map(function (effect) {
-      return schedule(function () {
-        return effect();
-      }, PriorityLevel.USER_BLOCKING);
-    }));
+    return Promise.all(sideEffects.map(function (effectMapItem) {
+      var c = effectMapItem.c;
+
+      if (c && shouldEffectRun(effectMapItem)) {
+        return schedule(function () {
+          c();
+          effectMapItem.c = undefined;
+        }, PriorityLevel.USER_BLOCKING);
+      }
+
+      return undefined;
+    }).filter(function (p) {
+      return p;
+    })).then(function () {
+      return Promise.all(sideEffects.map(function (effectMapItem) {
+        var e = effectMapItem.e,
+            d = effectMapItem.d;
+        var shouldRun = shouldEffectRun(effectMapItem);
+
+        if (d) {
+          effectMapItem.p = d();
+        }
+
+        if (shouldRun) {
+          return schedule(function () {
+            var cleanUp = e();
+
+            if (cleanUp) {
+              effectMapItem.c = cleanUp;
+            }
+          }, PriorityLevel.USER_BLOCKING);
+        }
+
+        return undefined;
+      }).filter(function (p) {
+        return p;
+      }));
+    });
   } else {
     return Promise.resolve([]);
   }
@@ -485,6 +540,22 @@ var component = function component(name, setup) {
 
     return _class;
   }(_wrapNativeSuper(HTMLElement)));
+};
+
+var $prop = function $prop(name, initialValue) {
+  var element = getElement();
+  var state = $state({
+    value: initialValue
+  });
+  Object.defineProperty(element, name, {
+    get: function get() {
+      return state.value;
+    },
+    set: function set(value) {
+      state.value = value;
+    }
+  });
+  return state;
 };
 
 var attributeCallbackMap =
@@ -571,6 +642,8 @@ var $attr = function $attr(name, initialValue) {
     stopObserving(element);
     element.setAttribute(name, state.value);
     startObserving(element);
+  }, function () {
+    return [state.value];
   });
   return state;
 };
@@ -593,7 +666,7 @@ createDirective(function (node, schedule, value) {
   if (node instanceof Text) {
     schedule(function () {
       node.textContent = value;
-    });
+    }, PriorityLevel.IMMEDIATE);
   }
 });
 
@@ -621,9 +694,11 @@ createDirective(function (node, schedule, cb) {
 });
 
 exports.$attr = $attr;
+exports.$prop = $prop;
 exports.$state = $state;
 exports.component = component;
 exports.createDirective = createDirective;
+exports.getElement = getElement;
 exports.html = html;
 exports.input = input;
 exports.render = render;
