@@ -1,14 +1,13 @@
+import { DirectiveResult } from './directive';
 export declare enum DirectiveType {
     TEXT = 0,
     ATTRIBUTE = 1,
     ATTRIBUTE_VALUE = 2
 }
 export interface DirectiveData {
-    d: Function;
+    d: DirectiveResult;
     t?: DirectiveType;
     a?: string;
-    n?: Node;
-    c?: () => void;
 }
 export declare const getTextMarker: (id: number) => string;
 export declare const getAttributeMarker: (id: number) => string;

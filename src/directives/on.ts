@@ -1,21 +1,18 @@
 import { createDirective } from '../directive';
-import { PriorityLevel, Schedule } from '../scheduler';
+import { PriorityLevel, schedule } from '../scheduler';
 
-const handlerMap: WeakMap<HTMLInputElement, string[]> = new WeakMap();
-export const onHandler = (
-  node: HTMLInputElement,
-  schedule: Schedule,
+export const on = createDirective(function*(
+  node: HTMLElement,
   name: string,
   cb: <E extends Event>(e: E) => void
-) => {
-  if (!handlerMap.has(node) && !(handlerMap.get(node) || []).includes(name)) {
-    handlerMap.set(
-      node,
-      [].concat(name, handlerMap.get(node)).filter(n => n)
-    );
-    node.addEventListener(name, e => {
-      schedule(() => cb(e), PriorityLevel.IMMEDIATE);
-    });
+) {
+  const cbRef = {
+    cb,
+  };
+  node.addEventListener(name, e => {
+    schedule(() => cbRef.cb(e), PriorityLevel.IMMEDIATE);
+  });
+  for (;;) {
+    cbRef.cb = (yield)[1];
   }
-};
-export const on = createDirective(onHandler);
+});

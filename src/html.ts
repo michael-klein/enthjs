@@ -1,3 +1,5 @@
+import { IS_DIRECTIVE, DirectiveResult } from './directive';
+
 const isLetter = (c: string): boolean => {
   return c.toLowerCase() != c.toUpperCase();
 };
@@ -8,11 +10,9 @@ export enum DirectiveType {
   ATTRIBUTE_VALUE,
 }
 export interface DirectiveData {
-  d: Function;
+  d: DirectiveResult;
   t?: DirectiveType;
   a?: string;
-  n?: Node;
-  c?: () => void;
 }
 const insertAttributeMarker = (
   marker: string,
@@ -42,6 +42,9 @@ export interface HTMLResult {
   template: HTMLTemplateElement;
   directives: DirectiveData[];
 }
+function isDirective(thing: any): boolean {
+  return thing.is && thing.is === IS_DIRECTIVE;
+}
 let resultCache: WeakMap<TemplateStringsArray, HTMLResult> = new WeakMap();
 export const html = (
   staticParts: TemplateStringsArray,
@@ -55,7 +58,7 @@ export const html = (
       const dynamicPart = dynamicParts[i];
       const staticPart = staticParts[i];
       appendedStatic += staticPart;
-      if (typeof dynamicPart !== 'function') {
+      if (!isDirective(dynamicPart)) {
         appendedStatic += dynamicPart;
         continue;
       }
@@ -138,7 +141,7 @@ export const html = (
   } else {
     let directiveIndex: number = 0;
     dynamicParts.forEach((value: any) => {
-      if (typeof value === 'function') {
+      if (isDirective(value)) {
         result.directives[directiveIndex].d = value;
         directiveIndex++;
       }

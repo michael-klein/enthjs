@@ -1,1 +1,1 @@
-export declare const input: import("../directive").Directive<any, [(value: string) => void]>;
+export declare const input: import("../directive").Directive<HTMLElement, [(value: string) => void]>;

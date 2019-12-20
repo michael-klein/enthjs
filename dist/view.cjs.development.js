@@ -1,5 +1,28 @@
 'use strict';
 
+require('regenerator-runtime/runtime');
+
+var IS_DIRECTIVE =
+/*#__PURE__*/
+Symbol('directive');
+function createDirective(factory) {
+  return function (factory) {
+    var directive = function directive() {
+      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return {
+        is: IS_DIRECTIVE,
+        factory: factory,
+        args: args
+      };
+    };
+
+    return directive;
+  }(factory);
+}
+
 var isLetter = function isLetter(c) {
   return c.toLowerCase() != c.toUpperCase();
 };
@@ -34,6 +57,11 @@ var getTextMarker = function getTextMarker(id) {
 var getAttributeMarker = function getAttributeMarker(id) {
   return "data-am-" + id;
 };
+
+function isDirective(thing) {
+  return thing.is && thing.is === IS_DIRECTIVE;
+}
+
 var resultCache =
 /*#__PURE__*/
 new WeakMap();
@@ -53,7 +81,7 @@ var html = function html(staticParts) {
       var staticPart = staticParts[i];
       appendedStatic += staticPart;
 
-      if (typeof dynamicPart !== 'function') {
+      if (!isDirective(dynamicPart)) {
         appendedStatic += dynamicPart;
         continue;
       }
@@ -129,7 +157,7 @@ var html = function html(staticParts) {
   } else {
     var directiveIndex = 0;
     dynamicParts.forEach(function (value) {
-      if (typeof value === 'function') {
+      if (isDirective(value)) {
         result.directives[directiveIndex].d = value;
         directiveIndex++;
       }
@@ -151,17 +179,24 @@ var clear = function clear(container) {
     renderedNodesMap["delete"](container);
   }
 };
+var generatorMap =
+/*#__PURE__*/
+new WeakMap();
 var render = function render(container, htmlResult) {
   var fragment;
 
   if (!renderedNodesMap.has(container)) {
+    var _generators = [];
+    generatorMap.set(container, _generators);
     fragment = htmlResult.template.content.cloneNode(true);
     htmlResult.directives.forEach(function (directiveData, id) {
+      var _directiveData$d, _directiveData$d2;
+
       switch (directiveData.t) {
         case DirectiveType.TEXT:
           var placeholder = fragment.querySelector(getTextMarker(id));
           var textNode = placeholder.firstChild;
-          directiveData.n = textNode;
+          _generators[id] = (_directiveData$d = directiveData.d).factory.apply(_directiveData$d, [textNode].concat(directiveData.d.args));
           placeholder.parentElement.replaceChild(textNode, placeholder);
           break;
 
@@ -169,19 +204,16 @@ var render = function render(container, htmlResult) {
         case DirectiveType.ATTRIBUTE_VALUE:
           var marker = getAttributeMarker(id);
           var node = fragment.querySelector("[" + marker + "]");
+          _generators[id] = (_directiveData$d2 = directiveData.d).factory.apply(_directiveData$d2, [node].concat(directiveData.d.args));
           node.removeAttribute(marker);
-          directiveData.n = node;
       }
     });
     renderedNodesMap.set(container, Array.from(fragment.childNodes));
   }
 
-  htmlResult.directives.forEach(function (directiveData) {
-    var node = directiveData.d(directiveData.n);
-
-    if (node) {
-      directiveData.n = node;
-    }
+  var generators = generatorMap.get(container);
+  htmlResult.directives.forEach(function (directiveData, id) {
+    generators[id].next(directiveData.d.args);
   });
 
   if (fragment) {
@@ -204,28 +236,29 @@ var schedulerRunning = false;
 var MAX_ELAPSED = 17;
 
 var processJobQueue = function processJobQueue(queue, now) {
-  return queue.filter(function (_ref) {
-    var cb = _ref[0],
-        latestEndTime = _ref[1];
+  var index = 0;
+
+  for (var length = queue.length; index < length; index++) {
     var totalElapsed = Date.now() - now;
+    var _queue$index = queue[index],
+        cb = _queue$index[0],
+        latestEndTime = _queue$index[1];
 
     if (now >= latestEndTime || totalElapsed < MAX_ELAPSED) {
       cb();
-      return false;
     } else {
-      return true;
+      break;
     }
-  });
+  }
+
+  return queue.slice(index);
 };
 
 var processScheduledJobs = function processScheduledJobs() {
   var now = Date.now();
-  var jobsToRun = scheduledJobs;
-  scheduledJobs = [];
-  var remainingJobs = processJobQueue(jobsToRun.sort(function (a, b) {
+  scheduledJobs = processJobQueue(scheduledJobs.sort(function (a, b) {
     return a[1] < b[1] ? -1 : 1;
   }), now);
-  scheduledJobs = remainingJobs.concat(scheduledJobs);
 
   if (scheduledJobs.length > 0) {
     requestAnimationFrame(processScheduledJobs);
@@ -258,34 +291,47 @@ var schedule = function schedule(cb, priority) {
   return Promise.resolve();
 };
 
-function createDirective(handler) {
-  return function () {
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    return function (node) {
-      return handler.apply(void 0, [node, schedule].concat(args));
-    };
-  };
-}
-
 var sub =
 /*#__PURE__*/
-createDirective(function (node, schedule, cb) {
-  if (node.nodeType === 3) {
-    var span = document.createElement('span');
-    node.parentElement.insertBefore(span, node);
-    node.parentElement.removeChild(node);
-    node = span;
-  }
+createDirective(
+/*#__PURE__*/
+regeneratorRuntime.mark(function _callee(node, cb) {
+  var span;
+  return regeneratorRuntime.wrap(function _callee$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          if (!(node.nodeType === 3)) {
+            _context.next = 10;
+            break;
+          }
 
-  schedule(function () {
-    clear(node);
-    render(node, cb());
-  }, PriorityLevel.USER_BLOCKING);
-  return node;
-});
+          span = document.createElement('span');
+          node.parentElement.insertBefore(span, node);
+          node.parentElement.removeChild(node);
+
+        case 4:
+          schedule(function () {
+            clear(span);
+            render(span, cb());
+          }, PriorityLevel.USER_BLOCKING);
+          _context.next = 7;
+          return;
+
+        case 7:
+          cb = _context.sent[0];
+
+        case 8:
+          _context.next = 4;
+          break;
+
+        case 10:
+        case "end":
+          return _context.stop();
+      }
+    }
+  }, _callee);
+}));
 
 function _inheritsLoose(subClass, superClass) {
   subClass.prototype = Object.create(superClass.prototype);
@@ -696,43 +742,108 @@ var $attr = function $attr(name, initialValue) {
 
 var text =
 /*#__PURE__*/
-createDirective(function (node, schedule, value) {
-  if (node instanceof Text) {
-    schedule(function () {
-      node.textContent = value;
-    }, PriorityLevel.IMMEDIATE);
-  }
-});
+createDirective(
+/*#__PURE__*/
+regeneratorRuntime.mark(function _callee(node, value) {
+  return regeneratorRuntime.wrap(function _callee$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          node.textContent = value;
+          _context.next = 3;
+          return;
 
-var handlerMap =
-/*#__PURE__*/
-new WeakMap();
-var onHandler = function onHandler(node, schedule, name, cb) {
-  if (!handlerMap.has(node) && !(handlerMap.get(node) || []).includes(name)) {
-    handlerMap.set(node, [].concat(name, handlerMap.get(node)).filter(function (n) {
-      return n;
-    }));
-    node.addEventListener(name, function (e) {
-      schedule(function () {
-        return cb(e);
-      }, PriorityLevel.IMMEDIATE);
-    });
-  }
-};
-var on =
-/*#__PURE__*/
-createDirective(onHandler);
+        case 3:
+          value = _context.sent[0];
+
+        case 4:
+          _context.next = 0;
+          break;
+
+        case 6:
+        case "end":
+          return _context.stop();
+      }
+    }
+  }, _callee);
+}));
 
 var input =
 /*#__PURE__*/
-createDirective(function (node, schedule, cb) {
-  return onHandler(node, schedule, 'input', function (e) {
-    var value = e.target.value;
-    schedule(function () {
-      return cb(value);
-    }, PriorityLevel.USER_BLOCKING);
-  });
-});
+createDirective(
+/*#__PURE__*/
+regeneratorRuntime.mark(function _callee(node, cb) {
+  var cbRef;
+  return regeneratorRuntime.wrap(function _callee$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          cbRef = {
+            cb: cb
+          };
+          node.addEventListener('input', function (e) {
+            var value = e.target.value;
+            schedule(function () {
+              return cbRef.cb(value);
+            }, PriorityLevel.NORMAL);
+          });
+
+        case 2:
+          _context.next = 4;
+          return;
+
+        case 4:
+          cbRef.cb = _context.sent[0];
+
+        case 5:
+          _context.next = 2;
+          break;
+
+        case 7:
+        case "end":
+          return _context.stop();
+      }
+    }
+  }, _callee);
+}));
+
+var on =
+/*#__PURE__*/
+createDirective(
+/*#__PURE__*/
+regeneratorRuntime.mark(function _callee(node, name, cb) {
+  var cbRef;
+  return regeneratorRuntime.wrap(function _callee$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          cbRef = {
+            cb: cb
+          };
+          node.addEventListener(name, function (e) {
+            schedule(function () {
+              return cbRef.cb(e);
+            }, PriorityLevel.IMMEDIATE);
+          });
+
+        case 2:
+          _context.next = 4;
+          return;
+
+        case 4:
+          cbRef.cb = _context.sent[1];
+
+        case 5:
+          _context.next = 2;
+          break;
+
+        case 7:
+        case "end":
+          return _context.stop();
+      }
+    }
+  }, _callee);
+}));
 
 exports.$attr = $attr;
 exports.$prop = $prop;

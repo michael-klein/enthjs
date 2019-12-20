@@ -1,26 +1,44 @@
-import { schedule, Schedule } from './scheduler';
+export type DirectiveGenerator<Args extends any[] = any[]> = Generator<
+  any,
+  void,
+  Args
+>;
 
+export type DirectiveGeneratorFactory<
+  N extends Node = Node,
+  Args extends any[] = any[]
+> = (node: N, ...initialArgs: Args) => DirectiveGenerator<Args>;
+export interface DirectiveResult<
+  N extends Node = Node,
+  Args extends any[] = any[]
+> {
+  factory: DirectiveGeneratorFactory<N, Args>;
+  args: Args;
+}
 export type Directive<N extends Node = Node, Args extends any[] = any[]> = (
   ...args: Args
-) => (node: N) => void;
-export type DirectiveHandler<
-  N extends Node = any,
-  Args extends any[] = any[]
-> = (node: N, schedule: Schedule, ...args: Args) => void | Node;
+) => DirectiveResult<N, Args>;
+export const IS_DIRECTIVE = Symbol('directive');
 export function createDirective<
-  Args extends any[] = any[],
+  Args extends any[],
   N extends Node = any,
-  D extends DirectiveHandler<N, Args> = DirectiveHandler<N, Args>
+  F extends DirectiveGeneratorFactory<N, Args> = DirectiveGeneratorFactory<
+    N,
+    Args
+  >
 >(
-  handler: D
-): D extends (node: N, schedule: Schedule, ...args: infer A) => void
+  factory: F
+): F extends (node: N, ...initialArgs: infer A) => DirectiveGenerator<any>
   ? Directive<N, A>
   : never {
-  return ((...args: Args) => {
-    return (node: N) => {
-      return handler(node, schedule, ...args);
-    };
-  }) as D extends (node: N, schedule: Schedule, ...args: infer A) => void
-    ? Directive<N, A>
-    : never;
+  return ((factory: F) => {
+    const directive = function(...args: Args) {
+      return {
+        is: IS_DIRECTIVE,
+        factory,
+        args,
+      };
+    } as any;
+    return directive;
+  })(factory);
 }

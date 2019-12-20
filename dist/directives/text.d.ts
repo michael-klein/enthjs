@@ -1,1 +1,1 @@
-export declare const text: import("../directive").Directive<any, [string]>;
+export declare const text: import("../directive").Directive<Text, [string]>;

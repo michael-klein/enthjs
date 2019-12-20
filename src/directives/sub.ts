@@ -1,20 +1,20 @@
 import { createDirective } from '../directive';
-import { Schedule, PriorityLevel } from '../scheduler';
+import { PriorityLevel, schedule } from '../scheduler';
 import { HTMLResult } from '../html';
 import { clear, render } from '../render';
 
-export const sub = createDirective(
-  (node: Node, schedule: Schedule, cb: () => HTMLResult) => {
-    if (node.nodeType === 3) {
-      const span = document.createElement('span');
-      node.parentElement.insertBefore(span, node);
-      node.parentElement.removeChild(node);
-      node = span;
+export const sub = createDirective(function*(node: Text, cb: () => HTMLResult) {
+  let span: HTMLSpanElement;
+  if (node.nodeType === 3) {
+    span = document.createElement('span');
+    node.parentElement.insertBefore(span, node);
+    node.parentElement.removeChild(node);
+    for (;;) {
+      schedule(() => {
+        clear(span as HTMLElement);
+        render(span as HTMLElement, cb());
+      }, PriorityLevel.USER_BLOCKING);
+      cb = (yield)[0];
     }
-    schedule(() => {
-      clear(node as HTMLElement);
-      render(node as HTMLElement, cb());
-    }, PriorityLevel.USER_BLOCKING);
-    return node;
   }
-);
+});

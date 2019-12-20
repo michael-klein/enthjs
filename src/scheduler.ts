@@ -13,25 +13,24 @@ const processJobQueue = (
   queue: ScheduledJob[],
   now: number
 ): ScheduledJob[] => {
-  return queue.filter(([cb, latestEndTime]) => {
+  let index = 0;
+  for (let length = queue.length; index < length; index++) {
     const totalElapsed: number = Date.now() - now;
+    const [cb, latestEndTime] = queue[index];
     if (now >= latestEndTime || totalElapsed < MAX_ELAPSED) {
       cb();
-      return false;
     } else {
-      return true;
+      break;
     }
-  });
+  }
+  return queue.slice(index);
 };
 const processScheduledJobs = () => {
   const now: number = Date.now();
-  const jobsToRun = scheduledJobs;
-  scheduledJobs = [];
-  const remainingJobs = processJobQueue(
-    jobsToRun.sort((a, b) => (a[1] < b[1] ? -1 : 1)),
+  scheduledJobs = processJobQueue(
+    scheduledJobs.sort((a, b) => (a[1] < b[1] ? -1 : 1)),
     now
   );
-  scheduledJobs = remainingJobs.concat(scheduledJobs);
   if (scheduledJobs.length > 0) {
     requestAnimationFrame(processScheduledJobs);
   } else {

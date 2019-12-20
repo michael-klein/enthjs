@@ -1,11 +1,18 @@
 import { createDirective } from '../directive';
-import { Schedule, PriorityLevel } from '../scheduler';
-import { onHandler } from './on';
+import { PriorityLevel, schedule } from '../scheduler';
 
-export const input = createDirective(
-  (node: HTMLInputElement, schedule: Schedule, cb: (value: string) => void) =>
-    onHandler(node, schedule, 'input', e => {
-      const value: string = (e.target as HTMLInputElement).value;
-      schedule(() => cb(value), PriorityLevel.USER_BLOCKING);
-    })
-);
+export const input = createDirective(function*(
+  node: HTMLElement,
+  cb: (value: string) => void
+) {
+  const cbRef = {
+    cb,
+  };
+  node.addEventListener('input', e => {
+    const value: string = (e.target as HTMLInputElement).value;
+    schedule(() => cbRef.cb(value), PriorityLevel.NORMAL);
+  });
+  for (;;) {
+    cbRef.cb = (yield)[0];
+  }
+});
