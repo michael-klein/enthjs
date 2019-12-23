@@ -5,7 +5,7 @@ export { component } from './component';
 export { $prop } from './properties';
 export { $attr } from './attributes';
 export { sideEffect } from './sideeffects';
-export { $state, setUpState } from './reactivity';
+export { $state } from './reactivity';
 export { Directive, createDirective } from './directive';
 export { text } from './directives/text';
 export { input } from './directives/input';

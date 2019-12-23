@@ -19,23 +19,23 @@ component('test-component', () => {
 
   // $state creates a reactive object
   // any changes to the object (even nested) will trigger a re-render
-  const state = $state({ inputValue: '', swap: true });
+  const $s = $state({ inputValue: '', swap: true });
   const $test = $attr('test');
   const $toast = $prop('toast', '');
 
   sideEffect(
     () => {
-      $test.value = state.inputValue;
-      $toast.value = state.inputValue;
+      $test.value = $s.inputValue;
+      $toast.value = $s.inputValue;
       return () => {};
     },
-    () => [state.inputValue]
+    () => [$s.inputValue]
   ); // only runs when values in array change
 
   console.log(getElement());
 
   const renderSub = () => {
-    if (state.swap) {
+    if ($s.swap) {
       return html`
         <div>this text</div>
       `;
@@ -47,24 +47,25 @@ component('test-component', () => {
     }
   };
   return {
+    watch: [$s, $test, $toast],
     render: () => {
       return html`
         <div>
-          <div>input value: ${text(state.inputValue)}</div>
+          <div>input value: ${text($s.inputValue)}</div>
           <div>test attribute value: ${text($test.value)}</div>
           <div>toast prop value: ${text($toast.value)}</div>
           <input
             id="in"
             type="text"
             ${input(value => {
-              state.inputValue = value; // simply re-assign inputValue to re-render
+              $s.inputValue = value; // simply re-assign inputValue to re-render
             })}
           />
           <br />
           ${sub(renderSub)}
           <button
             ${on('click', () => {
-              state.swap = !state.swap;
+              $s.swap = !$s.swap;
             })}
           >
             swap

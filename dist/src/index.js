@@ -5,7 +5,7 @@ export { component } from "./component.js";
 export { $prop } from "./properties.js";
 export { $attr } from "./attributes.js";
 export { sideEffect } from "./sideeffects.js";
-export { $state, setUpState } from "./reactivity.js";
+export { $state } from "./reactivity.js";
 export { createDirective } from "./directive.js";
 export { text } from "./directives/text.js";
 export { input } from "./directives/input.js";

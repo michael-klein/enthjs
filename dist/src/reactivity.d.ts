@@ -1,2 +1,4 @@
-export declare const setUpState: <CB extends () => any>(cb: CB, onChange: () => void) => ReturnType<CB>;
-export declare const $state: <S extends {} = {}>(initialState?: Partial<S>) => S;
+export declare type State<S extends {} = {}> = S & {
+    on: (listener: () => void) => () => void;
+};
+export declare const $state: <S extends {} = {}>(initialState?: Partial<S>) => State<S>;

@@ -493,55 +493,7 @@ const sub = (0, _directive.createDirective)(function* (node, cb) {
   }
 });
 exports.sub = sub;
-},{"../directive.js":"../dist/src/directive.js","../render.js":"../dist/src/render.js"}],"../dist/src/reactivity.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.$state = exports.setUpState = void 0;
-const IS_PROXY = Symbol('$P');
-
-function proxify(obj, onChange) {
-  const proxy = new Proxy(obj, {
-    get: (obj, prop) => {
-      if (obj[prop] && typeof obj[prop] === 'object' && obj[prop].__$p !== IS_PROXY) {
-        obj[prop] = proxify(obj[prop], onChange);
-      }
-
-      return obj[prop];
-    },
-    set: (obj, prop, value) => {
-      if (obj[prop] !== value && prop !== '__$p') {
-        obj[prop] = value;
-        onChange();
-      }
-
-      return true;
-    }
-  });
-  proxy.__$p = IS_PROXY;
-  return proxy;
-}
-
-let onStateChanged;
-
-const setUpState = (cb, onChange) => {
-  onStateChanged = onChange;
-  let result = cb();
-  onStateChanged = undefined;
-  return result;
-};
-
-exports.setUpState = setUpState;
-
-const $state = (initialState = {}) => {
-  let onChange = onStateChanged;
-  return proxify(initialState, () => onChange && onChange());
-};
-
-exports.$state = $state;
-},{}],"../dist/src/misc.js":[function(require,module,exports) {
+},{"../directive.js":"../dist/src/directive.js","../render.js":"../dist/src/render.js"}],"../dist/src/misc.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -678,8 +630,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.component = void 0;
 
-var _reactivity = require("./reactivity.js");
-
 var _render = require("./render.js");
 
 var _scheduler = require("./scheduler.js");
@@ -694,13 +644,40 @@ const component = (name, setup) => {
       super();
       this.renderQueued = false;
       this.nextRenderQueued = false;
+      this.watch = [];
+      this.wasConnected = false;
       this.attachShadow({
         mode: 'open'
       });
-      (0, _context.setUpContext)(this, () => (0, _reactivity.setUpState)(() => this.render = setup().render, () => {
+      (0, _context.setUpContext)(this, () => {
+        const result = setup();
+        this.render = result.render;
+        this.watch = result.watch;
+      });
+    }
+
+    connectedCallback() {
+      if (this.isConnected && !this.wasConnected) {
+        this.wasConnected = true;
         this.performRender();
-      }));
-      this.performRender();
+
+        if (this.watch) {
+          this.watchOff = this.watch.map(s => s.on(() => {
+            this.performRender();
+          }));
+        }
+      }
+    }
+
+    disconnectedCallback() {
+      if (this.wasConnected) {
+        this.wasConnected = false;
+
+        if (this.watchOff) {
+          this.watchOff.forEach(s => s());
+          this.watchOff = undefined;
+        }
+      }
     }
 
     performRender() {
@@ -725,7 +702,61 @@ const component = (name, setup) => {
 };
 
 exports.component = component;
-},{"./reactivity.js":"../dist/src/reactivity.js","./render.js":"../dist/src/render.js","./scheduler.js":"../dist/src/scheduler.js","./context.js":"../dist/src/context.js","./sideeffects.js":"../dist/src/sideeffects.js"}],"../dist/src/properties.js":[function(require,module,exports) {
+},{"./render.js":"../dist/src/render.js","./scheduler.js":"../dist/src/scheduler.js","./context.js":"../dist/src/context.js","./sideeffects.js":"../dist/src/sideeffects.js"}],"../dist/src/reactivity.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.$state = void 0;
+const IS_PROXY = Symbol('$P');
+
+function proxify(obj, onChange) {
+  const proxy = new Proxy(obj, {
+    get: (obj, prop) => {
+      if (obj[prop] && typeof obj[prop] === 'object' && obj[prop].__$p !== IS_PROXY && prop !== 'on') {
+        obj[prop] = proxify(obj[prop], onChange);
+      }
+
+      return obj[prop];
+    },
+    set: (obj, prop, value) => {
+      if (obj[prop] !== value && prop !== '__$p' && prop !== 'on') {
+        obj[prop] = value;
+        onChange();
+      } else if (prop === 'on') {
+        obj[prop] = value;
+      }
+
+      return true;
+    }
+  });
+  proxy.__$p = IS_PROXY;
+  return proxy;
+}
+
+const $state = (initialState = {}) => {
+  const proxy = proxify(initialState, () => {
+    listeners.forEach(l => l());
+  });
+  let listeners = [];
+
+  proxy.on = listener => {
+    listeners.push(listener);
+    return () => {
+      const index = listeners.indexOf(listener);
+
+      if (index > 1) {
+        listeners.splice(index, 1);
+      }
+    };
+  };
+
+  return proxy;
+};
+
+exports.$state = $state;
+},{}],"../dist/src/properties.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -958,12 +989,6 @@ Object.defineProperty(exports, "$state", {
     return _reactivity.$state;
   }
 });
-Object.defineProperty(exports, "setUpState", {
-  enumerable: true,
-  get: function () {
-    return _reactivity.setUpState;
-  }
-});
 Object.defineProperty(exports, "createDirective", {
   enumerable: true,
   get: function () {
@@ -1030,21 +1055,21 @@ Object.defineProperty(exports, "__esModule", {
 const index_js_1 = require("../dist/src/index.js");
 
 index_js_1.component('test-component', () => {
-  const state = index_js_1.$state({
+  const $s = index_js_1.$state({
     inputValue: '',
     swap: true
   });
   const $test = index_js_1.$attr('test');
   const $toast = index_js_1.$prop('toast', '');
   index_js_1.sideEffect(() => {
-    $test.value = state.inputValue;
-    $toast.value = state.inputValue;
+    $test.value = $s.inputValue;
+    $toast.value = $s.inputValue;
     return () => {};
-  }, () => [state.inputValue]);
+  }, () => [$s.inputValue]);
   console.log(index_js_1.getElement());
 
   const renderSub = () => {
-    if (state.swap) {
+    if ($s.swap) {
       return index_js_1.html`
         <div>this text</div>
       `;
@@ -1057,24 +1082,25 @@ index_js_1.component('test-component', () => {
   };
 
   return {
+    watch: [$s, $test, $toast],
     render: () => {
       return index_js_1.html`
         <div>
-          <div>input value: ${index_js_1.text(state.inputValue)}</div>
+          <div>input value: ${index_js_1.text($s.inputValue)}</div>
           <div>test attribute value: ${index_js_1.text($test.value)}</div>
           <div>toast prop value: ${index_js_1.text($toast.value)}</div>
           <input
             id="in"
             type="text"
             ${index_js_1.input(value => {
-        state.inputValue = value;
+        $s.inputValue = value;
       })}
           />
           <br />
           ${index_js_1.sub(renderSub)}
           <button
             ${index_js_1.on('click', () => {
-        state.swap = !state.swap;
+        $s.swap = !$s.swap;
       })}
           >
             swap
@@ -1112,7 +1138,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "35903" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "39957" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

@@ -4,15 +4,19 @@ function proxify(obj, onChange) {
         get: (obj, prop) => {
             if (obj[prop] &&
                 typeof obj[prop] === 'object' &&
-                obj[prop].__$p !== IS_PROXY) {
+                obj[prop].__$p !== IS_PROXY &&
+                prop !== 'on') {
                 obj[prop] = proxify(obj[prop], onChange);
             }
             return obj[prop];
         },
         set: (obj, prop, value) => {
-            if (obj[prop] !== value && prop !== '__$p') {
+            if (obj[prop] !== value && prop !== '__$p' && prop !== 'on') {
                 obj[prop] = value;
                 onChange();
+            }
+            else if (prop === 'on') {
+                obj[prop] = value;
             }
             return true;
         },
@@ -20,15 +24,20 @@ function proxify(obj, onChange) {
     proxy.__$p = IS_PROXY;
     return proxy;
 }
-let onStateChanged;
-export const setUpState = (cb, onChange) => {
-    onStateChanged = onChange;
-    let result = cb();
-    onStateChanged = undefined;
-    return result;
-};
 export const $state = (initialState = {}) => {
-    let onChange = onStateChanged;
-    return proxify(initialState, () => onChange && onChange());
+    const proxy = proxify(initialState, () => {
+        listeners.forEach(l => l());
+    });
+    let listeners = [];
+    proxy.on = (listener) => {
+        listeners.push(listener);
+        return () => {
+            const index = listeners.indexOf(listener);
+            if (index > 1) {
+                listeners.splice(index, 1);
+            }
+        };
+    };
+    return proxy;
 };
 //# sourceMappingURL=reactivity.js.map

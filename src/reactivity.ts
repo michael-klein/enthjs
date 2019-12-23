@@ -5,16 +5,19 @@ function proxify(obj: any, onChange: () => void): any {
       if (
         obj[prop] &&
         typeof obj[prop] === 'object' &&
-        obj[prop].__$p !== IS_PROXY
+        obj[prop].__$p !== IS_PROXY &&
+        prop !== 'on'
       ) {
         obj[prop] = proxify(obj[prop], onChange);
       }
       return obj[prop];
     },
     set: (obj, prop, value) => {
-      if (obj[prop] !== value && prop !== '__$p') {
+      if (obj[prop] !== value && prop !== '__$p' && prop !== 'on') {
         obj[prop] = value;
         onChange();
+      } else if (prop === 'on') {
+        obj[prop] = value;
       }
       return true;
     },
@@ -22,17 +25,25 @@ function proxify(obj: any, onChange: () => void): any {
   proxy.__$p = IS_PROXY;
   return proxy;
 }
-let onStateChanged: () => void;
-export const setUpState = <CB extends () => any>(
-  cb: CB,
-  onChange: () => void
-): ReturnType<CB> => {
-  onStateChanged = onChange;
-  let result = cb();
-  onStateChanged = undefined;
-  return result;
+export type State<S extends {} = {}> = S & {
+  on: (listener: () => void) => () => void;
 };
-export const $state = <S extends {} = {}>(initialState: Partial<S> = {}): S => {
-  let onChange = onStateChanged;
-  return proxify(initialState, () => onChange && onChange());
+
+export const $state = <S extends {} = {}>(
+  initialState: Partial<S> = {}
+): State<S> => {
+  const proxy = proxify(initialState, () => {
+    listeners.forEach(l => l());
+  });
+  let listeners: (() => void)[] = [];
+  proxy.on = (listener: () => void): (() => void) => {
+    listeners.push(listener);
+    return () => {
+      const index = listeners.indexOf(listener);
+      if (index > 1) {
+        listeners.splice(index, 1);
+      }
+    };
+  };
+  return proxy;
 };
