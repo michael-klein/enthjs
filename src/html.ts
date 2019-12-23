@@ -1,5 +1,4 @@
 import { IS_DIRECTIVE, DirectiveResult } from './directive';
-import { sub } from './directives/sub';
 
 const isLetter = (c: string): boolean => {
   return c.toLowerCase() != c.toUpperCase();
@@ -46,9 +45,6 @@ export interface HTMLResult {
 function isDirective(thing: any): boolean {
   return thing.is && thing.is === IS_DIRECTIVE;
 }
-function isHTMLResult(thing: any): boolean {
-  return thing.template && thing.directives;
-}
 let resultCache: WeakMap<TemplateStringsArray, HTMLResult> = new WeakMap();
 export const html = (
   staticParts: TemplateStringsArray,
@@ -59,17 +55,12 @@ export const html = (
     let appendedStatic: string = '';
     const directives: DirectiveData[] = [];
     for (let i = 0; i < dynamicParts.length; i++) {
-      let dynamicPart = dynamicParts[i];
+      const dynamicPart = dynamicParts[i];
       const staticPart = staticParts[i];
       appendedStatic += staticPart;
       if (!isDirective(dynamicPart)) {
-        if (isHTMLResult(dynamicPart)) {
-          const htmlResult = dynamicPart;
-          dynamicPart = sub(() => htmlResult);
-        } else {
-          appendedStatic += dynamicPart;
-          continue;
-        }
+        appendedStatic += dynamicPart;
+        continue;
       }
       let id =
         directives.push({
@@ -150,15 +141,8 @@ export const html = (
   } else {
     let directiveIndex: number = 0;
     dynamicParts.forEach((value: any) => {
-      if (isDirective(value) || isHTMLResult(value)) {
-        if (isHTMLResult(value)) {
-          result.directives[directiveIndex].d = {
-            args: [() => value],
-            factory: undefined,
-          };
-        } else {
-          result.directives[directiveIndex].d = value;
-        }
+      if (isDirective(value)) {
+        result.directives[directiveIndex].d = value;
         directiveIndex++;
       }
     });

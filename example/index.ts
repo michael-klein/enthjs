@@ -9,6 +9,7 @@ import {
   getElement,
   sideEffect,
   component,
+  sub,
 } from '../dist/src/index.js';
 
 // this is (currently) how you define a component
@@ -49,14 +50,16 @@ component('test-component', () => {
             })}
           />
           <br />
-          ${$s.swap
-            ? html`
-                <div>this text</div>
-              `
-            : html`
-                <div>can be changed</div>
-                <div>just like this</div>
-              `}
+          ${sub(() =>
+            $s.swap
+              ? html`
+                  <div>this text</div>
+                `
+              : html`
+                  <div>can be changed</div>
+                  <div>just like this</div>
+                `
+          )}
           <button
             ${on('click', () => {
               $s.swap = !$s.swap;
