@@ -1,4 +1,5 @@
 import { IS_DIRECTIVE } from "./directive.js";
+import { sub } from "./directives/sub.js";
 const isLetter = (c) => {
     return c.toLowerCase() != c.toUpperCase();
 };
@@ -29,6 +30,9 @@ export const getAttributeMarker = (id) => {
 function isDirective(thing) {
     return thing.is && thing.is === IS_DIRECTIVE;
 }
+function isHTMLResult(thing) {
+    return thing.template && thing.directives;
+}
 let resultCache = new WeakMap();
 export const html = (staticParts, ...dynamicParts) => {
     let result = resultCache.get(staticParts);
@@ -36,12 +40,18 @@ export const html = (staticParts, ...dynamicParts) => {
         let appendedStatic = '';
         const directives = [];
         for (let i = 0; i < dynamicParts.length; i++) {
-            const dynamicPart = dynamicParts[i];
+            let dynamicPart = dynamicParts[i];
             const staticPart = staticParts[i];
             appendedStatic += staticPart;
             if (!isDirective(dynamicPart)) {
-                appendedStatic += dynamicPart;
-                continue;
+                if (isHTMLResult(dynamicPart)) {
+                    const htmlResult = dynamicPart;
+                    dynamicPart = sub(() => htmlResult);
+                }
+                else {
+                    appendedStatic += dynamicPart;
+                    continue;
+                }
             }
             let id = directives.push({
                 d: dynamicPart,
@@ -111,8 +121,16 @@ export const html = (staticParts, ...dynamicParts) => {
     else {
         let directiveIndex = 0;
         dynamicParts.forEach((value) => {
-            if (isDirective(value)) {
-                result.directives[directiveIndex].d = value;
+            if (isDirective(value) || isHTMLResult(value)) {
+                if (isHTMLResult(value)) {
+                    result.directives[directiveIndex].d = {
+                        args: [() => value],
+                        factory: undefined,
+                    };
+                }
+                else {
+                    result.directives[directiveIndex].d = value;
+                }
                 directiveIndex++;
             }
         });

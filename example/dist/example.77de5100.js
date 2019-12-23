@@ -150,163 +150,7 @@ function createDirective(factory) {
     return directive;
   })(factory);
 }
-},{}],"../dist/src/html.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.html = exports.getAttributeMarker = exports.getTextMarker = exports.DirectiveType = void 0;
-
-var _directive = require("./directive.js");
-
-const isLetter = c => {
-  return c.toLowerCase() != c.toUpperCase();
-};
-
-var DirectiveType;
-exports.DirectiveType = DirectiveType;
-
-(function (DirectiveType) {
-  DirectiveType[DirectiveType["TEXT"] = 0] = "TEXT";
-  DirectiveType[DirectiveType["ATTRIBUTE"] = 1] = "ATTRIBUTE";
-  DirectiveType[DirectiveType["ATTRIBUTE_VALUE"] = 2] = "ATTRIBUTE_VALUE";
-})(DirectiveType || (exports.DirectiveType = DirectiveType = {}));
-
-const insertAttributeMarker = (marker, si, appendedStatic) => {
-  while (si++) {
-    const char = appendedStatic.charAt(si);
-
-    if (!char) {
-      break;
-    }
-
-    if (char === ' ') {
-      return appendedStatic.slice(0, si) + ' ' + marker + appendedStatic.slice(si);
-    }
-  }
-
-  return appendedStatic;
-};
-
-const getTextMarker = id => {
-  return `tm-${id}`;
-};
-
-exports.getTextMarker = getTextMarker;
-
-const getAttributeMarker = id => {
-  return `data-am-${id}`;
-};
-
-exports.getAttributeMarker = getAttributeMarker;
-
-function isDirective(thing) {
-  return thing.is && thing.is === _directive.IS_DIRECTIVE;
-}
-
-let resultCache = new WeakMap();
-
-const html = (staticParts, ...dynamicParts) => {
-  let result = resultCache.get(staticParts);
-
-  if (!result) {
-    let appendedStatic = '';
-    const directives = [];
-
-    for (let i = 0; i < dynamicParts.length; i++) {
-      const dynamicPart = dynamicParts[i];
-      const staticPart = staticParts[i];
-      appendedStatic += staticPart;
-
-      if (!isDirective(dynamicPart)) {
-        appendedStatic += dynamicPart;
-        continue;
-      }
-
-      let id = directives.push({
-        d: dynamicPart
-      }) - 1;
-      let si = appendedStatic.length + 1;
-      let attributeValueMode = false;
-      let attributeMode = false;
-      let attributeNameFound = false;
-      let attributeName = '';
-
-      while (si--) {
-        const char = appendedStatic.charAt(si);
-        const nextChar = appendedStatic.charAt(si - 1);
-        const nextNextChar = appendedStatic.charAt(si - 2);
-
-        if (char === '>' || si === 0) {
-          let marker = getTextMarker(id);
-          appendedStatic += `<${marker}>&zwnj;</${marker}>`;
-          directives[id].t = DirectiveType.TEXT;
-          break;
-        }
-
-        if (char === '"' && nextChar === '=' && isLetter(nextNextChar) && !attributeMode) {
-          attributeValueMode = true;
-          continue;
-        }
-
-        if (char === '"' && nextNextChar !== '=' && !attributeValueMode) {
-          attributeValueMode = false;
-          attributeMode = true;
-          continue;
-        }
-
-        if (attributeValueMode && char !== '"' && char !== '=' && !attributeNameFound) {
-          if (char !== ' ') {
-            attributeName = char + attributeName;
-          } else {
-            attributeNameFound = true;
-          }
-        }
-
-        if (char === '<' && attributeValueMode) {
-          appendedStatic = insertAttributeMarker(getAttributeMarker(id), si, appendedStatic);
-          directives[id].t = DirectiveType.ATTRIBUTE_VALUE;
-          directives[id].a = attributeName;
-
-          if (appendedStatic[appendedStatic.length - 1] === ' ') {
-            appendedStatic = appendedStatic.slice(0, appendedStatic.length - 1);
-          }
-
-          break;
-        }
-
-        if (char === '<' && !attributeValueMode) {
-          appendedStatic = insertAttributeMarker(getAttributeMarker(id), si, appendedStatic);
-          directives[id].t = DirectiveType.ATTRIBUTE;
-          break;
-        }
-      }
-    }
-
-    appendedStatic += staticParts[staticParts.length - 1];
-    const template = document.createElement('template');
-    template.innerHTML = appendedStatic;
-    result = {
-      template,
-      directives
-    };
-  } else {
-    let directiveIndex = 0;
-    dynamicParts.forEach(value => {
-      if (isDirective(value)) {
-        result.directives[directiveIndex].d = value;
-        directiveIndex++;
-      }
-    });
-  }
-
-  resultCache.set(staticParts, result);
-  return result;
-};
-
-exports.html = html;
-},{"./directive.js":"../dist/src/directive.js"}],"../dist/src/scheduler.js":[function(require,module,exports) {
+},{}],"../dist/src/scheduler.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -493,7 +337,182 @@ const sub = (0, _directive.createDirective)(function* (node, cb) {
   }
 });
 exports.sub = sub;
-},{"../directive.js":"../dist/src/directive.js","../render.js":"../dist/src/render.js"}],"../dist/src/misc.js":[function(require,module,exports) {
+},{"../directive.js":"../dist/src/directive.js","../render.js":"../dist/src/render.js"}],"../dist/src/html.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.html = exports.getAttributeMarker = exports.getTextMarker = exports.DirectiveType = void 0;
+
+var _directive = require("./directive.js");
+
+var _sub = require("./directives/sub.js");
+
+const isLetter = c => {
+  return c.toLowerCase() != c.toUpperCase();
+};
+
+var DirectiveType;
+exports.DirectiveType = DirectiveType;
+
+(function (DirectiveType) {
+  DirectiveType[DirectiveType["TEXT"] = 0] = "TEXT";
+  DirectiveType[DirectiveType["ATTRIBUTE"] = 1] = "ATTRIBUTE";
+  DirectiveType[DirectiveType["ATTRIBUTE_VALUE"] = 2] = "ATTRIBUTE_VALUE";
+})(DirectiveType || (exports.DirectiveType = DirectiveType = {}));
+
+const insertAttributeMarker = (marker, si, appendedStatic) => {
+  while (si++) {
+    const char = appendedStatic.charAt(si);
+
+    if (!char) {
+      break;
+    }
+
+    if (char === ' ') {
+      return appendedStatic.slice(0, si) + ' ' + marker + appendedStatic.slice(si);
+    }
+  }
+
+  return appendedStatic;
+};
+
+const getTextMarker = id => {
+  return `tm-${id}`;
+};
+
+exports.getTextMarker = getTextMarker;
+
+const getAttributeMarker = id => {
+  return `data-am-${id}`;
+};
+
+exports.getAttributeMarker = getAttributeMarker;
+
+function isDirective(thing) {
+  return thing.is && thing.is === _directive.IS_DIRECTIVE;
+}
+
+function isHTMLResult(thing) {
+  return thing.template && thing.directives;
+}
+
+let resultCache = new WeakMap();
+
+const html = (staticParts, ...dynamicParts) => {
+  let result = resultCache.get(staticParts);
+
+  if (!result) {
+    let appendedStatic = '';
+    const directives = [];
+
+    for (let i = 0; i < dynamicParts.length; i++) {
+      let dynamicPart = dynamicParts[i];
+      const staticPart = staticParts[i];
+      appendedStatic += staticPart;
+
+      if (!isDirective(dynamicPart)) {
+        if (isHTMLResult(dynamicPart)) {
+          const htmlResult = dynamicPart;
+          dynamicPart = (0, _sub.sub)(() => htmlResult);
+        } else {
+          appendedStatic += dynamicPart;
+          continue;
+        }
+      }
+
+      let id = directives.push({
+        d: dynamicPart
+      }) - 1;
+      let si = appendedStatic.length + 1;
+      let attributeValueMode = false;
+      let attributeMode = false;
+      let attributeNameFound = false;
+      let attributeName = '';
+
+      while (si--) {
+        const char = appendedStatic.charAt(si);
+        const nextChar = appendedStatic.charAt(si - 1);
+        const nextNextChar = appendedStatic.charAt(si - 2);
+
+        if (char === '>' || si === 0) {
+          let marker = getTextMarker(id);
+          appendedStatic += `<${marker}>&zwnj;</${marker}>`;
+          directives[id].t = DirectiveType.TEXT;
+          break;
+        }
+
+        if (char === '"' && nextChar === '=' && isLetter(nextNextChar) && !attributeMode) {
+          attributeValueMode = true;
+          continue;
+        }
+
+        if (char === '"' && nextNextChar !== '=' && !attributeValueMode) {
+          attributeValueMode = false;
+          attributeMode = true;
+          continue;
+        }
+
+        if (attributeValueMode && char !== '"' && char !== '=' && !attributeNameFound) {
+          if (char !== ' ') {
+            attributeName = char + attributeName;
+          } else {
+            attributeNameFound = true;
+          }
+        }
+
+        if (char === '<' && attributeValueMode) {
+          appendedStatic = insertAttributeMarker(getAttributeMarker(id), si, appendedStatic);
+          directives[id].t = DirectiveType.ATTRIBUTE_VALUE;
+          directives[id].a = attributeName;
+
+          if (appendedStatic[appendedStatic.length - 1] === ' ') {
+            appendedStatic = appendedStatic.slice(0, appendedStatic.length - 1);
+          }
+
+          break;
+        }
+
+        if (char === '<' && !attributeValueMode) {
+          appendedStatic = insertAttributeMarker(getAttributeMarker(id), si, appendedStatic);
+          directives[id].t = DirectiveType.ATTRIBUTE;
+          break;
+        }
+      }
+    }
+
+    appendedStatic += staticParts[staticParts.length - 1];
+    const template = document.createElement('template');
+    template.innerHTML = appendedStatic;
+    result = {
+      template,
+      directives
+    };
+  } else {
+    let directiveIndex = 0;
+    dynamicParts.forEach(value => {
+      if (isDirective(value) || isHTMLResult(value)) {
+        if (isHTMLResult(value)) {
+          result.directives[directiveIndex].d = {
+            args: [() => value],
+            factory: undefined
+          };
+        } else {
+          result.directives[directiveIndex].d = value;
+        }
+
+        directiveIndex++;
+      }
+    });
+  }
+
+  resultCache.set(staticParts, result);
+  return result;
+};
+
+exports.html = html;
+},{"./directive.js":"../dist/src/directive.js","./directives/sub.js":"../dist/src/directives/sub.js"}],"../dist/src/misc.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1067,20 +1086,6 @@ index_js_1.component('test-component', () => {
     return () => {};
   }, () => [$s.inputValue]);
   console.log(index_js_1.getElement());
-
-  const renderSub = () => {
-    if ($s.swap) {
-      return index_js_1.html`
-        <div>this text</div>
-      `;
-    } else {
-      return index_js_1.html`
-        <div>can be changed</div>
-        <div>just like this</div>
-      `;
-    }
-  };
-
   return {
     watch: [$s, $test, $toast],
     render: () => {
@@ -1097,7 +1102,12 @@ index_js_1.component('test-component', () => {
       })}
           />
           <br />
-          ${index_js_1.sub(renderSub)}
+          ${$s.swap ? index_js_1.html`
+                <div>this text</div>
+              ` : index_js_1.html`
+                <div>can be changed</div>
+                <div>just like this</div>
+              `}
           <button
             ${index_js_1.on('click', () => {
         $s.swap = !$s.swap;

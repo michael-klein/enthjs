@@ -9,7 +9,6 @@ import {
   getElement,
   sideEffect,
   component,
-  sub,
 } from '../dist/src/index.js';
 
 // this is (currently) how you define a component
@@ -34,18 +33,6 @@ component('test-component', () => {
 
   console.log(getElement());
 
-  const renderSub = () => {
-    if ($s.swap) {
-      return html`
-        <div>this text</div>
-      `;
-    } else {
-      return html`
-        <div>can be changed</div>
-        <div>just like this</div>
-      `;
-    }
-  };
   return {
     watch: [$s, $test, $toast],
     render: () => {
@@ -62,7 +49,14 @@ component('test-component', () => {
             })}
           />
           <br />
-          ${sub(renderSub)}
+          ${$s.swap
+            ? html`
+                <div>this text</div>
+              `
+            : html`
+                <div>can be changed</div>
+                <div>just like this</div>
+              `}
           <button
             ${on('click', () => {
               $s.swap = !$s.swap;
