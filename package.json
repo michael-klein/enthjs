@@ -1,5 +1,5 @@
 {
-  "name": "view",
+  "name": "gen_v",
   "version": "0.1.0",
   "license": "MIT",
   "author": "Michael Klein",
@@ -11,8 +11,8 @@
   ],
   "scripts": {
     "prepublish": "tsdx build",
-    "start": "tsdx watch",
-    "build": "tsdx build",
+    "start": "npx ttsc --watch --project tsconfig.json",
+    "build": "npx ttsc --project tsconfig.json",
     "test": "tsdx test --env=jsdom",
     "lint": "tsdx lint"
   },
@@ -38,6 +38,7 @@
     "@types/jest": "^24.0.22",
     "@types/react": "^16.9.11",
     "@types/react-dom": "^16.9.4",
+    "@zoltu/typescript-transformer-append-js-extension": "^1.0.1",
     "babel-preset-env": "^1.7.0",
     "husky": "^3.0.9",
     "react": "^16.11.0",
@@ -45,6 +46,7 @@
     "react-test-renderer": "^16.11.0",
     "tsdx": "^0.11.0",
     "tslib": "^1.10.0",
+    "ttypescript": "^1.5.8",
     "typescript": "^3.7.2"
   },
   "dependencies": {

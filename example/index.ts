@@ -10,7 +10,7 @@ import {
   sideEffect,
   component,
   sub,
-} from '../dist';
+} from '../dist/src/index.js';
 
 // this is (currently) how you define a component
 component('test-component', () => {
