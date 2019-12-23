@@ -1,3 +1,9 @@
+export var DOMUpdateType;
+(function (DOMUpdateType) {
+    DOMUpdateType[DOMUpdateType["TEXT"] = 0] = "TEXT";
+    DOMUpdateType[DOMUpdateType["REPLACE_NODE"] = 1] = "REPLACE_NODE";
+    DOMUpdateType[DOMUpdateType["ADD_NODE"] = 2] = "ADD_NODE";
+})(DOMUpdateType || (DOMUpdateType = {}));
 export const IS_DIRECTIVE = Symbol('directive');
 export function createDirective(factory) {
     return ((factory) => {

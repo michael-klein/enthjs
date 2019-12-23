@@ -1,5 +1,17 @@
+export interface DOMUpdate {
+  node: Node;
+  newNode?: Node;
+  type: DOMUpdateType;
+  value?: string;
+}
+export enum DOMUpdateType {
+  TEXT,
+  REPLACE_NODE,
+  ADD_NODE,
+}
+
 export type DirectiveGenerator<Args extends any[] = any[]> = Generator<
-  any,
+  DOMUpdate[] | Promise<DOMUpdate[]> | void,
   void,
   Args
 >;

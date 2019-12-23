@@ -1,18 +1,21 @@
-import { createDirective } from "../directive.js";
-import { PriorityLevel, schedule } from "../scheduler.js";
-import { clear, render } from "../render.js";
+import { createDirective, DOMUpdateType } from "../directive.js";
+import { render } from "../render.js";
 export const sub = createDirective(function* (node, cb) {
-    let span;
     if (node.nodeType === 3) {
-        span = document.createElement('span');
-        node.parentElement.insertBefore(span, node);
-        node.parentElement.removeChild(node);
+        let span;
         for (;;) {
-            schedule(() => {
-                clear(span);
-                render(span, cb());
-            }, PriorityLevel.USER_BLOCKING);
-            cb = (yield)[0];
+            cb = (yield new Promise(resolve => {
+                const newSpan = document.createElement('span');
+                render(newSpan, cb());
+                resolve([
+                    {
+                        type: DOMUpdateType.REPLACE_NODE,
+                        node: node.parentElement ? node : span,
+                        newNode: newSpan,
+                    },
+                ]);
+                span = newSpan;
+            }))[0];
         }
     }
 });

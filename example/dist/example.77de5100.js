@@ -124,7 +124,16 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.createDirective = createDirective;
-exports.IS_DIRECTIVE = void 0;
+exports.IS_DIRECTIVE = exports.DOMUpdateType = void 0;
+var DOMUpdateType;
+exports.DOMUpdateType = DOMUpdateType;
+
+(function (DOMUpdateType) {
+  DOMUpdateType[DOMUpdateType["TEXT"] = 0] = "TEXT";
+  DOMUpdateType[DOMUpdateType["REPLACE_NODE"] = 1] = "REPLACE_NODE";
+  DOMUpdateType[DOMUpdateType["ADD_NODE"] = 2] = "ADD_NODE";
+})(DOMUpdateType || (exports.DOMUpdateType = DOMUpdateType = {}));
+
 const IS_DIRECTIVE = Symbol('directive');
 exports.IS_DIRECTIVE = IS_DIRECTIVE;
 
@@ -297,67 +306,7 @@ const html = (staticParts, ...dynamicParts) => {
 };
 
 exports.html = html;
-},{"./directive.js":"../dist/src/directive.js"}],"../dist/src/render.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.render = exports.clear = void 0;
-
-var _html = require("./html.js");
-
-const renderedNodesMap = new WeakMap();
-
-const clear = container => {
-  if (renderedNodesMap.has(container)) {
-    renderedNodesMap.get(container).forEach(node => container.removeChild(node));
-    renderedNodesMap.delete(container);
-  }
-};
-
-exports.clear = clear;
-const generatorMap = new WeakMap();
-
-const render = (container, htmlResult) => {
-  let fragment;
-
-  if (!renderedNodesMap.has(container)) {
-    const generators = [];
-    generatorMap.set(container, generators);
-    fragment = htmlResult.template.content.cloneNode(true);
-    htmlResult.directives.forEach((directiveData, id) => {
-      switch (directiveData.t) {
-        case _html.DirectiveType.TEXT:
-          const placeholder = fragment.querySelector((0, _html.getTextMarker)(id));
-          const textNode = placeholder.firstChild;
-          generators[id] = directiveData.d.factory(textNode, ...directiveData.d.args);
-          placeholder.parentElement.replaceChild(textNode, placeholder);
-          break;
-
-        case _html.DirectiveType.ATTRIBUTE:
-        case _html.DirectiveType.ATTRIBUTE_VALUE:
-          const marker = (0, _html.getAttributeMarker)(id);
-          const node = fragment.querySelector(`[${marker}]`);
-          generators[id] = directiveData.d.factory(node, ...directiveData.d.args);
-          node.removeAttribute(marker);
-      }
-    });
-    renderedNodesMap.set(container, Array.from(fragment.childNodes));
-  }
-
-  const generators = generatorMap.get(container);
-  htmlResult.directives.forEach((directiveData, id) => {
-    generators[id].next(directiveData.d.args);
-  });
-
-  if (fragment) {
-    container.appendChild(fragment);
-  }
-};
-
-exports.render = render;
-},{"./html.js":"../dist/src/html.js"}],"../dist/src/scheduler.js":[function(require,module,exports) {
+},{"./directive.js":"../dist/src/directive.js"}],"../dist/src/scheduler.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -428,7 +377,92 @@ const schedule = (cb, priority = PriorityLevel.NORMAL) => {
 };
 
 exports.schedule = schedule;
-},{}],"../dist/src/directives/sub.js":[function(require,module,exports) {
+},{}],"../dist/src/render.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.render = exports.clear = void 0;
+
+var _html = require("./html.js");
+
+var _directive = require("./directive.js");
+
+var _scheduler = require("./scheduler.js");
+
+const renderedNodesMap = new WeakMap();
+
+const clear = container => {
+  if (renderedNodesMap.has(container)) {
+    renderedNodesMap.get(container).forEach(node => container.removeChild(node));
+    renderedNodesMap.delete(container);
+  }
+};
+
+exports.clear = clear;
+const generatorMap = new WeakMap();
+
+const render = (container, htmlResult) => {
+  let fragment;
+
+  if (!renderedNodesMap.has(container)) {
+    const generators = [];
+    generatorMap.set(container, generators);
+    fragment = htmlResult.template.content.cloneNode(true);
+    htmlResult.directives.forEach((directiveData, id) => {
+      switch (directiveData.t) {
+        case _html.DirectiveType.TEXT:
+          const placeholder = fragment.querySelector((0, _html.getTextMarker)(id));
+          const textNode = placeholder.firstChild;
+          generators[id] = directiveData.d.factory(textNode, ...directiveData.d.args);
+          placeholder.parentElement.replaceChild(textNode, placeholder);
+          break;
+
+        case _html.DirectiveType.ATTRIBUTE:
+        case _html.DirectiveType.ATTRIBUTE_VALUE:
+          const marker = (0, _html.getAttributeMarker)(id);
+          const node = fragment.querySelector(`[${marker}]`);
+          generators[id] = directiveData.d.factory(node, ...directiveData.d.args);
+          node.removeAttribute(marker);
+      }
+    });
+    renderedNodesMap.set(container, Array.from(fragment.childNodes));
+  }
+
+  const generators = generatorMap.get(container);
+  htmlResult.directives.forEach(async (directiveData, id) => {
+    const result = generators[id].next(directiveData.d.args);
+
+    if (result.value) {
+      const domUpdate = await result.value;
+      (0, _scheduler.schedule)(() => {
+        domUpdate.forEach(d => {
+          switch (d.type) {
+            case _directive.DOMUpdateType.TEXT:
+              d.node.textContent = d.value;
+              break;
+
+            case _directive.DOMUpdateType.ADD_NODE:
+              d.node.appendChild(d.newNode);
+              break;
+
+            case _directive.DOMUpdateType.REPLACE_NODE:
+              d.node.parentElement.replaceChild(d.newNode, d.node);
+              break;
+          }
+        });
+      });
+    }
+  });
+
+  if (fragment) {
+    container.appendChild(fragment);
+  }
+};
+
+exports.render = render;
+},{"./html.js":"../dist/src/html.js","./directive.js":"../dist/src/directive.js","./scheduler.js":"../dist/src/scheduler.js"}],"../dist/src/directives/sub.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -438,29 +472,28 @@ exports.sub = void 0;
 
 var _directive = require("../directive.js");
 
-var _scheduler = require("../scheduler.js");
-
 var _render = require("../render.js");
 
 const sub = (0, _directive.createDirective)(function* (node, cb) {
-  let span;
-
   if (node.nodeType === 3) {
-    span = document.createElement('span');
-    node.parentElement.insertBefore(span, node);
-    node.parentElement.removeChild(node);
+    let span;
 
     for (;;) {
-      (0, _scheduler.schedule)(() => {
-        (0, _render.clear)(span);
-        (0, _render.render)(span, cb());
-      }, _scheduler.PriorityLevel.USER_BLOCKING);
-      cb = (yield)[0];
+      cb = (yield new Promise(resolve => {
+        const newSpan = document.createElement('span');
+        (0, _render.render)(newSpan, cb());
+        resolve([{
+          type: _directive.DOMUpdateType.REPLACE_NODE,
+          node: node.parentElement ? node : span,
+          newNode: newSpan
+        }]);
+        span = newSpan;
+      }))[0];
     }
   }
 });
 exports.sub = sub;
-},{"../directive.js":"../dist/src/directive.js","../scheduler.js":"../dist/src/scheduler.js","../render.js":"../dist/src/render.js"}],"../dist/src/reactivity.js":[function(require,module,exports) {
+},{"../directive.js":"../dist/src/directive.js","../render.js":"../dist/src/render.js"}],"../dist/src/reactivity.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -811,8 +844,12 @@ var _directive = require("../directive.js");
 
 const text = (0, _directive.createDirective)(function* (node, value) {
   for (;;) {
-    node.textContent = value;
-    value = (yield)[0];
+    const result = yield [{
+      node,
+      value,
+      type: _directive.DOMUpdateType.TEXT
+    }];
+    value = result[0];
   }
 });
 exports.text = text;
@@ -1075,7 +1112,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "34253" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "35903" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

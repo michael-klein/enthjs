@@ -1,8 +1,14 @@
-import { createDirective } from '../directive';
+import { createDirective, DOMUpdateType } from '../directive';
 
 export const text = createDirective(function*(node: Text, value: string) {
   for (;;) {
-    node.textContent = value;
-    value = (yield)[0];
+    const result = yield [
+      {
+        node,
+        value,
+        type: DOMUpdateType.TEXT,
+      },
+    ];
+    value = result[0];
   }
 });

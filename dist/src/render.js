@@ -1,4 +1,6 @@
 import { DirectiveType, getTextMarker, getAttributeMarker, } from "./html.js";
+import { DOMUpdateType } from "./directive.js";
+import { schedule } from "./scheduler.js";
 const renderedNodesMap = new WeakMap();
 export const clear = (container) => {
     if (renderedNodesMap.has(container)) {
@@ -34,8 +36,26 @@ export const render = (container, htmlResult) => {
         renderedNodesMap.set(container, Array.from(fragment.childNodes));
     }
     const generators = generatorMap.get(container);
-    htmlResult.directives.forEach((directiveData, id) => {
-        generators[id].next(directiveData.d.args);
+    htmlResult.directives.forEach(async (directiveData, id) => {
+        const result = generators[id].next(directiveData.d.args);
+        if (result.value) {
+            const domUpdate = await result.value;
+            schedule(() => {
+                domUpdate.forEach(d => {
+                    switch (d.type) {
+                        case DOMUpdateType.TEXT:
+                            d.node.textContent = d.value;
+                            break;
+                        case DOMUpdateType.ADD_NODE:
+                            d.node.appendChild(d.newNode);
+                            break;
+                        case DOMUpdateType.REPLACE_NODE:
+                            d.node.parentElement.replaceChild(d.newNode, d.node);
+                            break;
+                    }
+                });
+            });
+        }
     });
     if (fragment) {
         container.appendChild(fragment);

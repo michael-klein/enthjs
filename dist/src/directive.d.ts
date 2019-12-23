@@ -1,4 +1,15 @@
-export declare type DirectiveGenerator<Args extends any[] = any[]> = Generator<any, void, Args>;
+export interface DOMUpdate {
+    node: Node;
+    newNode?: Node;
+    type: DOMUpdateType;
+    value?: string;
+}
+export declare enum DOMUpdateType {
+    TEXT = 0,
+    REPLACE_NODE = 1,
+    ADD_NODE = 2
+}
+export declare type DirectiveGenerator<Args extends any[] = any[]> = Generator<DOMUpdate[] | Promise<DOMUpdate[]> | void, void, Args>;
 export declare type DirectiveGeneratorFactory<N extends Node = Node, Args extends any[] = any[]> = (node: N, ...initialArgs: Args) => DirectiveGenerator<Args>;
 export interface DirectiveResult<N extends Node = Node, Args extends any[] = any[]> {
     factory: DirectiveGeneratorFactory<N, Args>;

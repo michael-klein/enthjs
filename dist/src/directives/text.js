@@ -1,8 +1,14 @@
-import { createDirective } from "../directive.js";
+import { createDirective, DOMUpdateType } from "../directive.js";
 export const text = createDirective(function* (node, value) {
     for (;;) {
-        node.textContent = value;
-        value = (yield)[0];
+        const result = yield [
+            {
+                node,
+                value,
+                type: DOMUpdateType.TEXT,
+            },
+        ];
+        value = result[0];
     }
 });
 //# sourceMappingURL=text.js.map
