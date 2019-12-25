@@ -1,4 +1,4 @@
-const IS_PROXY = Symbol('$P');
+const isProxyMap: WeakSet<object> = new WeakSet();
 function proxify(obj: any, onChange: () => void): any {
   let initialized = false;
   let onChangeWrapped = () => {
@@ -7,13 +7,25 @@ function proxify(obj: any, onChange: () => void): any {
     }
   };
   const proxy = new Proxy(obj as any, {
+    get: (obj, prop) => {
+      if (
+        obj[prop] &&
+        typeof obj[prop] === 'object' &&
+        !isProxyMap.has(obj[prop]) &&
+        prop !== 'on' &&
+        initialized
+      ) {
+        obj[prop] = proxify(obj[prop], onChange);
+      }
+      return obj[prop];
+    },
     set: (obj, prop, value) => {
       if (
         (obj[prop] !== value || !initialized) &&
         prop !== '__$p' &&
         prop !== 'on'
       ) {
-        if (typeof value === 'object') {
+        if (typeof value === 'object' && !isProxyMap.has(obj[prop])) {
           value = proxify(value, onChangeWrapped);
         }
         obj[prop] = value;
@@ -27,7 +39,7 @@ function proxify(obj: any, onChange: () => void): any {
   Object.keys(obj).forEach(key => {
     proxy[key] = obj[key];
   });
-  proxy.__$p = IS_PROXY;
+  isProxyMap.add(proxy);
   initialized = true;
   return proxy;
 }
