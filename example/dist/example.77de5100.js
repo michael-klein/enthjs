@@ -500,18 +500,43 @@ var _render = require("../render.js");
 
 const sub = (0, _directive.createDirective)(function* (node, htmlResult) {
   if (node.nodeType === 3) {
-    let span;
+    const start = document.createComment('');
+    let result = [{
+      type: _directive.DOMUpdateType.REPLACE_NODE,
+      node,
+      newNode: start
+    }];
+    let prevTemplate;
+    let prevFrag;
+    let prevChildren = [];
 
     for (;;) {
-      const newSpan = document.createElement('span');
-      (0, _render.render)(newSpan, htmlResult);
-      const result = [{
-        type: _directive.DOMUpdateType.REPLACE_NODE,
-        node: node.parentElement ? node : span,
-        newNode: newSpan
-      }];
-      span = newSpan;
+      if (prevTemplate === htmlResult.template) {
+        (0, _render.render)(prevFrag, htmlResult);
+      } else {
+        const frag = document.createDocumentFragment();
+        (0, _render.render)(frag, htmlResult);
+        prevChildren.forEach(child => {
+          result.push({
+            type: _directive.DOMUpdateType.REMOVE,
+            node: child
+          });
+        });
+        prevChildren = [];
+        frag.childNodes.forEach(child => {
+          prevChildren.push(child);
+          result.push({
+            type: _directive.DOMUpdateType.INSERT_BEFORE,
+            node: start,
+            newNode: child
+          });
+        });
+        prevTemplate = htmlResult.template;
+        prevFrag = frag;
+      }
+
       htmlResult = (yield result)[0];
+      result = [];
     }
   }
 });
@@ -1044,9 +1069,9 @@ const list = (0, _directive.createDirective)(function* (node, htmlResults) {
         console.log(results);
       }
 
+      oldKeyOrder = keyOrder;
       htmlResults = (yield results)[0];
       results = [];
-      oldKeyOrder = keyOrder;
     }
   }
 });

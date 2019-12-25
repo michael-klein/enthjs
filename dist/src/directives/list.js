@@ -68,9 +68,9 @@ export const list = createDirective(function* (node, htmlResults) {
                 }));
                 console.log(results);
             }
+            oldKeyOrder = keyOrder;
             htmlResults = (yield results)[0];
             results = [];
-            oldKeyOrder = keyOrder;
         }
     }
 });
