@@ -1,20 +1,34 @@
 const IS_PROXY = Symbol('$P');
 function proxify(obj: any, onChange: () => void): any {
-  const proxy = new Proxy(obj, {
+  let initialized = false;
+  let onChangeWrapped = () => {
+    if (initialized) {
+      onChange();
+    }
+  };
+  const proxy = new Proxy(obj as any, {
     set: (obj, prop, value) => {
-      if (obj[prop] !== value && prop !== '__$p' && prop !== 'on') {
-        if (typeof obj[prop] === 'object') {
-          obj[prop] = proxify(obj[prop], onChange);
+      if (
+        (obj[prop] !== value || !initialized) &&
+        prop !== '__$p' &&
+        prop !== 'on'
+      ) {
+        if (typeof value === 'object') {
+          value = proxify(value, onChangeWrapped);
         }
         obj[prop] = value;
-        onChange();
+        onChangeWrapped();
       } else if (prop === 'on') {
         obj[prop] = value;
       }
       return true;
     },
   });
+  Object.keys(obj).forEach(key => {
+    proxy[key] = obj[key];
+  });
   proxy.__$p = IS_PROXY;
+  initialized = true;
   return proxy;
 }
 export type State<S extends {} = {}> = S & {

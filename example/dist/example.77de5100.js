@@ -760,15 +760,23 @@ exports.$state = void 0;
 const IS_PROXY = Symbol('$P');
 
 function proxify(obj, onChange) {
+  let initialized = false;
+
+  let onChangeWrapped = () => {
+    if (initialized) {
+      onChange();
+    }
+  };
+
   const proxy = new Proxy(obj, {
     set: (obj, prop, value) => {
-      if (obj[prop] !== value && prop !== '__$p' && prop !== 'on') {
-        if (typeof obj[prop] === 'object') {
-          obj[prop] = proxify(obj[prop], onChange);
+      if ((obj[prop] !== value || !initialized) && prop !== '__$p' && prop !== 'on') {
+        if (typeof value === 'object') {
+          value = proxify(value, onChangeWrapped);
         }
 
         obj[prop] = value;
-        onChange();
+        onChangeWrapped();
       } else if (prop === 'on') {
         obj[prop] = value;
       }
@@ -776,7 +784,11 @@ function proxify(obj, onChange) {
       return true;
     }
   });
+  Object.keys(obj).forEach(key => {
+    proxy[key] = obj[key];
+  });
   proxy.__$p = IS_PROXY;
+  initialized = true;
   return proxy;
 }
 
@@ -1007,7 +1019,7 @@ function getKey(htmlResult) {
     id++;
   }
 
-  return Date.now() + '';
+  return htmlResult.template.innerHTML;
 }
 
 const list = (0, _directive.createDirective)(function* (node, htmlResults) {

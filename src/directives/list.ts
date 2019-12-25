@@ -13,7 +13,7 @@ export function getKey(htmlResult: HTMLResult): string {
     }
     id++;
   }
-  return Date.now() + '';
+  return htmlResult.template.innerHTML;
 }
 
 export const list = createDirective(function*(

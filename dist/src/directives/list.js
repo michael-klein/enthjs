@@ -11,7 +11,7 @@ export function getKey(htmlResult) {
         }
         id++;
     }
-    return Date.now() + '';
+    return htmlResult.template.innerHTML;
 }
 export const list = createDirective(function* (node, htmlResults) {
     if (node.nodeType === 3) {
