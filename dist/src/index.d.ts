@@ -10,4 +10,5 @@ export { Directive, createDirective } from './directive';
 export { text } from './directives/text';
 export { input } from './directives/input';
 export { on } from './directives/on';
+export { list, key } from './directives/list';
 export { getElement } from './context';

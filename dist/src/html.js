@@ -102,7 +102,7 @@ export const html = (staticParts, ...dynamicParts) => {
         }
         appendedStatic += staticParts[staticParts.length - 1];
         const template = document.createElement('template');
-        template.innerHTML = appendedStatic;
+        template.innerHTML = appendedStatic.trim();
         result = {
             template,
             directives,
@@ -110,6 +110,17 @@ export const html = (staticParts, ...dynamicParts) => {
     }
     else {
         let directiveIndex = 0;
+        result = {
+            ...result,
+            directives: result.directives.map(directive => {
+                const { a, t } = directive;
+                return {
+                    a,
+                    t,
+                    d: undefined,
+                };
+            }),
+        };
         dynamicParts.forEach((value) => {
             if (isDirective(value)) {
                 result.directives[directiveIndex].d = value;

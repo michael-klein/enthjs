@@ -9,9 +9,21 @@ import {
   getElement,
   sideEffect,
   component,
+  list,
   sub,
+  key,
 } from '../dist/src/index.js';
 
+function shuffle(a) {
+  var j, x, i;
+  for (i = a.length - 1; i > 0; i--) {
+    j = Math.floor(Math.random() * (i + 1));
+    x = a[i];
+    a[i] = a[j];
+    a[j] = x;
+  }
+  return a;
+}
 // this is (currently) how you define a component
 component('test-component', () => {
   // this method is the "setup" of the component
@@ -19,7 +31,7 @@ component('test-component', () => {
 
   // $state creates a reactive object
   // any changes to the object (even nested) will trigger a re-render
-  const $s = $state({ inputValue: '', swap: true });
+  const $s = $state({ inputValue: '', swap: true, keys: [1, 2, 3, 4] });
   const $test = $attr('test');
   const $toast = $prop('toast', '');
 
@@ -33,6 +45,11 @@ component('test-component', () => {
   ); // only runs when values in array change
 
   console.log(getElement());
+
+  function shuffleKeys() {
+    const keys = [...$s.keys];
+    $s.keys = shuffle(keys);
+  }
 
   return {
     watch: [$s, $test, $toast],
@@ -50,7 +67,7 @@ component('test-component', () => {
             })}
           />
           <br />
-          ${sub(() =>
+          ${sub(
             $s.swap
               ? html`
                   <div>this text</div>
@@ -67,6 +84,18 @@ component('test-component', () => {
           >
             swap
           </button>
+          <br /><br />
+          ${list([
+            ...$s.keys.map(
+              k => html`
+                <div ${key(k + '')}>${text(`key: ${k}`)}</div>
+              `
+            ),
+            html`
+              <div>keyless</div>
+            `,
+          ])}
+          <button ${on('click', () => shuffleKeys())}>shuffle</button>
         </div>
       `;
     },

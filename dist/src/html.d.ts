@@ -14,5 +14,7 @@ export declare const getAttributeMarker: (id: number) => string;
 export interface HTMLResult {
     template: HTMLTemplateElement;
     directives: DirectiveData[];
+    key?: string;
 }
+export declare type HTML = typeof html;
 export declare const html: (staticParts: TemplateStringsArray, ...dynamicParts: any[]) => HTMLResult;

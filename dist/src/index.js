@@ -10,5 +10,6 @@ export { createDirective } from "./directive.js";
 export { text } from "./directives/text.js";
 export { input } from "./directives/input.js";
 export { on } from "./directives/on.js";
+export { list, key } from "./directives/list.js";
 export { getElement } from "./context.js";
 //# sourceMappingURL=index.js.map

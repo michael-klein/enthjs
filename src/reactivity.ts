@@ -1,19 +1,11 @@
 const IS_PROXY = Symbol('$P');
 function proxify(obj: any, onChange: () => void): any {
   const proxy = new Proxy(obj, {
-    get: (obj, prop) => {
-      if (
-        obj[prop] &&
-        typeof obj[prop] === 'object' &&
-        obj[prop].__$p !== IS_PROXY &&
-        prop !== 'on'
-      ) {
-        obj[prop] = proxify(obj[prop], onChange);
-      }
-      return obj[prop];
-    },
     set: (obj, prop, value) => {
       if (obj[prop] !== value && prop !== '__$p' && prop !== 'on') {
+        if (typeof obj[prop] === 'object') {
+          obj[prop] = proxify(obj[prop], onChange);
+        }
         obj[prop] = value;
         onChange();
       } else if (prop === 'on') {

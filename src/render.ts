@@ -68,6 +68,12 @@ export const render = (
             case DOMUpdateType.REPLACE_NODE:
               d.node.parentElement.replaceChild(d.newNode, d.node);
               break;
+            case DOMUpdateType.INSERT_BEFORE:
+              d.node.parentElement.insertBefore(d.newNode, d.node);
+              break;
+            case DOMUpdateType.REMOVE:
+              d.node.parentElement.removeChild(d.node);
+              break;
           }
         });
       });

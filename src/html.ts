@@ -41,7 +41,9 @@ export const getAttributeMarker = (id: number): string => {
 export interface HTMLResult {
   template: HTMLTemplateElement;
   directives: DirectiveData[];
+  key?: string;
 }
+export type HTML = typeof html;
 function isDirective(thing: any): boolean {
   return thing.is && thing.is === IS_DIRECTIVE;
 }
@@ -133,13 +135,24 @@ export const html = (
     }
     appendedStatic += staticParts[staticParts.length - 1];
     const template = document.createElement('template');
-    template.innerHTML = appendedStatic;
+    template.innerHTML = appendedStatic.trim();
     result = {
       template,
       directives,
     };
   } else {
     let directiveIndex: number = 0;
+    result = {
+      ...result,
+      directives: result.directives.map(directive => {
+        const { a, t } = directive;
+        return {
+          a,
+          t,
+          d: undefined,
+        };
+      }),
+    };
     dynamicParts.forEach((value: any) => {
       if (isDirective(value)) {
         result.directives[directiveIndex].d = value;

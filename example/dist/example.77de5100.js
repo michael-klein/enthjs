@@ -132,6 +132,8 @@ exports.DOMUpdateType = DOMUpdateType;
   DOMUpdateType[DOMUpdateType["TEXT"] = 0] = "TEXT";
   DOMUpdateType[DOMUpdateType["REPLACE_NODE"] = 1] = "REPLACE_NODE";
   DOMUpdateType[DOMUpdateType["ADD_NODE"] = 2] = "ADD_NODE";
+  DOMUpdateType[DOMUpdateType["INSERT_BEFORE"] = 3] = "INSERT_BEFORE";
+  DOMUpdateType[DOMUpdateType["REMOVE"] = 4] = "REMOVE";
 })(DOMUpdateType || (exports.DOMUpdateType = DOMUpdateType = {}));
 
 const IS_DIRECTIVE = Symbol('directive');
@@ -143,7 +145,8 @@ function createDirective(factory) {
       return {
         is: IS_DIRECTIVE,
         factory,
-        args
+        args,
+        directive
       };
     };
 
@@ -286,13 +289,26 @@ const html = (staticParts, ...dynamicParts) => {
 
     appendedStatic += staticParts[staticParts.length - 1];
     const template = document.createElement('template');
-    template.innerHTML = appendedStatic;
+    template.innerHTML = appendedStatic.trim();
     result = {
       template,
       directives
     };
   } else {
     let directiveIndex = 0;
+    result = { ...result,
+      directives: result.directives.map(directive => {
+        const {
+          a,
+          t
+        } = directive;
+        return {
+          a,
+          t,
+          d: undefined
+        };
+      })
+    };
     dynamicParts.forEach(value => {
       if (isDirective(value)) {
         result.directives[directiveIndex].d = value;
@@ -450,6 +466,14 @@ const render = (container, htmlResult) => {
             case _directive.DOMUpdateType.REPLACE_NODE:
               d.node.parentElement.replaceChild(d.newNode, d.node);
               break;
+
+            case _directive.DOMUpdateType.INSERT_BEFORE:
+              d.node.parentElement.insertBefore(d.newNode, d.node);
+              break;
+
+            case _directive.DOMUpdateType.REMOVE:
+              d.node.parentElement.removeChild(d.node);
+              break;
           }
         });
       });
@@ -474,21 +498,20 @@ var _directive = require("../directive.js");
 
 var _render = require("../render.js");
 
-const sub = (0, _directive.createDirective)(function* (node, cb) {
+const sub = (0, _directive.createDirective)(function* (node, htmlResult) {
   if (node.nodeType === 3) {
     let span;
 
     for (;;) {
-      cb = (yield new Promise(resolve => {
-        const newSpan = document.createElement('span');
-        (0, _render.render)(newSpan, cb());
-        resolve([{
-          type: _directive.DOMUpdateType.REPLACE_NODE,
-          node: node.parentElement ? node : span,
-          newNode: newSpan
-        }]);
-        span = newSpan;
-      }))[0];
+      const newSpan = document.createElement('span');
+      (0, _render.render)(newSpan, htmlResult);
+      const result = [{
+        type: _directive.DOMUpdateType.REPLACE_NODE,
+        node: node.parentElement ? node : span,
+        newNode: newSpan
+      }];
+      span = newSpan;
+      htmlResult = (yield result)[0];
     }
   }
 });
@@ -713,15 +736,12 @@ const IS_PROXY = Symbol('$P');
 
 function proxify(obj, onChange) {
   const proxy = new Proxy(obj, {
-    get: (obj, prop) => {
-      if (obj[prop] && typeof obj[prop] === 'object' && obj[prop].__$p !== IS_PROXY && prop !== 'on') {
-        obj[prop] = proxify(obj[prop], onChange);
-      }
-
-      return obj[prop];
-    },
     set: (obj, prop, value) => {
       if (obj[prop] !== value && prop !== '__$p' && prop !== 'on') {
+        if (typeof obj[prop] === 'object') {
+          obj[prop] = proxify(obj[prop], onChange);
+        }
+
         obj[prop] = value;
         onChange();
       } else if (prop === 'on') {
@@ -935,7 +955,106 @@ const on = (0, _directive.createDirective)(function* (node, name, cb) {
   }
 });
 exports.on = on;
-},{"../directive.js":"../dist/src/directive.js","../scheduler.js":"../dist/src/scheduler.js"}],"../dist/src/index.js":[function(require,module,exports) {
+},{"../directive.js":"../dist/src/directive.js","../scheduler.js":"../dist/src/scheduler.js"}],"../dist/src/directives/list.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getKey = getKey;
+exports.key = exports.list = void 0;
+
+var _directive = require("../directive.js");
+
+var _html = require("../html.js");
+
+var _render = require("../render.js");
+
+function getKey(htmlResult) {
+  let id = 0;
+
+  for (const directive of htmlResult.directives) {
+    if (directive.d.directive === key) {
+      const listNode = htmlResult.template.content.querySelector(`[${(0, _html.getAttributeMarker)(id)}]`);
+      if (listNode && !listNode.parentElement) return directive.d.args[0];
+    }
+
+    id++;
+  }
+
+  return Date.now() + '';
+}
+
+const list = (0, _directive.createDirective)(function* (node, htmlResults) {
+  if (node.nodeType === 3) {
+    const root = document.createDocumentFragment();
+    const start = document.createComment('');
+    root.appendChild(start);
+    const keyToFragmentsMap = new Map();
+    let results = [{
+      type: _directive.DOMUpdateType.REPLACE_NODE,
+      node,
+      newNode: root
+    }];
+    let oldKeyOrder = [];
+
+    for (;;) {
+      const keyOrder = htmlResults.map(result => {
+        const key = getKey(result);
+
+        if (!keyToFragmentsMap.has(key)) {
+          const frag = document.createDocumentFragment();
+          (0, _render.render)(frag, result);
+          keyToFragmentsMap.set(key, [frag, ...Array.from(frag.childNodes)]);
+        } else {
+          const frag = keyToFragmentsMap.get(key)[0];
+          (0, _render.render)(frag, result);
+        }
+
+        return key;
+      });
+
+      if (oldKeyOrder.join('') !== keyOrder.join('')) {
+        results = results.concat(keyOrder.flatMap(newKey => {
+          const oldIndex = oldKeyOrder.indexOf(newKey);
+
+          if (oldIndex > -1) {
+            oldKeyOrder.splice(oldIndex, 1);
+          }
+
+          const [, ...children] = keyToFragmentsMap.get(newKey);
+          return children.map(child => {
+            return {
+              type: _directive.DOMUpdateType.INSERT_BEFORE,
+              node: start,
+              newNode: child
+            };
+          });
+        }));
+        results = results.concat(oldKeyOrder.flatMap(oldKey => {
+          const [, ...children] = keyToFragmentsMap.get(oldKey);
+          keyToFragmentsMap.delete(oldKey);
+          return children.map(child => {
+            return {
+              type: _directive.DOMUpdateType.REMOVE,
+              node: child
+            };
+          });
+        }));
+        console.log(results);
+      }
+
+      htmlResults = (yield results)[0];
+      results = [];
+      oldKeyOrder = keyOrder;
+    }
+  }
+});
+exports.list = list;
+const key = (0, _directive.createDirective)(function* (_node, _keyName) {});
+exports.key = key;
+console.log(key);
+},{"../directive.js":"../dist/src/directive.js","../html.js":"../dist/src/html.js","../render.js":"../dist/src/render.js"}],"../dist/src/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1013,6 +1132,18 @@ Object.defineProperty(exports, "on", {
     return _on.on;
   }
 });
+Object.defineProperty(exports, "list", {
+  enumerable: true,
+  get: function () {
+    return _list.list;
+  }
+});
+Object.defineProperty(exports, "key", {
+  enumerable: true,
+  get: function () {
+    return _list.key;
+  }
+});
 Object.defineProperty(exports, "getElement", {
   enumerable: true,
   get: function () {
@@ -1044,8 +1175,10 @@ var _input = require("./directives/input.js");
 
 var _on = require("./directives/on.js");
 
+var _list = require("./directives/list.js");
+
 var _context = require("./context.js");
-},{"./html.js":"../dist/src/html.js","./render.js":"../dist/src/render.js","./directives/sub.js":"../dist/src/directives/sub.js","./component.js":"../dist/src/component.js","./properties.js":"../dist/src/properties.js","./attributes.js":"../dist/src/attributes.js","./sideeffects.js":"../dist/src/sideeffects.js","./reactivity.js":"../dist/src/reactivity.js","./directive.js":"../dist/src/directive.js","./directives/text.js":"../dist/src/directives/text.js","./directives/input.js":"../dist/src/directives/input.js","./directives/on.js":"../dist/src/directives/on.js","./context.js":"../dist/src/context.js"}],"index.ts":[function(require,module,exports) {
+},{"./html.js":"../dist/src/html.js","./render.js":"../dist/src/render.js","./directives/sub.js":"../dist/src/directives/sub.js","./component.js":"../dist/src/component.js","./properties.js":"../dist/src/properties.js","./attributes.js":"../dist/src/attributes.js","./sideeffects.js":"../dist/src/sideeffects.js","./reactivity.js":"../dist/src/reactivity.js","./directive.js":"../dist/src/directive.js","./directives/text.js":"../dist/src/directives/text.js","./directives/input.js":"../dist/src/directives/input.js","./directives/on.js":"../dist/src/directives/on.js","./directives/list.js":"../dist/src/directives/list.js","./context.js":"../dist/src/context.js"}],"index.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1054,10 +1187,24 @@ Object.defineProperty(exports, "__esModule", {
 
 const index_js_1 = require("../dist/src/index.js");
 
+function shuffle(a) {
+  var j, x, i;
+
+  for (i = a.length - 1; i > 0; i--) {
+    j = Math.floor(Math.random() * (i + 1));
+    x = a[i];
+    a[i] = a[j];
+    a[j] = x;
+  }
+
+  return a;
+}
+
 index_js_1.component('test-component', () => {
   const $s = index_js_1.$state({
     inputValue: '',
-    swap: true
+    swap: true,
+    keys: [1, 2, 3, 4]
   });
   const $test = index_js_1.$attr('test');
   const $toast = index_js_1.$prop('toast', '');
@@ -1067,6 +1214,12 @@ index_js_1.component('test-component', () => {
     return () => {};
   }, () => [$s.inputValue]);
   console.log(index_js_1.getElement());
+
+  function shuffleKeys() {
+    const keys = [...$s.keys];
+    $s.keys = shuffle(keys);
+  }
+
   return {
     watch: [$s, $test, $toast],
     render: () => {
@@ -1083,7 +1236,7 @@ index_js_1.component('test-component', () => {
       })}
           />
           <br />
-          ${index_js_1.sub(() => $s.swap ? index_js_1.html`
+          ${index_js_1.sub($s.swap ? index_js_1.html`
                   <div>this text</div>
                 ` : index_js_1.html`
                   <div>can be changed</div>
@@ -1096,6 +1249,13 @@ index_js_1.component('test-component', () => {
           >
             swap
           </button>
+          <br /><br />
+          ${index_js_1.list([...$s.keys.map(k => index_js_1.html`
+                <div ${index_js_1.key(k + '')}>${index_js_1.text(`key: ${k}`)}</div>
+              `), index_js_1.html`
+              <div>keyless</div>
+            `])}
+          <button ${index_js_1.on('click', () => shuffleKeys())}>shuffle</button>
         </div>
       `;
     }
@@ -1129,7 +1289,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "39957" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "37769" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

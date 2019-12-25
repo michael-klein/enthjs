@@ -8,6 +8,8 @@ export enum DOMUpdateType {
   TEXT,
   REPLACE_NODE,
   ADD_NODE,
+  INSERT_BEFORE,
+  REMOVE,
 }
 
 export type DirectiveGenerator<Args extends any[] = any[]> = Generator<
@@ -26,6 +28,7 @@ export interface DirectiveResult<
 > {
   factory: DirectiveGeneratorFactory<N, Args>;
   args: Args;
+  directive: Directive;
 }
 export type Directive<N extends Node = Node, Args extends any[] = any[]> = (
   ...args: Args
@@ -49,6 +52,7 @@ export function createDirective<
         is: IS_DIRECTIVE,
         factory,
         args,
+        directive,
       };
     } as any;
     return directive;
