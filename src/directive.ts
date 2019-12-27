@@ -13,6 +13,7 @@ export enum DOMUpdateType {
   REMOVE,
   ADD_CLASS,
   REMOVE_CLASS,
+  SET_ATTRIBUTE,
 }
 
 export type DirectiveGenerator<Args extends any[] = any[]> = Generator<

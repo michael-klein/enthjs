@@ -7,6 +7,7 @@ export var DOMUpdateType;
     DOMUpdateType[DOMUpdateType["REMOVE"] = 4] = "REMOVE";
     DOMUpdateType[DOMUpdateType["ADD_CLASS"] = 5] = "ADD_CLASS";
     DOMUpdateType[DOMUpdateType["REMOVE_CLASS"] = 6] = "REMOVE_CLASS";
+    DOMUpdateType[DOMUpdateType["SET_ATTRIBUTE"] = 7] = "SET_ATTRIBUTE";
 })(DOMUpdateType || (DOMUpdateType = {}));
 export const IS_DIRECTIVE = Symbol('directive');
 export function createDirective(factory) {

@@ -12149,6 +12149,7 @@ exports.DOMUpdateType = DOMUpdateType;
   DOMUpdateType[DOMUpdateType["REMOVE"] = 4] = "REMOVE";
   DOMUpdateType[DOMUpdateType["ADD_CLASS"] = 5] = "ADD_CLASS";
   DOMUpdateType[DOMUpdateType["REMOVE_CLASS"] = 6] = "REMOVE_CLASS";
+  DOMUpdateType[DOMUpdateType["SET_ATTRIBUTE"] = 7] = "SET_ATTRIBUTE";
 })(DOMUpdateType || (exports.DOMUpdateType = DOMUpdateType = {}));
 
 var IS_DIRECTIVE = Symbol('directive');
@@ -12627,6 +12628,10 @@ var render = function render(container, htmlResult) {
 
                   case _directive.DOMUpdateType.REMOVE_CLASS:
                     d.node.classList.remove(d.value);
+                    break;
+
+                  case _directive.DOMUpdateType.SET_ATTRIBUTE:
+                    d.node.setAttribute(d.name, d.value);
                     break;
                 }
               });
@@ -13369,7 +13374,57 @@ regeneratorRuntime.mark(function _callee(node, name, cb) {
   }, _callee);
 }));
 exports.on = on;
-},{"../directive":"../src/directive.ts","../scheduler":"../src/scheduler.ts"}],"../src/directives/list.ts":[function(require,module,exports) {
+},{"../directive":"../src/directive.ts","../scheduler":"../src/scheduler.ts"}],"../src/directives/attr.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.attr = void 0;
+
+var _directive = require("../directive");
+
+var attr = (0, _directive.createDirective)(
+/*#__PURE__*/
+regeneratorRuntime.mark(function _callee(node, name, value) {
+  var result, newArgs;
+  return regeneratorRuntime.wrap(function _callee$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          if (!(node instanceof HTMLElement)) {
+            _context.next = 9;
+            break;
+          }
+
+        case 1:
+          result = [{
+            type: _directive.DOMUpdateType.SET_ATTRIBUTE,
+            node: node,
+            value: value,
+            name: name
+          }];
+          _context.next = 4;
+          return result;
+
+        case 4:
+          newArgs = _context.sent;
+          name = newArgs[0];
+          value = newArgs[1];
+
+        case 7:
+          _context.next = 1;
+          break;
+
+        case 9:
+        case "end":
+          return _context.stop();
+      }
+    }
+  }, _callee);
+}));
+exports.attr = attr;
+},{"../directive":"../src/directive.ts"}],"../src/directives/list.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13654,6 +13709,12 @@ Object.defineProperty(exports, "on", {
     return _on.on;
   }
 });
+Object.defineProperty(exports, "attr", {
+  enumerable: true,
+  get: function () {
+    return _attr.attr;
+  }
+});
 Object.defineProperty(exports, "list", {
   enumerable: true,
   get: function () {
@@ -13699,10 +13760,12 @@ var _input = require("./directives/input");
 
 var _on = require("./directives/on");
 
+var _attr = require("./directives/attr");
+
 var _list = require("./directives/list");
 
 var _context = require("./context");
-},{"./directives/clss":"../src/directives/clss.ts","./html":"../src/html.ts","./render":"../src/render.ts","./directives/sub":"../src/directives/sub.ts","./component":"../src/component.ts","./properties":"../src/properties.ts","./attributes":"../src/attributes.ts","./sideeffects":"../src/sideeffects.ts","./reactivity":"../src/reactivity.ts","./directive":"../src/directive.ts","./directives/text":"../src/directives/text.ts","./directives/input":"../src/directives/input.ts","./directives/on":"../src/directives/on.ts","./directives/list":"../src/directives/list.ts","./context":"../src/context.ts"}],"utils.ts":[function(require,module,exports) {
+},{"./directives/clss":"../src/directives/clss.ts","./html":"../src/html.ts","./render":"../src/render.ts","./directives/sub":"../src/directives/sub.ts","./component":"../src/component.ts","./properties":"../src/properties.ts","./attributes":"../src/attributes.ts","./sideeffects":"../src/sideeffects.ts","./reactivity":"../src/reactivity.ts","./directive":"../src/directive.ts","./directives/text":"../src/directives/text.ts","./directives/input":"../src/directives/input.ts","./directives/on":"../src/directives/on.ts","./directives/attr":"../src/directives/attr.ts","./directives/list":"../src/directives/list.ts","./context":"../src/context.ts"}],"utils.ts":[function(require,module,exports) {
 "use strict";
 
 var __importStar = this && this.__importStar || function (mod) {
@@ -13769,7 +13832,7 @@ function _templateObject3() {
 }
 
 function _templateObject2() {
-  var data = _taggedTemplateLiteral(["\n            background: black;\n            color: #f1f2f2;\n            padding-top: 20px;\n            padding-bottom: 20px;\n            font-family: 'Rubik', sans-serif;\n          "]);
+  var data = _taggedTemplateLiteral(["\n            position: fixed;\n            width: 100%;\n            background: black;\n            color: #f1f2f2;\n            padding-top: 20px;\n            padding-bottom: 20px;\n            font-family: 'Rubik', sans-serif;\n            z-index: 100;\n          "]);
 
   _templateObject2 = function _templateObject2() {
     return data;
@@ -13943,7 +14006,7 @@ function _templateObject3() {
 }
 
 function _templateObject2() {
-  var data = _taggedTemplateLiteral(["\n          background: linear-gradient(166deg, #000000 50%, #232528 100%);\n          padding-top: 50px;\n          padding-bottom: 50px;\n        "]);
+  var data = _taggedTemplateLiteral(["\n          padding-top: 100px;\n          padding-bottom: 50px;\n        "]);
 
   _templateObject2 = function _templateObject2() {
     return data;
@@ -13953,7 +14016,7 @@ function _templateObject2() {
 }
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n        <div ", ">\n          <nth-container>\n            <div ", ">\n              <div ", "> \n                <div ", ">\n                <p ", ">\n                Not just the <span ", ">nth</span> JavaScript framework you found today!<span ", ">*</span></p>\n                <p ", " >\n                * Okay maybe it is but if you keep scrolling there might be something here for you?  \n              </p>\n              </div>\n            </div>\n              <div ", ">\n                <img src=\".", "\" ", " />\n              </div>\n            </div>\n          </nth-container>\n        </nav>\n      "]);
+  var data = _taggedTemplateLiteral(["\n        <div ", "\n        ", ">\n          <nth-container>\n            <div ", "\n            ", ">\n              <div ", "> \n                <div ", ">\n                <p ", ">\n                Not just the <span ", ">nth</span> JavaScript framework you found today!<span ", ">*</span></p>\n                <p ", " >\n                * Okay maybe it is but if you keep scrolling there might be something here for you?  \n              </p>\n              </div>\n            </div>\n              <div ", ">\n                <img src=\".", "\" ", " />\n              </div>\n            </div>\n          </nth-container>\n        </nav>\n      "]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -13988,6 +14051,9 @@ src_1.component('nth-intro', function () {
     showAsterisk: false,
     showBottomText: false
   });
+  var $opacity = src_1.$state({
+    value: 1
+  });
   src_1.sideEffect(function () {
     $animationStates.showImage = true;
     setTimeout(function () {
@@ -13997,13 +14063,16 @@ src_1.component('nth-intro', function () {
       $animationStates.showBottomText = true;
       $animationStates.showAsterisk = true;
     }, 2000);
+    window.addEventListener('scroll', function (e) {
+      $opacity.value = Math.max(0, 1 - Math.min(100, Math.round(window.scrollY / (window.innerHeight * 0.6) * 100) / 100));
+    });
   }, function () {
     return [];
   });
   return {
-    watch: [$animationStates],
+    watch: [$animationStates, $opacity],
     render: function render() {
-      return src_1.html(_templateObject(), css(_templateObject2()), css(_templateObject3()), css(_templateObject4()), css(_templateObject5()), css(_templateObject6(), $animationStates.showTopText ? '0' : '400px'), css(_templateObject7()), css(_templateObject8(), $animationStates.showAsterisk ? '0' : '-50px', $animationStates.showAsterisk ? '1' : '0'), css(_templateObject9(), $animationStates.showBottomText ? '0' : '400px'), css(_templateObject10()), imac_svg_1.default, css(_templateObject11(), $animationStates.showTopText ? '1' : '0'));
+      return src_1.html(_templateObject(), css(_templateObject2()), src_1.attr('style', "background: linear-gradient(166deg, #000000 ".concat((1 - $opacity.value) * 50 + 50, "%, #232528 100%);")), css(_templateObject3()), src_1.attr('style', "opacity:".concat($opacity.value)), css(_templateObject4()), css(_templateObject5()), css(_templateObject6(), $animationStates.showTopText ? '0' : '400px'), css(_templateObject7()), css(_templateObject8(), $animationStates.showAsterisk ? '0' : '-50px', $animationStates.showAsterisk ? '1' : '0'), css(_templateObject9(), $animationStates.showBottomText ? '0' : '400px'), css(_templateObject10()), imac_svg_1.default, css(_templateObject11(), $animationStates.showTopText ? '1' : '0'));
     }
   };
 });
@@ -14011,7 +14080,7 @@ src_1.component('nth-intro', function () {
 "use strict";
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n  @import url('https://fonts.googleapis.com/css?family=Muli:500|Rubik&display=swap');\n  html,\n  body {\n    margin: 0;\n    padding: 0;\n  }\n"]);
+  var data = _taggedTemplateLiteral(["\n  @import url('https://fonts.googleapis.com/css?family=Muli:500|Rubik&display=swap');\n  html,\n  body {\n    margin: 0;\n    padding: 0;\n  }\n  body {\n    height: 3000px;\n  }\n"]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -14069,7 +14138,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "45753" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "46711" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

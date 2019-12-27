@@ -13,6 +13,7 @@ import {
   sub,
   key,
   clss,
+  attr,
 } from '../../src/';
 import { getCss } from '../utils.ts';
 import introImage from '../images/imac.svg';
@@ -24,6 +25,9 @@ component('nth-intro', () => {
     showAsterisk: false,
     showBottomText: false,
   });
+  const $opacity = $state({
+    value: 1,
+  });
   sideEffect(
     () => {
       $animationStates.showImage = true;
@@ -34,22 +38,39 @@ component('nth-intro', () => {
         $animationStates.showBottomText = true;
         $animationStates.showAsterisk = true;
       }, 2000);
+      window.addEventListener('scroll', e => {
+        $opacity.value = Math.max(
+          0,
+          1 -
+            Math.min(
+              100,
+              Math.round((window.scrollY / (window.innerHeight * 0.6)) * 100) /
+                100
+            )
+        );
+      });
     },
     () => []
   );
   return {
-    watch: [$animationStates],
+    watch: [$animationStates, $opacity],
     render: () => {
       return html`
         <div ${css`
-          background: linear-gradient(166deg, #000000 50%, #232528 100%);
-          padding-top: 50px;
+          padding-top: 100px;
           padding-bottom: 50px;
-        `}>
+        `}
+        ${attr(
+          'style',
+          `background: linear-gradient(166deg, #000000 ${(1 - $opacity.value) *
+            50 +
+            50}%, #232528 100%);`
+        )}>
           <nth-container>
             <div ${css`
               display: flex;
-            `}>
+            `}
+            ${attr('style', `opacity:${$opacity.value}`)}>
               <div ${css`
                 flex: 1;
                 color: white;

@@ -12,7 +12,8 @@ export declare enum DOMUpdateType {
     INSERT_BEFORE = 3,
     REMOVE = 4,
     ADD_CLASS = 5,
-    REMOVE_CLASS = 6
+    REMOVE_CLASS = 6,
+    SET_ATTRIBUTE = 7
 }
 export declare type DirectiveGenerator<Args extends any[] = any[]> = Generator<DOMUpdate[] | Promise<DOMUpdate[]> | void, void, Args>;
 export declare type DirectiveGeneratorFactory<N extends Node = Node, Args extends any[] = any[]> = (node: N, ...initialArgs: Args) => DirectiveGenerator<Args>;

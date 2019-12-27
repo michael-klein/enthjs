@@ -10,6 +10,9 @@ glob`
     margin: 0;
     padding: 0;
   }
+  body {
+    height: 3000px;
+  }
 `;
 
 import './components/nav_bar.ts';

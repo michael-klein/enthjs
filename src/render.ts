@@ -80,6 +80,9 @@ export const render = (
             case DOMUpdateType.REMOVE_CLASS:
               (d.node as HTMLElement).classList.remove(d.value);
               break;
+            case DOMUpdateType.SET_ATTRIBUTE:
+              (d.node as HTMLElement).setAttribute(d.name, d.value);
+              break;
           }
         });
       });

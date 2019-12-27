@@ -64,6 +64,9 @@ export const render = (container, htmlResult) => {
                         case DOMUpdateType.REMOVE_CLASS:
                             d.node.classList.remove(d.value);
                             break;
+                        case DOMUpdateType.SET_ATTRIBUTE:
+                            d.node.setAttribute(d.name, d.value);
+                            break;
                     }
                 });
             });

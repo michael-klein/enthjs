@@ -23,11 +23,14 @@ component('nth-navbar', () => {
       return html`
         <nav
           ${css`
+            position: fixed;
+            width: 100%;
             background: black;
             color: #f1f2f2;
             padding-top: 20px;
             padding-bottom: 20px;
             font-family: 'Rubik', sans-serif;
+            z-index: 100;
           `}
         >
           <nth-container>
