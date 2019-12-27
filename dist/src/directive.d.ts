@@ -3,13 +3,16 @@ export interface DOMUpdate {
     newNode?: Node;
     type: DOMUpdateType;
     value?: string;
+    name?: string;
 }
 export declare enum DOMUpdateType {
     TEXT = 0,
     REPLACE_NODE = 1,
     ADD_NODE = 2,
     INSERT_BEFORE = 3,
-    REMOVE = 4
+    REMOVE = 4,
+    ADD_CLASS = 5,
+    REMOVE_CLASS = 6
 }
 export declare type DirectiveGenerator<Args extends any[] = any[]> = Generator<DOMUpdate[] | Promise<DOMUpdate[]> | void, void, Args>;
 export declare type DirectiveGeneratorFactory<N extends Node = Node, Args extends any[] = any[]> = (node: N, ...initialArgs: Args) => DirectiveGenerator<Args>;

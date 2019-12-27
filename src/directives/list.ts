@@ -88,4 +88,3 @@ export const list = createDirective(function*(
 });
 
 export const key = createDirective(function*(_node: Text, _keyName: string) {});
-console.log(key);

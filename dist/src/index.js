@@ -1,3 +1,4 @@
+export { clss } from "./directives/clss.js";
 export { html } from "./html.js";
 export { render } from "./render.js";
 export { sub } from "./directives/sub.js";

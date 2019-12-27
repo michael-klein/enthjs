@@ -75,5 +75,4 @@ export const list = createDirective(function* (node, htmlResults) {
     }
 });
 export const key = createDirective(function* (_node, _keyName) { });
-console.log(key);
 //# sourceMappingURL=list.js.map

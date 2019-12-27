@@ -58,6 +58,12 @@ export const render = (container, htmlResult) => {
                         case DOMUpdateType.REMOVE:
                             d.node.parentElement.removeChild(d.node);
                             break;
+                        case DOMUpdateType.ADD_CLASS:
+                            d.node.classList.add(d.value);
+                            break;
+                        case DOMUpdateType.REMOVE_CLASS:
+                            d.node.classList.remove(d.value);
+                            break;
                     }
                 });
             });

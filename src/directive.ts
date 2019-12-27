@@ -3,6 +3,7 @@ export interface DOMUpdate {
   newNode?: Node;
   type: DOMUpdateType;
   value?: string;
+  name?: string;
 }
 export enum DOMUpdateType {
   TEXT,
@@ -10,6 +11,8 @@ export enum DOMUpdateType {
   ADD_NODE,
   INSERT_BEFORE,
   REMOVE,
+  ADD_CLASS,
+  REMOVE_CLASS,
 }
 
 export type DirectiveGenerator<Args extends any[] = any[]> = Generator<

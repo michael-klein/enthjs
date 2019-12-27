@@ -22,7 +22,6 @@ export const component = (name: string, setup: Setup) => {
       constructor() {
         super();
         this.attachShadow({ mode: 'open' });
-
         setUpContext(this, () => {
           const result = setup();
           this.render = result.render;
