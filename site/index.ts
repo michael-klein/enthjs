@@ -1,3 +1,6 @@
+import 'core-js/stable';
+import 'regenerator-runtime/runtime';
+import 'proxy-polyfill/src/proxy';
 import { glob } from 'goober';
 
 glob`

@@ -13,7 +13,7 @@ import {
   sub,
   key,
   clss,
-} from '../../dist/src/index.js';
+} from '../../src/';
 import { getCss } from '../utils.ts';
 
 component('nth-container', () => {

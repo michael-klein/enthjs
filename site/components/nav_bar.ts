@@ -13,7 +13,7 @@ import {
   sub,
   key,
   clss,
-} from '../../dist/src/index.js';
+} from '../../src/index.ts';
 import { getCss } from '../utils.ts';
 
 component('nth-navbar', () => {
@@ -34,11 +34,13 @@ component('nth-navbar', () => {
             <div
               ${css`
                 display: flex;
+                align-items: center;
               `}
             >
               <div
                 ${css`
                   color: #a2a9a9;
+                  font-size: 1.3em;
                   > span {
                     color: #ea5353;
                   }
