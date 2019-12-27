@@ -50,7 +50,7 @@ component('nth-intro', () => {
                 flex: 1;
                 overflow: hidden;
               `}>
-                <img src="${web_window}" ${css`
+                <img src=".${web_window}" ${css`
         width: 140%;
         margin-left: -16%;
       `} />
