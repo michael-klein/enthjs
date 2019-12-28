@@ -154,10 +154,14 @@ component('nth-intro', () => {
       <div ${css`
         padding-top: 100px;
         padding-bottom: 50px;
+        margin-left: -20px;
+        margin-right: -20px;
+        padding-left: 20px;
+        padding-right: 20px;
       `}
       ${attr(
         'style',
-        `background: #098ba7; border-radius: 0 0 50% 125% / ${$opacity.value *
+        `background: #098ba7; border-radius: 0 0 50% 75% / ${$opacity.value *
           85}px;`
       )}>
         <nth-container>

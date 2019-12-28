@@ -13926,7 +13926,7 @@ function _templateObject15() {
 }
 
 function _templateObject14() {
-  var data = _taggedTemplateLiteral(["\n        padding-top: 100px;\n        padding-bottom: 50px;\n      "]);
+  var data = _taggedTemplateLiteral(["\n        padding-top: 100px;\n        padding-bottom: 50px;\n        margin-left: -20px;\n        margin-right: -20px;\n        padding-left: 20px;\n        padding-right: 20px;\n      "]);
 
   _templateObject14 = function _templateObject14() {
     return data;
@@ -14129,7 +14129,7 @@ src_1.component('nth-intro', function () {
   return {
     watch: [$animationStates, $opacity],
     render: function render() {
-      return src_1.html(_templateObject13(), css(_templateObject14()), src_1.attr('style', "background: #098ba7; border-radius: 0 0 50% 125% / ".concat($opacity.value * 85, "px;")), css(_templateObject15()), src_1.attr('style', "opacity:".concat($opacity.value)), src_1.sub(renderTextBox()), src_1.sub(renderImage()));
+      return src_1.html(_templateObject13(), css(_templateObject14()), src_1.attr('style', "background: #098ba7; border-radius: 0 0 50% 75% / ".concat($opacity.value * 85, "px;")), css(_templateObject15()), src_1.attr('style', "opacity:".concat($opacity.value)), src_1.sub(renderTextBox()), src_1.sub(renderImage()));
     }
   };
 });
@@ -14137,7 +14137,7 @@ src_1.component('nth-intro', function () {
 "use strict";
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n  @import url('https://fonts.googleapis.com/css?family=Muli:500|Rubik&display=swap');\n  html,\n  body {\n    margin: 0;\n    padding: 0;\n  }\n  body {\n    height: 3000px;\n    text-shadow: 0px 1px 2px rgba(0,0,0,0.3);\n  }\n"]);
+  var data = _taggedTemplateLiteral(["\n  @import url('https://fonts.googleapis.com/css?family=Muli:500|Rubik&display=swap');\n  html,\n  body {\n    margin: 0;\n    padding: 0;\n  }\n  body {\n    height: 3000px;\n    text-shadow: 0px 1px 2px rgba(0,0,0,0.3);\n    overflow-x: hidden;\n  }\n"]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -14195,7 +14195,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "39943" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "40127" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
