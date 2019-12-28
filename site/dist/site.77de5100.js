@@ -13807,7 +13807,7 @@ exports.getCss = function () {
 "use strict";
 
 function _templateObject7() {
-  var data = _taggedTemplateLiteral(["\n                  display: flex;\n                  flex: auto;\n                  justify-content: flex-end;\n                  letter-spacing: 0.045em;\n                  & > div {\n                    flex: none;\n                    margin-left: 20px;\n                  }\n                "]);
+  var data = _taggedTemplateLiteral(["\n                  display: flex;\n                  flex: auto;\n                  justify-content: flex-end;\n                  letter-spacing: 0.045em;\n                  & > div {\n                    flex: none;\n                    margin-left: 20px;\n                  }\n                  @media only screen and (max-width: 600px) {\n                    flex-wrap: wrap;\n                    line-height: 2em;\n                  }\n                "]);
 
   _templateObject7 = function _templateObject7() {
     return data;
@@ -13857,7 +13857,7 @@ function _templateObject3() {
 }
 
 function _templateObject2() {
-  var data = _taggedTemplateLiteral(["\n          color: #a2a9a9;\n          font-size: 1.3em;\n          background: #1a505b;\n          padding: 5px;\n          box-shadow: inset 0 0 3px #0000006b;\n          border-radius: 4px;\n          position: relative;\n          > span {\n            color: #ea5353;\n          }\n        "]);
+  var data = _taggedTemplateLiteral(["\n          color: #a2a9a9;\n          font-size: 1.3em;\n          background: #1a505b;\n          padding: 5px;\n          box-shadow: inset 0 0 3px #0000006b;\n          border-radius: 4px;\n          position: relative;\n          white-space: nowrap;\n          > span {\n            color: #ea5353;\n          }\n        "]);
 
   _templateObject2 = function _templateObject2() {
     return data;
@@ -13947,8 +13947,18 @@ module.exports = "/carbon.c4d35d1c.svg";
 },{}],"components/intro.ts":[function(require,module,exports) {
 "use strict";
 
+function _templateObject17() {
+  var data = _taggedTemplateLiteral(["\n                  display: flex;\n                  @media only screen and (max-width: 600px) {\n                    display: block;\n                    opacity: 1 !important;\n                  }\n                "]);
+
+  _templateObject17 = function _templateObject17() {
+    return data;
+  };
+
+  return data;
+}
+
 function _templateObject16() {
-  var data = _taggedTemplateLiteral(["\n            display: flex;\n          "]);
+  var data = _taggedTemplateLiteral(["\n              padding-top: 100px;\n              padding-bottom: 50px;\n              margin-left: -20px;\n              padding-left: 20px;\n              margin-right: -20px;\n              padding-right: 20px;\n            "]);
 
   _templateObject16 = function _templateObject16() {
     return data;
@@ -13958,7 +13968,7 @@ function _templateObject16() {
 }
 
 function _templateObject15() {
-  var data = _taggedTemplateLiteral(["\n        padding-top: 100px;\n        padding-bottom: 50px;\n        margin-left: -20px;\n        margin-right: -20px;\n        padding-left: 20px;\n        padding-right: 20px;\n      "]);
+  var data = _taggedTemplateLiteral(["\n            width: 100%;\n            max-width: 100%;\n            overflow: hidden;\n          "]);
 
   _templateObject15 = function _templateObject15() {
     return data;
@@ -13968,7 +13978,7 @@ function _templateObject15() {
 }
 
 function _templateObject14() {
-  var data = _taggedTemplateLiteral(["\n      <div ", "\n      ", ">\n        <nth-container>\n          <div ", "\n          ", ">\n            ", "\n            ", "\n          </div>\n        </nth-container>\n      </nav>\n    "]);
+  var data = _taggedTemplateLiteral(["\n        <div\n          ", "\n        >\n          <div\n            ", "\n            ", "\n          >\n            <nth-container>\n              <div\n                ", "\n                ", "\n              >\n                ", " ", "\n              </div>\n            </nth-container>\n          </div>\n        </div>\n      "]);
 
   _templateObject14 = function _templateObject14() {
     return data;
@@ -14018,7 +14028,7 @@ function _templateObject10() {
 }
 
 function _templateObject9() {
-  var data = _taggedTemplateLiteral(["\n            max-width: 90%;\n          "]);
+  var data = _taggedTemplateLiteral(["\n            max-width: 90%;\n            @media only screen and (max-width: 600px) {\n              max-width: 100%;\n            }\n          "]);
 
   _templateObject9 = function _templateObject9() {
     return data;
@@ -14028,7 +14038,7 @@ function _templateObject9() {
 }
 
 function _templateObject8() {
-  var data = _taggedTemplateLiteral(["\n          flex: 1;\n          color: white;\n          font-size: 2.5em;\n          font-family: 'Rubik', sans-serif;\n          display: flex;\n          align-items: center;\n          overflow: hidden;\n        "]);
+  var data = _taggedTemplateLiteral(["\n          flex: 1;\n          color: white;\n          font-size: 2.5em;\n          font-family: 'Rubik', sans-serif;\n          display: flex;\n          align-items: center;\n          overflow: hidden;\n          @media only screen and (max-width: 600px) {\n            font-size: 2.3em;\n          }\n        "]);
 
   _templateObject8 = function _templateObject8() {
     return data;
@@ -14048,7 +14058,7 @@ function _templateObject7() {
 }
 
 function _templateObject6() {
-  var data = _taggedTemplateLiteral(["\n          font-size: 0.3em;\n          color: #0f353d;\n          text-shadow: 0px 1px 2px rgba(47, 178, 206, 0.42);\n          padding-right: 40px;\n          transform: translateY(\n            ", "\n          );\n          transition: all 0.5s ease-out;\n        "]);
+  var data = _taggedTemplateLiteral(["\n          font-size: 0.3em;\n          color: #0f353d;\n          text-shadow: 0px 1px 2px rgba(47, 178, 206, 0.42);\n          padding-right: 40px;\n          transform: translateY(\n            ", "\n          );\n          transition: all 0.5s ease-out;\n\n          @media only screen and (max-width: 600px) {\n            font-size: 0.5em;\n            padding-right: 0px;\n          }\n        "]);
 
   _templateObject6 = function _templateObject6() {
     return data;
@@ -14175,7 +14185,7 @@ src_1.component('nth-intro', function () {
   return {
     watch: [$animationStates, $opacity],
     render: function render() {
-      return src_1.html(_templateObject14(), css(_templateObject15()), src_1.attr('style', "background: #098ba7; border-radius: 0 0 25% 75% / ".concat($opacity.value * 85, "px;")), css(_templateObject16()), src_1.attr('style', "opacity:".concat($opacity.value)), src_1.sub(renderTextBox()), src_1.sub(renderImage()));
+      return src_1.html(_templateObject14(), css(_templateObject15()), css(_templateObject16()), src_1.attr('style', "background: #098ba7; border-radius: 0 0 25% 75% / ".concat($opacity.value * 85, "px;")), css(_templateObject17()), src_1.attr('style', "opacity:".concat($opacity.value)), src_1.sub(renderTextBox()), src_1.sub(renderImage()));
     }
   };
 });
@@ -14278,7 +14288,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "35651" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "43719" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

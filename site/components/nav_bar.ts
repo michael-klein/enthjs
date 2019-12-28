@@ -16,6 +16,7 @@ component('nth-navbar', () => {
           box-shadow: inset 0 0 3px #0000006b;
           border-radius: 4px;
           position: relative;
+          white-space: nowrap;
           > span {
             color: #ea5353;
           }
@@ -73,6 +74,10 @@ component('nth-navbar', () => {
                   & > div {
                     flex: none;
                     margin-left: 20px;
+                  }
+                  @media only screen and (max-width: 600px) {
+                    flex-wrap: wrap;
+                    line-height: 2em;
                   }
                 `}
               >

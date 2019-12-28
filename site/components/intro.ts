@@ -97,6 +97,11 @@ component('nth-intro', () => {
             ${$animationStates.showBottomText ? '0' : '400px'}
           );
           transition: all 0.5s ease-out;
+
+          @media only screen and (max-width: 600px) {
+            font-size: 0.5em;
+            padding-right: 0px;
+          }
         `}
       >
         * Okay maybe it is but if you keep scrolling there might be something
@@ -116,11 +121,17 @@ component('nth-intro', () => {
           display: flex;
           align-items: center;
           overflow: hidden;
+          @media only screen and (max-width: 600px) {
+            font-size: 2.3em;
+          }
         `}
       >
         <div
           ${css`
             max-width: 90%;
+            @media only screen and (max-width: 600px) {
+              max-width: 100%;
+            }
           `}
         >
           ${sub(renderTopText())} ${sub(renderAsteriskText())}
@@ -177,30 +188,45 @@ component('nth-intro', () => {
     watch: [$animationStates, $opacity],
     render: () => {
       return html`
-      <div ${css`
-        padding-top: 100px;
-        padding-bottom: 50px;
-        margin-left: -20px;
-        margin-right: -20px;
-        padding-left: 20px;
-        padding-right: 20px;
-      `}
-      ${attr(
-        'style',
-        `background: #098ba7; border-radius: 0 0 25% 75% / ${$opacity.value *
-          85}px;`
-      )}>
-        <nth-container>
-          <div ${css`
-            display: flex;
+        <div
+          ${css`
+            width: 100%;
+            max-width: 100%;
+            overflow: hidden;
           `}
-          ${attr('style', `opacity:${$opacity.value}`)}>
-            ${sub(renderTextBox())}
-            ${sub(renderImage())}
+        >
+          <div
+            ${css`
+              padding-top: 100px;
+              padding-bottom: 50px;
+              margin-left: -20px;
+              padding-left: 20px;
+              margin-right: -20px;
+              padding-right: 20px;
+            `}
+            ${attr(
+              'style',
+              `background: #098ba7; border-radius: 0 0 25% 75% / ${$opacity.value *
+                85}px;`
+            )}
+          >
+            <nth-container>
+              <div
+                ${css`
+                  display: flex;
+                  @media only screen and (max-width: 600px) {
+                    display: block;
+                    opacity: 1 !important;
+                  }
+                `}
+                ${attr('style', `opacity:${$opacity.value}`)}
+              >
+                ${sub(renderTextBox())} ${sub(renderImage())}
+              </div>
+            </nth-container>
           </div>
-        </nth-container>
-      </nav>
-    `;
+        </div>
+      `;
     },
   };
 });
