@@ -1,19 +1,4 @@
-import {
-  html,
-  $attr,
-  text,
-  on,
-  input,
-  $state,
-  $prop,
-  getElement,
-  sideEffect,
-  component,
-  list,
-  sub,
-  key,
-  clss,
-} from '../../src/';
+import { html, component } from '../../src/';
 import { getCss } from '../utils.ts';
 
 component('nth-container', () => {

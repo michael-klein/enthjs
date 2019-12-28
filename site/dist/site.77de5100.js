@@ -13221,6 +13221,11 @@ var $attr = function $attr(name) {
       state.value = element.getAttribute(name);
     }
   });
+
+  if (element.hasAttribute(name)) {
+    initialValue = element.getAttribute(name);
+  }
+
   element.setAttribute(name, initialValue);
   var state = (0, _reactivity.$state)({
     value: element.getAttribute(name)
@@ -13801,8 +13806,28 @@ exports.getCss = function () {
 },{"goober":"node_modules/goober/dist/goober.module.js","../src/":"../src/index.ts"}],"components/nav_bar.ts":[function(require,module,exports) {
 "use strict";
 
-function _templateObject5() {
+function _templateObject7() {
   var data = _taggedTemplateLiteral(["\n                  display: flex;\n                  flex: auto;\n                  justify-content: flex-end;\n                  letter-spacing: 0.045em;\n                  & > div {\n                    flex: none;\n                    margin-left: 20px;\n                  }\n                "]);
+
+  _templateObject7 = function _templateObject7() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject6() {
+  var data = _taggedTemplateLiteral(["\n                display: flex;\n                align-items: center;\n              "]);
+
+  _templateObject6 = function _templateObject6() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject5() {
+  var data = _taggedTemplateLiteral(["\n            position: fixed;\n            width: 100%;\n            background: #098ba7;\n            color: #f1f2f2;\n            padding-top: 20px;\n            padding-bottom: 20px;\n            font-family: 'Rubik', sans-serif;\n            z-index: 100;\n          "]);
 
   _templateObject5 = function _templateObject5() {
     return data;
@@ -13812,7 +13837,7 @@ function _templateObject5() {
 }
 
 function _templateObject4() {
-  var data = _taggedTemplateLiteral(["\n                  color: #a2a9a9;\n                  font-size: 1.3em;\n                  background: #1a505b;\n                  padding: 5px;\n                  box-shadow: inset 0 0 3px #0000006b;\n                  border-radius: 4px;\n                  > span {\n                    color: #ea5353;\n                  }\n                "]);
+  var data = _taggedTemplateLiteral(["\n        <nav\n          ", "\n        >\n          <nth-container>\n            <div\n              ", "\n            >\n              ", "\n              <div\n                ", "\n              >\n                <div>Intro</div>\n                <div>Getting started</div>\n                <div>Docs</div>\n                <div>Github</div>\n              </div>\n            </div>\n          </nth-container>\n        </nav>\n      "]);
 
   _templateObject4 = function _templateObject4() {
     return data;
@@ -13822,7 +13847,7 @@ function _templateObject4() {
 }
 
 function _templateObject3() {
-  var data = _taggedTemplateLiteral(["\n                display: flex;\n                align-items: center;\n              "]);
+  var data = _taggedTemplateLiteral(["\n            position: absolute;\n            right: -2.5em;\n            top: -0.7em;\n            font-size: 0.5em;\n            letter-spacing: 0.05em;\n            color: white;\n            border: 1px solid #e45b5b;\n            background: #ea5353;\n            padding: 2px;\n            border-radius: 2px;\n          "]);
 
   _templateObject3 = function _templateObject3() {
     return data;
@@ -13832,7 +13857,7 @@ function _templateObject3() {
 }
 
 function _templateObject2() {
-  var data = _taggedTemplateLiteral(["\n            position: fixed;\n            width: 100%;\n            background: #098ba7;\n            color: #f1f2f2;\n            padding-top: 20px;\n            padding-bottom: 20px;\n            font-family: 'Rubik', sans-serif;\n            z-index: 100;\n          "]);
+  var data = _taggedTemplateLiteral(["\n          color: #a2a9a9;\n          font-size: 1.3em;\n          background: #1a505b;\n          padding: 5px;\n          box-shadow: inset 0 0 3px #0000006b;\n          border-radius: 4px;\n          position: relative;\n          > span {\n            color: #ea5353;\n          }\n        "]);
 
   _templateObject2 = function _templateObject2() {
     return data;
@@ -13842,7 +13867,7 @@ function _templateObject2() {
 }
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n        <nav\n          ", "\n        >\n          <nth-container>\n            <div\n              ", "\n            >\n              <div\n                ", "\n              >\n                e<span>nth</span>-js\n              </div>\n              <div\n                ", "\n              >\n                <div>Intro</div>\n                <div>Getting started</div>\n                <div>Docs</div>\n                <div>Github</div>\n              </div>\n            </div>\n          </nth-container>\n        </nav>\n      "]);
+  var data = _taggedTemplateLiteral(["\n      <div\n        ", "\n      >\n        <div\n          ", "\n        >\n          alpha\n        </div>\n        e<span>nth</span>-js\n      </div>\n    "]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -13861,15 +13886,22 @@ var index_ts_1 = require("../../src/index.ts");
 
 var utils_ts_1 = require("../utils.ts");
 
+var src_1 = require("../../src");
+
 index_ts_1.component('nth-navbar', function () {
   var css = utils_ts_1.getCss();
+
+  function renderLogo() {
+    return index_ts_1.html(_templateObject(), css(_templateObject2()), css(_templateObject3()));
+  }
+
   return {
     render: function render() {
-      return index_ts_1.html(_templateObject(), css(_templateObject2()), css(_templateObject3()), css(_templateObject4()), css(_templateObject5()));
+      return index_ts_1.html(_templateObject4(), css(_templateObject5()), css(_templateObject6()), src_1.sub(renderLogo()), css(_templateObject7()));
     }
   };
 });
-},{"../../src/index.ts":"../src/index.ts","../utils.ts":"utils.ts"}],"components/container.ts":[function(require,module,exports) {
+},{"../../src/index.ts":"../src/index.ts","../utils.ts":"utils.ts","../../src":"../src/index.ts"}],"components/container.ts":[function(require,module,exports) {
 "use strict";
 
 function _templateObject2() {
@@ -13910,13 +13942,23 @@ src_1.component('nth-container', function () {
     }
   };
 });
-},{"../../src/":"../src/index.ts","../utils.ts":"utils.ts"}],"images/imac.svg":[function(require,module,exports) {
-module.exports = "/imac.40687145.svg";
+},{"../../src/":"../src/index.ts","../utils.ts":"utils.ts"}],"images/carbon.svg":[function(require,module,exports) {
+module.exports = "/carbon.c4d35d1c.svg";
 },{}],"components/intro.ts":[function(require,module,exports) {
 "use strict";
 
-function _templateObject15() {
+function _templateObject16() {
   var data = _taggedTemplateLiteral(["\n            display: flex;\n          "]);
+
+  _templateObject16 = function _templateObject16() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject15() {
+  var data = _taggedTemplateLiteral(["\n        padding-top: 100px;\n        padding-bottom: 50px;\n        margin-left: -20px;\n        margin-right: -20px;\n        padding-left: 20px;\n        padding-right: 20px;\n      "]);
 
   _templateObject15 = function _templateObject15() {
     return data;
@@ -13926,7 +13968,7 @@ function _templateObject15() {
 }
 
 function _templateObject14() {
-  var data = _taggedTemplateLiteral(["\n        padding-top: 100px;\n        padding-bottom: 50px;\n        margin-left: -20px;\n        margin-right: -20px;\n        padding-left: 20px;\n        padding-right: 20px;\n      "]);
+  var data = _taggedTemplateLiteral(["\n      <div ", "\n      ", ">\n        <nth-container>\n          <div ", "\n          ", ">\n            ", "\n            ", "\n          </div>\n        </nth-container>\n      </nav>\n    "]);
 
   _templateObject14 = function _templateObject14() {
     return data;
@@ -13936,7 +13978,7 @@ function _templateObject14() {
 }
 
 function _templateObject13() {
-  var data = _taggedTemplateLiteral(["\n      <div ", "\n      ", ">\n        <nth-container>\n          <div ", "\n          ", ">\n            ", "\n            ", "\n          </div>\n        </nth-container>\n      </nav>\n    "]);
+  var data = _taggedTemplateLiteral(["\n            position: absolute;\n            right: 10px;\n            bottom: 30px;\n            background: #1a505b;\n            padding: 10px;\n            border: 1px solid #098ba75e;\n            border-radius: 5px;\n            transition: all 0.5s ease-out;\n            opacity: ", ";\n          "]);
 
   _templateObject13 = function _templateObject13() {
     return data;
@@ -13946,7 +13988,7 @@ function _templateObject13() {
 }
 
 function _templateObject12() {
-  var data = _taggedTemplateLiteral(["\n            width: 140%;\n            margin-left: -13%;\n            opacity: ", ";\n            transition: all 0.5s ease-out;\n          "]);
+  var data = _taggedTemplateLiteral(["\n              width: 100%;\n            "]);
 
   _templateObject12 = function _templateObject12() {
     return data;
@@ -13956,7 +13998,7 @@ function _templateObject12() {
 }
 
 function _templateObject11() {
-  var data = _taggedTemplateLiteral(["\n          flex: 1;\n          overflow: hidden;\n        "]);
+  var data = _taggedTemplateLiteral(["\n          flex: 1;\n          overflow: hidden;\n          position: relative;\n          padding-bottom: 50px;\n          display: flex;\n          align-items: flex-end;\n          align-self: center;\n          transition: all 0.5s ease-out;\n          opacity: ", ";\n        "]);
 
   _templateObject11 = function _templateObject11() {
     return data;
@@ -13966,7 +14008,7 @@ function _templateObject11() {
 }
 
 function _templateObject10() {
-  var data = _taggedTemplateLiteral(["\n      <div\n        ", "\n      >\n        <img\n          src=\".", "\"\n          ", "\n        />\n      </div>\n    "]);
+  var data = _taggedTemplateLiteral(["\n      <div\n        ", "\n      >\n        <div>\n          <img\n            ", "\n            src=\".", "\"\n          />\n        </div>\n        <div\n          ", "\n        >\n          <nth-hello-world\n            style=\"color:white; font-family:'Rubik', sans-serif; letter-spacing: .05em;\"\n          ></nth-hello-world>\n        </div>\n      </div>\n    "]);
 
   _templateObject10 = function _templateObject10() {
     return data;
@@ -14006,7 +14048,7 @@ function _templateObject7() {
 }
 
 function _templateObject6() {
-  var data = _taggedTemplateLiteral(["\n          font-size: 0.3em;\n          color: #194e58;\n          text-shadow: 0px 1px 2px rgba(47, 178, 206, 0.42);\n          padding-right: 40px;\n          transform: translateY(\n            ", "\n          );\n          transition: all 0.5s ease-out;\n        "]);
+  var data = _taggedTemplateLiteral(["\n          font-size: 0.3em;\n          color: #0f353d;\n          text-shadow: 0px 1px 2px rgba(47, 178, 206, 0.42);\n          padding-right: 40px;\n          transform: translateY(\n            ", "\n          );\n          transition: all 0.5s ease-out;\n        "]);
 
   _templateObject6 = function _templateObject6() {
     return data;
@@ -14081,12 +14123,13 @@ var src_1 = require("../../src/");
 
 var utils_ts_1 = require("../utils.ts");
 
-var imac_svg_1 = __importDefault(require("../images/imac.svg"));
+var carbon_svg_1 = __importDefault(require("../images/carbon.svg"));
 
 src_1.component('nth-intro', function () {
   var css = utils_ts_1.getCss();
   var $animationStates = src_1.$state({
     showImage: false,
+    showExample: false,
     showTopText: false,
     showAsterisk: false,
     showBottomText: false
@@ -14095,10 +14138,13 @@ src_1.component('nth-intro', function () {
     value: 1
   });
   src_1.sideEffect(function () {
-    $animationStates.showImage = true;
     setTimeout(function () {
       $animationStates.showTopText = true;
+      $animationStates.showImage = true;
     }, 300);
+    setTimeout(function () {
+      $animationStates.showExample = true;
+    }, 800);
     setTimeout(function () {
       $animationStates.showBottomText = true;
       $animationStates.showAsterisk = true;
@@ -14123,17 +14169,52 @@ src_1.component('nth-intro', function () {
   }
 
   function renderImage() {
-    return src_1.html(_templateObject10(), css(_templateObject11()), imac_svg_1.default, css(_templateObject12(), $animationStates.showTopText ? '1' : '0'));
+    return src_1.html(_templateObject10(), css(_templateObject11(), $animationStates.showImage ? '1' : '0'), css(_templateObject12()), carbon_svg_1.default, css(_templateObject13(), $animationStates.showExample ? '1' : '0'));
   }
 
   return {
     watch: [$animationStates, $opacity],
     render: function render() {
-      return src_1.html(_templateObject13(), css(_templateObject14()), src_1.attr('style', "background: #098ba7; border-radius: 0 0 25% 75% / ".concat($opacity.value * 85, "px;")), css(_templateObject15()), src_1.attr('style', "opacity:".concat($opacity.value)), src_1.sub(renderTextBox()), src_1.sub(renderImage()));
+      return src_1.html(_templateObject14(), css(_templateObject15()), src_1.attr('style', "background: #098ba7; border-radius: 0 0 25% 75% / ".concat($opacity.value * 85, "px;")), css(_templateObject16()), src_1.attr('style', "opacity:".concat($opacity.value)), src_1.sub(renderTextBox()), src_1.sub(renderImage()));
     }
   };
 });
-},{"../../src/":"../src/index.ts","../utils.ts":"utils.ts","../images/imac.svg":"images/imac.svg"}],"index.ts":[function(require,module,exports) {
+},{"../../src/":"../src/index.ts","../utils.ts":"utils.ts","../images/carbon.svg":"images/carbon.svg"}],"components/hello_world.ts":[function(require,module,exports) {
+"use strict";
+
+function _templateObject() {
+  var data = _taggedTemplateLiteral(["\n        <div ", ">\n          <div>", "</div>\n          <div>\n            <input\n              type=\"text\"\n              ", "\n              ", "\n            />\n          </div>\n        </div>\n      "]);
+
+  _templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+
+function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var src_1 = require("../../src/");
+
+src_1.component('nth-hello-world', function () {
+  var $input = src_1.$state({
+    value: 'Hello World!'
+  });
+  var $style = src_1.$attr('style', 'color: white;');
+  return {
+    watch: [$input, $style],
+    render: function render() {
+      return src_1.html(_templateObject(), src_1.attr('style', $style.value), src_1.text($input.value), src_1.attr('value', $input.value), src_1.input(function (value) {
+        return $input.value = value;
+      }));
+    }
+  };
+});
+},{"../../src/":"../src/index.ts"}],"index.ts":[function(require,module,exports) {
 "use strict";
 
 function _templateObject() {
@@ -14167,7 +14248,9 @@ require("./components/nav_bar.ts");
 require("./components/container.ts");
 
 require("./components/intro.ts");
-},{"core-js/stable":"node_modules/core-js/stable/index.js","regenerator-runtime/runtime":"node_modules/regenerator-runtime/runtime.js","proxy-polyfill/src/proxy":"node_modules/proxy-polyfill/src/proxy.js","goober":"node_modules/goober/dist/goober.module.js","./components/nav_bar.ts":"components/nav_bar.ts","./components/container.ts":"components/container.ts","./components/intro.ts":"components/intro.ts"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+
+require("./components/hello_world");
+},{"core-js/stable":"node_modules/core-js/stable/index.js","regenerator-runtime/runtime":"node_modules/regenerator-runtime/runtime.js","proxy-polyfill/src/proxy":"node_modules/proxy-polyfill/src/proxy.js","goober":"node_modules/goober/dist/goober.module.js","./components/nav_bar.ts":"components/nav_bar.ts","./components/container.ts":"components/container.ts","./components/intro.ts":"components/intro.ts","./components/hello_world":"components/hello_world.ts"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -14195,7 +14278,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "33217" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "35651" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

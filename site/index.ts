@@ -20,3 +20,4 @@ glob`
 import './components/nav_bar.ts';
 import './components/container.ts';
 import './components/intro.ts';
+import './components/hello_world';

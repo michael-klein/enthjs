@@ -1,12 +1,13 @@
 import { html, $state, sideEffect, component, sub, attr } from '../../src/';
 import { getCss } from '../utils.ts';
-import introImage from '../images/imac.svg';
+import carbon from '../images/carbon.svg';
 
 component('nth-intro', () => {
   const css = getCss();
 
   const $animationStates = $state({
     showImage: false,
+    showExample: false,
     showTopText: false,
     showAsterisk: false,
     showBottomText: false,
@@ -18,11 +19,13 @@ component('nth-intro', () => {
 
   sideEffect(
     () => {
-      $animationStates.showImage = true;
-
       setTimeout(() => {
         $animationStates.showTopText = true;
+        $animationStates.showImage = true;
       }, 300);
+      setTimeout(() => {
+        $animationStates.showExample = true;
+      }, 800);
 
       setTimeout(() => {
         $animationStates.showBottomText = true;
@@ -87,7 +90,7 @@ component('nth-intro', () => {
       <p
         ${css`
           font-size: 0.3em;
-          color: #194e58;
+          color: #0f353d;
           text-shadow: 0px 1px 2px rgba(47, 178, 206, 0.42);
           padding-right: 40px;
           transform: translateY(
@@ -132,17 +135,40 @@ component('nth-intro', () => {
         ${css`
           flex: 1;
           overflow: hidden;
+          position: relative;
+          padding-bottom: 50px;
+          display: flex;
+          align-items: flex-end;
+          align-self: center;
+          transition: all 0.5s ease-out;
+          opacity: ${$animationStates.showImage ? '1' : '0'};
         `}
       >
-        <img
-          src=".${introImage}"
+        <div>
+          <img
+            ${css`
+              width: 100%;
+            `}
+            src=".${carbon}"
+          />
+        </div>
+        <div
           ${css`
-            width: 140%;
-            margin-left: -13%;
-            opacity: ${$animationStates.showTopText ? '1' : '0'};
+            position: absolute;
+            right: 10px;
+            bottom: 30px;
+            background: #1a505b;
+            padding: 10px;
+            border: 1px solid #098ba75e;
+            border-radius: 5px;
             transition: all 0.5s ease-out;
+            opacity: ${$animationStates.showExample ? '1' : '0'};
           `}
-        />
+        >
+          <nth-hello-world
+            style="color:white; font-family:'Rubik', sans-serif; letter-spacing: .05em;"
+          ></nth-hello-world>
+        </div>
       </div>
     `;
   }

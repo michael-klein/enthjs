@@ -63,6 +63,10 @@ export const $attr = (
     }
   });
 
+  if (element.hasAttribute(name)) {
+    initialValue = element.getAttribute(name);
+  }
+
   element.setAttribute(name, initialValue);
 
   const state = $state({ value: element.getAttribute(name) });
