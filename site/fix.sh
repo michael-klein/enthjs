@@ -1,0 +1,1 @@
+sed -i 's/src="\//src=".\//g' dist/index.html
