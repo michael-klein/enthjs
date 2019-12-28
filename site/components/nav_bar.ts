@@ -1,19 +1,4 @@
-import {
-  html,
-  $attr,
-  text,
-  on,
-  input,
-  $state,
-  $prop,
-  getElement,
-  sideEffect,
-  component,
-  list,
-  sub,
-  key,
-  clss,
-} from '../../src/index.ts';
+import { html, component } from '../../src/index.ts';
 import { getCss } from '../utils.ts';
 
 component('nth-navbar', () => {
@@ -25,7 +10,7 @@ component('nth-navbar', () => {
           ${css`
             position: fixed;
             width: 100%;
-            background: black;
+            background: #098ba7;
             color: #f1f2f2;
             padding-top: 20px;
             padding-bottom: 20px;
@@ -44,6 +29,10 @@ component('nth-navbar', () => {
                 ${css`
                   color: #a2a9a9;
                   font-size: 1.3em;
+                  background: #1a505b;
+                  padding: 5px;
+                  box-shadow: inset 0 0 3px #0000006b;
+                  border-radius: 4px;
                   > span {
                     color: #ea5353;
                   }

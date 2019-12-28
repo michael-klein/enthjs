@@ -13812,7 +13812,7 @@ function _templateObject5() {
 }
 
 function _templateObject4() {
-  var data = _taggedTemplateLiteral(["\n                  color: #a2a9a9;\n                  font-size: 1.3em;\n                  > span {\n                    color: #ea5353;\n                  }\n                "]);
+  var data = _taggedTemplateLiteral(["\n                  color: #a2a9a9;\n                  font-size: 1.3em;\n                  background: #1a505b;\n                  padding: 5px;\n                  box-shadow: inset 0 0 3px #0000006b;\n                  border-radius: 4px;\n                  > span {\n                    color: #ea5353;\n                  }\n                "]);
 
   _templateObject4 = function _templateObject4() {
     return data;
@@ -13832,7 +13832,7 @@ function _templateObject3() {
 }
 
 function _templateObject2() {
-  var data = _taggedTemplateLiteral(["\n            position: fixed;\n            width: 100%;\n            background: black;\n            color: #f1f2f2;\n            padding-top: 20px;\n            padding-bottom: 20px;\n            font-family: 'Rubik', sans-serif;\n            z-index: 100;\n          "]);
+  var data = _taggedTemplateLiteral(["\n            position: fixed;\n            width: 100%;\n            background: #098ba7;\n            color: #f1f2f2;\n            padding-top: 20px;\n            padding-bottom: 20px;\n            font-family: 'Rubik', sans-serif;\n            z-index: 100;\n          "]);
 
   _templateObject2 = function _templateObject2() {
     return data;
@@ -14006,7 +14006,7 @@ function _templateObject7() {
 }
 
 function _templateObject6() {
-  var data = _taggedTemplateLiteral(["\n          font-size: 0.3em;\n          color: #a2a9a9;\n          padding-right: 40px;\n          transform: translateY(\n            ", "\n          );\n          transition: all 0.5s ease-out;\n        "]);
+  var data = _taggedTemplateLiteral(["\n          font-size: 0.3em;\n          color: #194e58;\n          text-shadow: 0px 1px 2px rgba(47, 178, 206, 0.42);\n          padding-right: 40px;\n          transform: translateY(\n            ", "\n          );\n          transition: all 0.5s ease-out;\n        "]);
 
   _templateObject6 = function _templateObject6() {
     return data;
@@ -14036,7 +14036,7 @@ function _templateObject4() {
 }
 
 function _templateObject3() {
-  var data = _taggedTemplateLiteral(["\n            color: #ea5353;\n          "]);
+  var data = _taggedTemplateLiteral(["\n            color: #ea5353;\n            display: inline-block;\n            line-height: 1em;\n            background: #1a505b;\n            padding: 5px;\n            box-shadow: inset 0 0 3px #0000006b;\n            border-radius: 4px;\n          "]);
 
   _templateObject3 = function _templateObject3() {
     return data;
@@ -14129,7 +14129,7 @@ src_1.component('nth-intro', function () {
   return {
     watch: [$animationStates, $opacity],
     render: function render() {
-      return src_1.html(_templateObject13(), css(_templateObject14()), src_1.attr('style', "background: linear-gradient(166deg, #000000 ".concat((1 - $opacity.value) * 50 + 50, "%, #232528 100%);")), css(_templateObject15()), src_1.attr('style', "opacity:".concat($opacity.value)), src_1.sub(renderTextBox()), src_1.sub(renderImage()));
+      return src_1.html(_templateObject13(), css(_templateObject14()), src_1.attr('style', "background: #098ba7; border-radius: 0 0 50% 125% / ".concat($opacity.value * 85, "px;")), css(_templateObject15()), src_1.attr('style', "opacity:".concat($opacity.value)), src_1.sub(renderTextBox()), src_1.sub(renderImage()));
     }
   };
 });
@@ -14137,7 +14137,7 @@ src_1.component('nth-intro', function () {
 "use strict";
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n  @import url('https://fonts.googleapis.com/css?family=Muli:500|Rubik&display=swap');\n  html,\n  body {\n    margin: 0;\n    padding: 0;\n  }\n  body {\n    height: 3000px;\n  }\n"]);
+  var data = _taggedTemplateLiteral(["\n  @import url('https://fonts.googleapis.com/css?family=Muli:500|Rubik&display=swap');\n  html,\n  body {\n    margin: 0;\n    padding: 0;\n  }\n  body {\n    height: 3000px;\n    text-shadow: 0px 1px 2px rgba(0,0,0,0.3);\n  }\n"]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -14195,7 +14195,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "37093" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "39943" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

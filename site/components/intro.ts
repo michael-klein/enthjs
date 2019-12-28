@@ -1,20 +1,4 @@
-import {
-  html,
-  $attr,
-  text,
-  on,
-  input,
-  $state,
-  $prop,
-  getElement,
-  sideEffect,
-  component,
-  list,
-  sub,
-  key,
-  clss,
-  attr,
-} from '../../src/';
+import { html, $state, sideEffect, component, sub, attr } from '../../src/';
 import { getCss } from '../utils.ts';
 import introImage from '../images/imac.svg';
 
@@ -75,6 +59,12 @@ component('nth-intro', () => {
         <span
           ${css`
             color: #ea5353;
+            display: inline-block;
+            line-height: 1em;
+            background: #1a505b;
+            padding: 5px;
+            box-shadow: inset 0 0 3px #0000006b;
+            border-radius: 4px;
           `}
           >nth</span
         >
@@ -97,7 +87,8 @@ component('nth-intro', () => {
       <p
         ${css`
           font-size: 0.3em;
-          color: #a2a9a9;
+          color: #194e58;
+          text-shadow: 0px 1px 2px rgba(47, 178, 206, 0.42);
           padding-right: 40px;
           transform: translateY(
             ${$animationStates.showBottomText ? '0' : '400px'}
@@ -166,9 +157,8 @@ component('nth-intro', () => {
       `}
       ${attr(
         'style',
-        `background: linear-gradient(166deg, #000000 ${(1 - $opacity.value) *
-          50 +
-          50}%, #232528 100%);`
+        `background: #098ba7; border-radius: 0 0 50% 125% / ${$opacity.value *
+          85}px;`
       )}>
         <nth-container>
           <div ${css`
