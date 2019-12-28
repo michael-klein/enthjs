@@ -138,7 +138,7 @@ component('nth-intro', () => {
           src=".${introImage}"
           ${css`
             width: 140%;
-            margin-left: -12%;
+            margin-left: -13%;
             opacity: ${$animationStates.showTopText ? '1' : '0'};
             transition: all 0.5s ease-out;
           `}
@@ -161,7 +161,7 @@ component('nth-intro', () => {
       `}
       ${attr(
         'style',
-        `background: #098ba7; border-radius: 0 0 50% 75% / ${$opacity.value *
+        `background: #098ba7; border-radius: 0 0 25% 75% / ${$opacity.value *
           85}px;`
       )}>
         <nth-container>

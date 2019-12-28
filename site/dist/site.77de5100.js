@@ -13946,7 +13946,7 @@ function _templateObject13() {
 }
 
 function _templateObject12() {
-  var data = _taggedTemplateLiteral(["\n            width: 140%;\n            margin-left: -12%;\n            opacity: ", ";\n            transition: all 0.5s ease-out;\n          "]);
+  var data = _taggedTemplateLiteral(["\n            width: 140%;\n            margin-left: -13%;\n            opacity: ", ";\n            transition: all 0.5s ease-out;\n          "]);
 
   _templateObject12 = function _templateObject12() {
     return data;
@@ -14129,7 +14129,7 @@ src_1.component('nth-intro', function () {
   return {
     watch: [$animationStates, $opacity],
     render: function render() {
-      return src_1.html(_templateObject13(), css(_templateObject14()), src_1.attr('style', "background: #098ba7; border-radius: 0 0 50% 75% / ".concat($opacity.value * 85, "px;")), css(_templateObject15()), src_1.attr('style', "opacity:".concat($opacity.value)), src_1.sub(renderTextBox()), src_1.sub(renderImage()));
+      return src_1.html(_templateObject13(), css(_templateObject14()), src_1.attr('style', "background: #098ba7; border-radius: 0 0 25% 75% / ".concat($opacity.value * 85, "px;")), css(_templateObject15()), src_1.attr('style', "opacity:".concat($opacity.value)), src_1.sub(renderTextBox()), src_1.sub(renderImage()));
     }
   };
 });
@@ -14195,7 +14195,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "40127" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "33217" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
