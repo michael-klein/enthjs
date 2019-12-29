@@ -1,4 +1,4 @@
-import { getOnlySetupError } from './misc';
+import { getOnlySetupError } from '../errors';
 
 const global: { __$c: HTMLElement } = window as any;
 

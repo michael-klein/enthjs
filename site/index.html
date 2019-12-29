@@ -10,7 +10,17 @@
 
   <body>
     <nth-navbar></nth-navbar>
-    <nth-intro></nth-intro>
+    <nth-router>
+      <nth-route path="/">
+        <nth-intro></nth-intro>
+      </nth-route>
+      <nth-route path="/getting-started">
+        <div>getting started</div>
+      </nth-route>
+      <nth-route path="/docs">
+        <div>docs</div>
+      </nth-route>
+    </nth-router>
     <script src="./index.ts"></script>
   </body>
 </html>

@@ -1,8 +1,8 @@
 import { HTMLResult } from './html';
 import { render } from './render';
 import { schedule, PriorityLevel } from './scheduler';
-import { setUpContext } from './context';
-import { runSideEffects } from './sideeffects';
+import { setUpContext } from './composables/element';
+import { runSideEffects } from './composables/sideeffects';
 import { State } from './reactivity';
 
 export interface ComponentDefinition {

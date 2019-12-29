@@ -1,5 +1,5 @@
-import { $state } from './reactivity';
-import { getElement } from './context';
+import { $state } from '../reactivity';
+import { getElement } from './element';
 import { sideEffect } from './sideeffects';
 
 const attributeCallbackMap: WeakMap<

@@ -197,7 +197,7 @@ component('nth-intro', () => {
         >
           <div
             ${css`
-              padding-top: 100px;
+              padding-top: 25px;
               padding-bottom: 50px;
               margin-left: -20px;
               padding-left: 20px;

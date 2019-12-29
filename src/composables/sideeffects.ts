@@ -1,5 +1,5 @@
-import { getElement } from './context';
-import { schedule, PriorityLevel } from './scheduler';
+import { getElement } from './element';
+import { schedule, PriorityLevel } from '../scheduler';
 
 export type CleanUp = () => void;
 export type SideEffect = () => void | CleanUp;

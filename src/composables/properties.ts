@@ -1,5 +1,5 @@
-import { getElement } from './context';
-import { $state } from './reactivity';
+import { getElement } from './element';
+import { $state } from '../reactivity';
 
 export const $prop = <T>(name: string, initialValue: T): { value: T } => {
   const element = getElement() as any;

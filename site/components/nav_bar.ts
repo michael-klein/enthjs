@@ -45,11 +45,17 @@ component('nth-navbar', () => {
   return {
     render: () => {
       return html`
+        <div
+          ${css`
+            margin-top: 74px;
+          `}
+        ></div>
         <nav
           ${css`
             position: fixed;
             width: 100%;
             background: #098ba7;
+            top: 0px;
             color: #f1f2f2;
             padding-top: 20px;
             padding-bottom: 20px;
@@ -79,11 +85,21 @@ component('nth-navbar', () => {
                     flex-wrap: wrap;
                     line-height: 2em;
                   }
+                  a,
+                  a:link,
+                  a:active,
+                  a:hover {
+                    text-decoration: none;
+                    color: inherit;
+                  }
+                  a:hover {
+                    text-decoration: underline;
+                  }
                 `}
               >
-                <div>Intro</div>
-                <div>Getting started</div>
-                <div>Docs</div>
+                <div><a href="#/">Intro</a></div>
+                <div><a href="#/getting-started">Getting started</a></div>
+                <div><a href="#/docs">Docs</a></div>
                 <div>Github</div>
               </div>
             </div>

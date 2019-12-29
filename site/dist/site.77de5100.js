@@ -12130,7 +12130,169 @@ function g(r) {
     };
   };
 }
-},{}],"../src/directive.ts":[function(require,module,exports) {
+},{}],"../src/reactivity.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.$state = void 0;
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+var isProxyMap = new WeakSet();
+
+function proxify(obj, onChange) {
+  var initialized = false;
+
+  var onChangeWrapped = function onChangeWrapped() {
+    if (initialized) {
+      onChange();
+    }
+  };
+
+  var proxy = new Proxy(obj, {
+    get: function get(obj, prop) {
+      if (obj[prop] && _typeof(obj[prop]) === 'object' && !isProxyMap.has(obj[prop]) && prop !== 'on' && initialized) {
+        obj[prop] = proxify(obj[prop], onChange);
+      }
+
+      return obj[prop];
+    },
+    set: function set(obj, prop, value) {
+      if ((obj[prop] !== value || !initialized) && prop !== '__$p' && prop !== 'on') {
+        if (_typeof(value) === 'object' && !isProxyMap.has(obj[prop])) {
+          value = proxify(value, onChangeWrapped);
+        }
+
+        obj[prop] = value;
+        onChangeWrapped();
+      } else if (prop === 'on') {
+        obj[prop] = value;
+      }
+
+      return true;
+    }
+  });
+  Object.keys(obj).forEach(function (key) {
+    proxy[key] = obj[key];
+  });
+  isProxyMap.add(proxy);
+  initialized = true;
+  return proxy;
+}
+
+var $state = function $state() {
+  var initialState = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  var proxy = proxify(initialState, function () {
+    listeners.forEach(function (l) {
+      return l();
+    });
+  });
+  var listeners = [];
+
+  proxy.on = function (listener) {
+    listeners.push(listener);
+    return function () {
+      var index = listeners.indexOf(listener);
+
+      if (index > 1) {
+        listeners.splice(index, 1);
+      }
+    };
+  };
+
+  return proxy;
+};
+
+exports.$state = $state;
+},{}],"../src/errors.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getOnlySetupError = void 0;
+
+var getOnlySetupError = function getOnlySetupError(subject) {
+  return "".concat(subject, " can only be used during setup!");
+};
+
+exports.getOnlySetupError = getOnlySetupError;
+},{}],"../src/composables/element.ts":[function(require,module,exports) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getElement = exports.setUpContext = void 0;
+
+var _errors = require("../errors");
+
+var global = window;
+
+var setUpContext = function setUpContext(context, cb) {
+  global.__$c = context;
+  cb();
+  global.__$c = undefined;
+};
+
+exports.setUpContext = setUpContext;
+
+var getElement = function getElement() {
+  if (global.__$c) {
+    return global.__$c;
+  } else {
+    throw (0, _errors.getOnlySetupError)('getElement');
+  }
+};
+
+exports.getElement = getElement;
+},{"../errors":"../src/errors.ts"}],"../src/composables/context.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createContext = createContext;
+
+var _reactivity = require("../reactivity");
+
+var _element = require("./element");
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var contextMap = new WeakMap();
+
+function createContext(name, defaulValue) {
+  var $defaultContext = (0, _reactivity.$state)(defaulValue);
+  return {
+    provide: function provide(value) {
+      contextMap.set((0, _element.getElement)(), _objectSpread({}, contextMap.get((0, _element.getElement)()) || {}, _defineProperty({}, name, (0, _reactivity.$state)(value))));
+      return contextMap.get((0, _element.getElement)())[name];
+    },
+    get: function get() {
+      var element = (0, _element.getElement)();
+      var parent = element;
+
+      while ((parent = parent.parentElement) && parent !== document.body) {
+        var $context = contextMap.has(parent) && contextMap.get(parent)[name];
+
+        if ($context) {
+          return $context;
+        }
+      }
+
+      return $defaultContext;
+    }
+  };
+}
+},{"../reactivity":"../src/reactivity.ts","./element":"../src/composables/element.ts"}],"../src/directive.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12566,7 +12728,7 @@ var render = function render(container, htmlResult) {
           var placeholder = fragment.querySelector((0, _html.getTextMarker)(id));
           var textNode = placeholder.firstChild;
           _generators[id] = (_directiveData$d = directiveData.d).factory.apply(_directiveData$d, [textNode].concat(_toConsumableArray(directiveData.d.args)));
-          placeholder.parentElement.replaceChild(textNode, placeholder);
+          placeholder.parentNode.replaceChild(textNode, placeholder);
           break;
 
         case _html.DirectiveType.ATTRIBUTE:
@@ -12611,15 +12773,15 @@ var render = function render(container, htmlResult) {
                     break;
 
                   case _directive.DOMUpdateType.REPLACE_NODE:
-                    d.node.parentElement.replaceChild(d.newNode, d.node);
+                    d.node.parentNode.replaceChild(d.newNode, d.node);
                     break;
 
                   case _directive.DOMUpdateType.INSERT_BEFORE:
-                    d.node.parentElement.insertBefore(d.newNode, d.node);
+                    d.node.parentNode.insertBefore(d.newNode, d.node);
                     break;
 
                   case _directive.DOMUpdateType.REMOVE:
-                    d.node.parentElement.removeChild(d.node);
+                    d.node.parentNode.removeChild(d.node);
                     break;
 
                   case _directive.DOMUpdateType.ADD_CLASS:
@@ -12743,50 +12905,7 @@ regeneratorRuntime.mark(function _callee2(node, htmlResult) {
   }, _callee2);
 }));
 exports.sub = sub;
-},{"../directive":"../src/directive.ts","../render":"../src/render.ts"}],"../src/misc.ts":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.getOnlySetupError = void 0;
-
-var getOnlySetupError = function getOnlySetupError(subject) {
-  return "".concat(subject, " can only be used during setup!");
-};
-
-exports.getOnlySetupError = getOnlySetupError;
-},{}],"../src/context.ts":[function(require,module,exports) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.getElement = exports.setUpContext = void 0;
-
-var _misc = require("./misc");
-
-var global = window;
-
-var setUpContext = function setUpContext(context, cb) {
-  global.__$c = context;
-  cb();
-  global.__$c = undefined;
-};
-
-exports.setUpContext = setUpContext;
-
-var getElement = function getElement() {
-  if (global.__$c) {
-    return global.__$c;
-  } else {
-    throw (0, _misc.getOnlySetupError)('getElement');
-  }
-};
-
-exports.getElement = getElement;
-},{"./misc":"../src/misc.ts"}],"../src/sideeffects.ts":[function(require,module,exports) {
+},{"../directive":"../src/directive.ts","../render":"../src/render.ts"}],"../src/composables/sideeffects.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12794,14 +12913,14 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.runSideEffects = exports.sideEffect = void 0;
 
-var _context = require("./context");
+var _element = require("./element");
 
-var _scheduler = require("./scheduler");
+var _scheduler = require("../scheduler");
 
 var sideEffectsMap = new WeakMap();
 
 var sideEffect = function sideEffect(effect, dependencies) {
-  var element = (0, _context.getElement)();
+  var element = (0, _element.getElement)();
   sideEffectsMap.set(element, (sideEffectsMap.get(element) || []).concat({
     e: effect,
     d: dependencies
@@ -12876,7 +12995,7 @@ var runSideEffects = function runSideEffects(element) {
 };
 
 exports.runSideEffects = runSideEffects;
-},{"./context":"../src/context.ts","./scheduler":"../src/scheduler.ts"}],"../src/component.ts":[function(require,module,exports) {
+},{"./element":"../src/composables/element.ts","../scheduler":"../src/scheduler.ts"}],"../src/component.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12888,9 +13007,9 @@ var _render = require("./render");
 
 var _scheduler = require("./scheduler");
 
-var _context2 = require("./context");
+var _element = require("./composables/element");
 
-var _sideeffects = require("./sideeffects");
+var _sideeffects = require("./composables/sideeffects");
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
@@ -12939,7 +13058,7 @@ var component = function component(name, setup) {
         mode: 'open'
       });
 
-      (0, _context2.setUpContext)(_assertThisInitialized(_this), function () {
+      (0, _element.setUpContext)(_assertThisInitialized(_this), function () {
         var result = setup();
         _this.render = result.render;
         _this.watch = result.watch;
@@ -13025,83 +13144,7 @@ var component = function component(name, setup) {
 };
 
 exports.component = component;
-},{"./render":"../src/render.ts","./scheduler":"../src/scheduler.ts","./context":"../src/context.ts","./sideeffects":"../src/sideeffects.ts"}],"../src/reactivity.ts":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.$state = void 0;
-
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-var isProxyMap = new WeakSet();
-
-function proxify(obj, onChange) {
-  var initialized = false;
-
-  var onChangeWrapped = function onChangeWrapped() {
-    if (initialized) {
-      onChange();
-    }
-  };
-
-  var proxy = new Proxy(obj, {
-    get: function get(obj, prop) {
-      if (obj[prop] && _typeof(obj[prop]) === 'object' && !isProxyMap.has(obj[prop]) && prop !== 'on' && initialized) {
-        obj[prop] = proxify(obj[prop], onChange);
-      }
-
-      return obj[prop];
-    },
-    set: function set(obj, prop, value) {
-      if ((obj[prop] !== value || !initialized) && prop !== '__$p' && prop !== 'on') {
-        if (_typeof(value) === 'object' && !isProxyMap.has(obj[prop])) {
-          value = proxify(value, onChangeWrapped);
-        }
-
-        obj[prop] = value;
-        onChangeWrapped();
-      } else if (prop === 'on') {
-        obj[prop] = value;
-      }
-
-      return true;
-    }
-  });
-  Object.keys(obj).forEach(function (key) {
-    proxy[key] = obj[key];
-  });
-  isProxyMap.add(proxy);
-  initialized = true;
-  return proxy;
-}
-
-var $state = function $state() {
-  var initialState = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-  var proxy = proxify(initialState, function () {
-    listeners.forEach(function (l) {
-      return l();
-    });
-  });
-  var listeners = [];
-
-  proxy.on = function (listener) {
-    listeners.push(listener);
-    return function () {
-      var index = listeners.indexOf(listener);
-
-      if (index > 1) {
-        listeners.splice(index, 1);
-      }
-    };
-  };
-
-  return proxy;
-};
-
-exports.$state = $state;
-},{}],"../src/properties.ts":[function(require,module,exports) {
+},{"./render":"../src/render.ts","./scheduler":"../src/scheduler.ts","./composables/element":"../src/composables/element.ts","./composables/sideeffects":"../src/composables/sideeffects.ts"}],"../src/composables/properties.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13109,12 +13152,12 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.$prop = void 0;
 
-var _context = require("./context");
+var _element = require("./element");
 
-var _reactivity = require("./reactivity");
+var _reactivity = require("../reactivity");
 
 var $prop = function $prop(name, initialValue) {
-  var element = (0, _context.getElement)();
+  var element = (0, _element.getElement)();
   var state = (0, _reactivity.$state)({
     value: initialValue
   });
@@ -13130,7 +13173,7 @@ var $prop = function $prop(name, initialValue) {
 };
 
 exports.$prop = $prop;
-},{"./context":"../src/context.ts","./reactivity":"../src/reactivity.ts"}],"../src/attributes.ts":[function(require,module,exports) {
+},{"./element":"../src/composables/element.ts","../reactivity":"../src/reactivity.ts"}],"../src/composables/attributes.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13138,9 +13181,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.$attr = void 0;
 
-var _reactivity = require("./reactivity");
+var _reactivity = require("../reactivity");
 
-var _context = require("./context");
+var _element = require("./element");
 
 var _sideeffects = require("./sideeffects");
 
@@ -13212,7 +13255,7 @@ var observeAttribute = function observeAttribute(element, name, cb) {
 
 var $attr = function $attr(name) {
   var initialValue = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-  var element = (0, _context.getElement)();
+  var element = (0, _element.getElement)();
   addObserver(element);
   observeAttribute(element, name, function () {
     var value = element.getAttribute(name);
@@ -13241,7 +13284,7 @@ var $attr = function $attr(name) {
 };
 
 exports.$attr = $attr;
-},{"./reactivity":"../src/reactivity.ts","./context":"../src/context.ts","./sideeffects":"../src/sideeffects.ts"}],"../src/directives/text.ts":[function(require,module,exports) {
+},{"../reactivity":"../src/reactivity.ts","./element":"../src/composables/element.ts","./sideeffects":"../src/composables/sideeffects.ts"}],"../src/directives/text.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13624,6 +13667,12 @@ exports.key = key;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+Object.defineProperty(exports, "createContext", {
+  enumerable: true,
+  get: function () {
+    return _context.createContext;
+  }
+});
 Object.defineProperty(exports, "clss", {
   enumerable: true,
   get: function () {
@@ -13735,9 +13784,11 @@ Object.defineProperty(exports, "key", {
 Object.defineProperty(exports, "getElement", {
   enumerable: true,
   get: function () {
-    return _context.getElement;
+    return _element.getElement;
   }
 });
+
+var _context = require("./composables/context");
 
 var _clss = require("./directives/clss");
 
@@ -13749,11 +13800,11 @@ var _sub = require("./directives/sub");
 
 var _component = require("./component");
 
-var _properties = require("./properties");
+var _properties = require("./composables/properties");
 
-var _attributes = require("./attributes");
+var _attributes = require("./composables/attributes");
 
-var _sideeffects = require("./sideeffects");
+var _sideeffects = require("./composables/sideeffects");
 
 var _reactivity = require("./reactivity");
 
@@ -13769,8 +13820,8 @@ var _attr = require("./directives/attr");
 
 var _list = require("./directives/list");
 
-var _context = require("./context");
-},{"./directives/clss":"../src/directives/clss.ts","./html":"../src/html.ts","./render":"../src/render.ts","./directives/sub":"../src/directives/sub.ts","./component":"../src/component.ts","./properties":"../src/properties.ts","./attributes":"../src/attributes.ts","./sideeffects":"../src/sideeffects.ts","./reactivity":"../src/reactivity.ts","./directive":"../src/directive.ts","./directives/text":"../src/directives/text.ts","./directives/input":"../src/directives/input.ts","./directives/on":"../src/directives/on.ts","./directives/attr":"../src/directives/attr.ts","./directives/list":"../src/directives/list.ts","./context":"../src/context.ts"}],"utils.ts":[function(require,module,exports) {
+var _element = require("./composables/element");
+},{"./composables/context":"../src/composables/context.ts","./directives/clss":"../src/directives/clss.ts","./html":"../src/html.ts","./render":"../src/render.ts","./directives/sub":"../src/directives/sub.ts","./component":"../src/component.ts","./composables/properties":"../src/composables/properties.ts","./composables/attributes":"../src/composables/attributes.ts","./composables/sideeffects":"../src/composables/sideeffects.ts","./reactivity":"../src/reactivity.ts","./directive":"../src/directive.ts","./directives/text":"../src/directives/text.ts","./directives/input":"../src/directives/input.ts","./directives/on":"../src/directives/on.ts","./directives/attr":"../src/directives/attr.ts","./directives/list":"../src/directives/list.ts","./composables/element":"../src/composables/element.ts"}],"utils.ts":[function(require,module,exports) {
 "use strict";
 
 var __importStar = this && this.__importStar || function (mod) {
@@ -13806,8 +13857,18 @@ exports.getCss = function () {
 },{"goober":"node_modules/goober/dist/goober.module.js","../src/":"../src/index.ts"}],"components/nav_bar.ts":[function(require,module,exports) {
 "use strict";
 
+function _templateObject8() {
+  var data = _taggedTemplateLiteral(["\n                  display: flex;\n                  flex: auto;\n                  justify-content: flex-end;\n                  letter-spacing: 0.045em;\n                  & > div {\n                    flex: none;\n                    margin-left: 20px;\n                  }\n                  @media only screen and (max-width: 600px) {\n                    flex-wrap: wrap;\n                    line-height: 2em;\n                  }\n                  a,\n                  a:link,\n                  a:active,\n                  a:hover {\n                    text-decoration: none;\n                    color: inherit;\n                  }\n                  a:hover {\n                    text-decoration: underline;\n                  }\n                "]);
+
+  _templateObject8 = function _templateObject8() {
+    return data;
+  };
+
+  return data;
+}
+
 function _templateObject7() {
-  var data = _taggedTemplateLiteral(["\n                  display: flex;\n                  flex: auto;\n                  justify-content: flex-end;\n                  letter-spacing: 0.045em;\n                  & > div {\n                    flex: none;\n                    margin-left: 20px;\n                  }\n                  @media only screen and (max-width: 600px) {\n                    flex-wrap: wrap;\n                    line-height: 2em;\n                  }\n                "]);
+  var data = _taggedTemplateLiteral(["\n                display: flex;\n                align-items: center;\n              "]);
 
   _templateObject7 = function _templateObject7() {
     return data;
@@ -13817,7 +13878,7 @@ function _templateObject7() {
 }
 
 function _templateObject6() {
-  var data = _taggedTemplateLiteral(["\n                display: flex;\n                align-items: center;\n              "]);
+  var data = _taggedTemplateLiteral(["\n            position: fixed;\n            width: 100%;\n            background: #098ba7;\n            top: 0px;\n            color: #f1f2f2;\n            padding-top: 20px;\n            padding-bottom: 20px;\n            font-family: 'Rubik', sans-serif;\n            z-index: 100;\n          "]);
 
   _templateObject6 = function _templateObject6() {
     return data;
@@ -13827,7 +13888,7 @@ function _templateObject6() {
 }
 
 function _templateObject5() {
-  var data = _taggedTemplateLiteral(["\n            position: fixed;\n            width: 100%;\n            background: #098ba7;\n            color: #f1f2f2;\n            padding-top: 20px;\n            padding-bottom: 20px;\n            font-family: 'Rubik', sans-serif;\n            z-index: 100;\n          "]);
+  var data = _taggedTemplateLiteral(["\n            margin-top: 74px;\n          "]);
 
   _templateObject5 = function _templateObject5() {
     return data;
@@ -13837,7 +13898,7 @@ function _templateObject5() {
 }
 
 function _templateObject4() {
-  var data = _taggedTemplateLiteral(["\n        <nav\n          ", "\n        >\n          <nth-container>\n            <div\n              ", "\n            >\n              ", "\n              <div\n                ", "\n              >\n                <div>Intro</div>\n                <div>Getting started</div>\n                <div>Docs</div>\n                <div>Github</div>\n              </div>\n            </div>\n          </nth-container>\n        </nav>\n      "]);
+  var data = _taggedTemplateLiteral(["\n        <div\n          ", "\n        ></div>\n        <nav\n          ", "\n        >\n          <nth-container>\n            <div\n              ", "\n            >\n              ", "\n              <div\n                ", "\n              >\n                <div><a href=\"#/\">Intro</a></div>\n                <div><a href=\"#/getting-started\">Getting started</a></div>\n                <div><a href=\"#/docs\">Docs</a></div>\n                <div>Github</div>\n              </div>\n            </div>\n          </nth-container>\n        </nav>\n      "]);
 
   _templateObject4 = function _templateObject4() {
     return data;
@@ -13897,7 +13958,7 @@ index_ts_1.component('nth-navbar', function () {
 
   return {
     render: function render() {
-      return index_ts_1.html(_templateObject4(), css(_templateObject5()), css(_templateObject6()), src_1.sub(renderLogo()), css(_templateObject7()));
+      return index_ts_1.html(_templateObject4(), css(_templateObject5()), css(_templateObject6()), css(_templateObject7()), src_1.sub(renderLogo()), css(_templateObject8()));
     }
   };
 });
@@ -13958,7 +14019,7 @@ function _templateObject17() {
 }
 
 function _templateObject16() {
-  var data = _taggedTemplateLiteral(["\n              padding-top: 100px;\n              padding-bottom: 50px;\n              margin-left: -20px;\n              padding-left: 20px;\n              margin-right: -20px;\n              padding-right: 20px;\n            "]);
+  var data = _taggedTemplateLiteral(["\n              padding-top: 25px;\n              padding-bottom: 50px;\n              margin-left: -20px;\n              padding-left: 20px;\n              margin-right: -20px;\n              padding-right: 20px;\n            "]);
 
   _templateObject16 = function _templateObject16() {
     return data;
@@ -14224,7 +14285,94 @@ src_1.component('nth-hello-world', function () {
     }
   };
 });
-},{"../../src/":"../src/index.ts"}],"index.ts":[function(require,module,exports) {
+},{"../../src/":"../src/index.ts"}],"components/router.ts":[function(require,module,exports) {
+"use strict";
+
+function _templateObject4() {
+  var data = _taggedTemplateLiteral([""]);
+
+  _templateObject4 = function _templateObject4() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject3() {
+  var data = _taggedTemplateLiteral(["\n                <slot></slot>\n              "]);
+
+  _templateObject3 = function _templateObject3() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject2() {
+  var data = _taggedTemplateLiteral(["\n        ", "\n      "]);
+
+  _templateObject2 = function _templateObject2() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject() {
+  var data = _taggedTemplateLiteral(["\n        <slot></slot>\n      "]);
+
+  _templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+
+function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var src_1 = require("../../src");
+
+var routerContext = src_1.createContext('router', {
+  currentPath: ''
+});
+src_1.component('nth-router', function () {
+  var $context = routerContext.provide({
+    currentPath: ''
+  });
+  var $hash = src_1.$state({
+    value: window.location.hash
+  });
+  window.addEventListener('hashchange', function () {
+    $hash.value = window.location.hash;
+  }, false);
+
+  var handleHash = function handleHash() {
+    $context.currentPath = $hash.value.slice(1) || '/';
+  };
+
+  $hash.on(handleHash);
+  handleHash();
+  return {
+    render: function render() {
+      return src_1.html(_templateObject());
+    }
+  };
+});
+src_1.component('nth-route', function () {
+  var $context = routerContext.get();
+  var $path = src_1.$attr('path');
+  return {
+    watch: [$context, $path],
+    render: function render() {
+      return src_1.html(_templateObject2(), src_1.sub($context.currentPath === $path.value ? src_1.html(_templateObject3()) : src_1.html(_templateObject4())));
+    }
+  };
+});
+},{"../../src":"../src/index.ts"}],"index.ts":[function(require,module,exports) {
 "use strict";
 
 function _templateObject() {
@@ -14260,7 +14408,9 @@ require("./components/container.ts");
 require("./components/intro.ts");
 
 require("./components/hello_world");
-},{"core-js/stable":"node_modules/core-js/stable/index.js","regenerator-runtime/runtime":"node_modules/regenerator-runtime/runtime.js","proxy-polyfill/src/proxy":"node_modules/proxy-polyfill/src/proxy.js","goober":"node_modules/goober/dist/goober.module.js","./components/nav_bar.ts":"components/nav_bar.ts","./components/container.ts":"components/container.ts","./components/intro.ts":"components/intro.ts","./components/hello_world":"components/hello_world.ts"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+
+require("./components/router");
+},{"core-js/stable":"node_modules/core-js/stable/index.js","regenerator-runtime/runtime":"node_modules/regenerator-runtime/runtime.js","proxy-polyfill/src/proxy":"node_modules/proxy-polyfill/src/proxy.js","goober":"node_modules/goober/dist/goober.module.js","./components/nav_bar.ts":"components/nav_bar.ts","./components/container.ts":"components/container.ts","./components/intro.ts":"components/intro.ts","./components/hello_world":"components/hello_world.ts","./components/router":"components/router.ts"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -14288,7 +14438,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "43719" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "41509" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
