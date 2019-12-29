@@ -12280,7 +12280,7 @@ function createContext(name, defaulValue) {
       var element = (0, _element.getElement)();
       var parent = element;
 
-      while ((parent = parent.parentElement) && parent !== document.body) {
+      while ((parent = parent.parentNode || parent.host) && parent !== document.body) {
         var $context = contextMap.has(parent) && contextMap.get(parent)[name];
 
         if ($context) {
@@ -12370,19 +12370,23 @@ regeneratorRuntime.mark(function _callee(node, classes) {
                   case 0:
                     result = [];
                     oldClasses.forEach(function (oldCls) {
-                      return result.push({
-                        type: _directive.DOMUpdateType.REMOVE_CLASS,
-                        node: node,
-                        value: oldCls
-                      });
+                      if (!!oldCls) {
+                        result.push({
+                          type: _directive.DOMUpdateType.REMOVE_CLASS,
+                          node: node,
+                          value: oldCls
+                        });
+                      }
                     });
                     oldClasses = classes.trim().split(' ');
                     oldClasses.forEach(function (cls) {
-                      return result.push({
-                        type: _directive.DOMUpdateType.ADD_CLASS,
-                        node: node,
-                        value: cls
-                      });
+                      if (!!cls) {
+                        result.push({
+                          type: _directive.DOMUpdateType.ADD_CLASS,
+                          node: node,
+                          value: cls
+                        });
+                      }
                     });
                     _context.next = 6;
                     return result;
@@ -13159,7 +13163,7 @@ var _reactivity = require("../reactivity");
 var $prop = function $prop(name, initialValue) {
   var element = (0, _element.getElement)();
   var state = (0, _reactivity.$state)({
-    value: initialValue
+    value: element[name] || initialValue
   });
   Object.defineProperty(element, name, {
     get: function get() {
@@ -13325,6 +13329,51 @@ regeneratorRuntime.mark(function _callee(node, value) {
   }, _callee);
 }));
 exports.text = text;
+},{"../directive":"../src/directive.ts"}],"../src/directives/prop.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.prop = void 0;
+
+var _directive = require("../directive");
+
+var prop = (0, _directive.createDirective)(
+/*#__PURE__*/
+regeneratorRuntime.mark(function _callee(node, name, value) {
+  var newArgs;
+  return regeneratorRuntime.wrap(function _callee$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          if (!(node instanceof HTMLElement)) {
+            _context.next = 9;
+            break;
+          }
+
+        case 1:
+          node[name] = value;
+          _context.next = 4;
+          return;
+
+        case 4:
+          newArgs = _context.sent;
+          name = newArgs[0];
+          value = newArgs[1];
+
+        case 7:
+          _context.next = 1;
+          break;
+
+        case 9:
+        case "end":
+          return _context.stop();
+      }
+    }
+  }, _callee);
+}));
+exports.prop = prop;
 },{"../directive":"../src/directive.ts"}],"../src/directives/input.ts":[function(require,module,exports) {
 "use strict";
 
@@ -13751,6 +13800,12 @@ Object.defineProperty(exports, "text", {
     return _text.text;
   }
 });
+Object.defineProperty(exports, "prop", {
+  enumerable: true,
+  get: function () {
+    return _prop.prop;
+  }
+});
 Object.defineProperty(exports, "input", {
   enumerable: true,
   get: function () {
@@ -13812,6 +13867,8 @@ var _directive = require("./directive");
 
 var _text = require("./directives/text");
 
+var _prop = require("./directives/prop");
+
 var _input = require("./directives/input");
 
 var _on = require("./directives/on");
@@ -13821,7 +13878,7 @@ var _attr = require("./directives/attr");
 var _list = require("./directives/list");
 
 var _element = require("./composables/element");
-},{"./composables/context":"../src/composables/context.ts","./directives/clss":"../src/directives/clss.ts","./html":"../src/html.ts","./render":"../src/render.ts","./directives/sub":"../src/directives/sub.ts","./component":"../src/component.ts","./composables/properties":"../src/composables/properties.ts","./composables/attributes":"../src/composables/attributes.ts","./composables/sideeffects":"../src/composables/sideeffects.ts","./reactivity":"../src/reactivity.ts","./directive":"../src/directive.ts","./directives/text":"../src/directives/text.ts","./directives/input":"../src/directives/input.ts","./directives/on":"../src/directives/on.ts","./directives/attr":"../src/directives/attr.ts","./directives/list":"../src/directives/list.ts","./composables/element":"../src/composables/element.ts"}],"utils.ts":[function(require,module,exports) {
+},{"./composables/context":"../src/composables/context.ts","./directives/clss":"../src/directives/clss.ts","./html":"../src/html.ts","./render":"../src/render.ts","./directives/sub":"../src/directives/sub.ts","./component":"../src/component.ts","./composables/properties":"../src/composables/properties.ts","./composables/attributes":"../src/composables/attributes.ts","./composables/sideeffects":"../src/composables/sideeffects.ts","./reactivity":"../src/reactivity.ts","./directive":"../src/directive.ts","./directives/text":"../src/directives/text.ts","./directives/prop":"../src/directives/prop.ts","./directives/input":"../src/directives/input.ts","./directives/on":"../src/directives/on.ts","./directives/attr":"../src/directives/attr.ts","./directives/list":"../src/directives/list.ts","./composables/element":"../src/composables/element.ts"}],"utils.ts":[function(require,module,exports) {
 "use strict";
 
 var __importStar = this && this.__importStar || function (mod) {
@@ -13857,8 +13914,18 @@ exports.getCss = function () {
 },{"goober":"node_modules/goober/dist/goober.module.js","../src/":"../src/index.ts"}],"components/nav_bar.ts":[function(require,module,exports) {
 "use strict";
 
+function _templateObject9() {
+  var data = _taggedTemplateLiteral(["\n                  display: flex;\n                  flex: auto;\n                  justify-content: flex-end;\n                  letter-spacing: 0.045em;\n                  & > div {\n                    flex: none;\n                    margin-left: 20px;\n                  }\n                  @media only screen and (max-width: 600px) {\n                    flex-wrap: wrap;\n                    line-height: 2em;\n                  }\n                "]);
+
+  _templateObject9 = function _templateObject9() {
+    return data;
+  };
+
+  return data;
+}
+
 function _templateObject8() {
-  var data = _taggedTemplateLiteral(["\n                  display: flex;\n                  flex: auto;\n                  justify-content: flex-end;\n                  letter-spacing: 0.045em;\n                  & > div {\n                    flex: none;\n                    margin-left: 20px;\n                  }\n                  @media only screen and (max-width: 600px) {\n                    flex-wrap: wrap;\n                    line-height: 2em;\n                  }\n                  a,\n                  a:link,\n                  a:active,\n                  a:hover {\n                    text-decoration: none;\n                    color: inherit;\n                  }\n                  a:hover {\n                    text-decoration: underline;\n                  }\n                "]);
+  var data = _taggedTemplateLiteral(["\n                display: flex;\n                align-items: center;\n              "]);
 
   _templateObject8 = function _templateObject8() {
     return data;
@@ -13868,7 +13935,7 @@ function _templateObject8() {
 }
 
 function _templateObject7() {
-  var data = _taggedTemplateLiteral(["\n                display: flex;\n                align-items: center;\n              "]);
+  var data = _taggedTemplateLiteral(["\n            position: fixed;\n            width: 100%;\n            background: #098ba7;\n            top: 0px;\n            color: #f1f2f2;\n            padding-top: 20px;\n            padding-bottom: 20px;\n            font-family: 'Rubik', sans-serif;\n            z-index: 100;\n          "]);
 
   _templateObject7 = function _templateObject7() {
     return data;
@@ -13878,7 +13945,7 @@ function _templateObject7() {
 }
 
 function _templateObject6() {
-  var data = _taggedTemplateLiteral(["\n            position: fixed;\n            width: 100%;\n            background: #098ba7;\n            top: 0px;\n            color: #f1f2f2;\n            padding-top: 20px;\n            padding-bottom: 20px;\n            font-family: 'Rubik', sans-serif;\n            z-index: 100;\n          "]);
+  var data = _taggedTemplateLiteral(["\n            margin-top: 74px;\n          "]);
 
   _templateObject6 = function _templateObject6() {
     return data;
@@ -13888,7 +13955,7 @@ function _templateObject6() {
 }
 
 function _templateObject5() {
-  var data = _taggedTemplateLiteral(["\n            margin-top: 74px;\n          "]);
+  var data = _taggedTemplateLiteral(["\n        <div\n          ", "\n        ></div>\n        <nav\n          ", "\n        >\n          <nth-container>\n            <div\n              ", "\n            >\n              ", "\n              <div\n                ", "\n              >\n                <div>\n                  <nth-link ", " path=\"/\">Intro</nth-link>\n                </div>\n                <div>\n                  <nth-link ", " path=\"/getting-started\"\n                    >Getting started</nth-link\n                  >\n                </div>\n                <div>\n                  <nth-link ", " path=\"/docs\"\n                    >Docs</nth-link\n                  >\n                </div>\n                <div>Github</div>\n              </div>\n            </div>\n          </nth-container>\n        </nav>\n      "]);
 
   _templateObject5 = function _templateObject5() {
     return data;
@@ -13898,7 +13965,7 @@ function _templateObject5() {
 }
 
 function _templateObject4() {
-  var data = _taggedTemplateLiteral(["\n        <div\n          ", "\n        ></div>\n        <nav\n          ", "\n        >\n          <nth-container>\n            <div\n              ", "\n            >\n              ", "\n              <div\n                ", "\n              >\n                <div><a href=\"#/\">Intro</a></div>\n                <div><a href=\"#/getting-started\">Getting started</a></div>\n                <div><a href=\"#/docs\">Docs</a></div>\n                <div>Github</div>\n              </div>\n            </div>\n          </nth-container>\n        </nav>\n      "]);
+  var data = _taggedTemplateLiteral(["\n    &,\n    &:link,\n    &:active,\n    &:visited {\n      text-decoration: none;\n      color: white;\n    }\n    &:hover {\n      color: white;\n      text-decoration: underline;\n    }\n    &.active {\n      text-decoration: underline;\n    }\n  "]);
 
   _templateObject4 = function _templateObject4() {
     return data;
@@ -13956,9 +14023,13 @@ index_ts_1.component('nth-navbar', function () {
     return index_ts_1.html(_templateObject(), css(_templateObject2()), css(_templateObject3()));
   }
 
+  var getLinkCss = function getLinkCss(css) {
+    return css(_templateObject4());
+  };
+
   return {
     render: function render() {
-      return index_ts_1.html(_templateObject4(), css(_templateObject5()), css(_templateObject6()), css(_templateObject7()), src_1.sub(renderLogo()), css(_templateObject8()));
+      return index_ts_1.html(_templateObject5(), css(_templateObject6()), css(_templateObject7()), css(_templateObject8()), src_1.sub(renderLogo()), css(_templateObject9()), src_1.prop('css', getLinkCss), src_1.prop('css', getLinkCss), src_1.prop('css', getLinkCss));
     }
   };
 });
@@ -14288,6 +14359,26 @@ src_1.component('nth-hello-world', function () {
 },{"../../src/":"../src/index.ts"}],"components/router.ts":[function(require,module,exports) {
 "use strict";
 
+function _templateObject6() {
+  var data = _taggedTemplateLiteral(["\n        <a\n          ", "\n          ", "\n          ", "\n          ><slot></slot\n        ></a>\n      "]);
+
+  _templateObject6 = function _templateObject6() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject5() {
+  var data = _taggedTemplateLiteral([""]);
+
+  _templateObject5 = function _templateObject5() {
+    return data;
+  };
+
+  return data;
+}
+
 function _templateObject4() {
   var data = _taggedTemplateLiteral([""]);
 
@@ -14336,6 +14427,8 @@ Object.defineProperty(exports, "__esModule", {
 
 var src_1 = require("../../src");
 
+var utils_1 = require("../utils");
+
 var routerContext = src_1.createContext('router', {
   currentPath: ''
 });
@@ -14372,7 +14465,29 @@ src_1.component('nth-route', function () {
     }
   };
 });
-},{"../../src":"../src/index.ts"}],"index.ts":[function(require,module,exports) {
+src_1.component('nth-link', function () {
+  var $path = src_1.$attr('path');
+  var css = utils_1.getCss();
+  var $css = src_1.$prop('css', function (c) {
+    return css(_templateObject5());
+  });
+  var $classes = src_1.$state({
+    value: $css.value(css)
+  });
+  var $context = routerContext.get();
+  src_1.sideEffect(function () {
+    $classes.value = $css.value(css);
+  }, function () {
+    return [$css, $context];
+  });
+  return {
+    watch: [$context, $path, $classes, $css],
+    render: function render() {
+      return src_1.html(_templateObject6(), src_1.attr('href', '#' + $path.value), $classes.value, src_1.clss($context.currentPath === $path.value ? 'active' : ''));
+    }
+  };
+});
+},{"../../src":"../src/index.ts","../utils":"utils.ts"}],"index.ts":[function(require,module,exports) {
 "use strict";
 
 function _templateObject() {
@@ -14438,7 +14553,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "41509" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "34659" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

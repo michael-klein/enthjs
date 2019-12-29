@@ -10,6 +10,7 @@ export { sideEffect } from './composables/sideeffects';
 export { $state } from './reactivity';
 export { Directive, createDirective } from './directive';
 export { text } from './directives/text';
+export { prop } from './directives/prop';
 export { input } from './directives/input';
 export { on } from './directives/on';
 export { attr } from './directives/attr';

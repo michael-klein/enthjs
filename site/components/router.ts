@@ -3,10 +3,14 @@ import {
   html,
   createContext,
   $state,
-  sideEffect,
   $attr,
   sub,
+  clss,
+  attr,
+  $prop,
+  sideEffect,
 } from '../../src';
+import { getCss } from '../utils';
 
 export interface Route {
   template: HTMLElement;
@@ -54,6 +58,32 @@ component('nth-route', () => {
               `
             : html``
         )}
+      `,
+  };
+});
+
+component('nth-link', () => {
+  const $path = $attr('path');
+  const css = getCss();
+  const $css = $prop('css', (c: typeof css) => css``);
+  const $classes = $state({ value: $css.value(css) });
+  const $context = routerContext.get();
+  sideEffect(
+    () => {
+      $classes.value = $css.value(css);
+    },
+    () => [$css, $context]
+  );
+  return {
+    watch: [$context, $path, $classes, $css],
+    render: () =>
+      html`
+        <a
+          ${attr('href', '#' + $path.value)}
+          ${$classes.value}
+          ${clss($context.currentPath === $path.value ? 'active' : '')}
+          ><slot></slot
+        ></a>
       `,
   };
 });

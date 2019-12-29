@@ -1,10 +1,7 @@
 import { State, $state } from '../reactivity';
 import { getElement } from './element';
 
-const contextMap: WeakMap<
-  HTMLElement,
-  { [key: string]: State<any> }
-> = new WeakMap();
+const contextMap: WeakMap<Node, { [key: string]: State<any> }> = new WeakMap();
 
 export interface ContextAPI<Context extends {}> {
   provide: (value: Context) => State<Context>;
@@ -25,8 +22,11 @@ export function createContext<Context extends {}>(
     },
     get: () => {
       const element = getElement();
-      let parent = element;
-      while ((parent = parent.parentElement) && parent !== document.body) {
+      let parent: Node = element;
+      while (
+        (parent = parent.parentNode || (parent as any).host) &&
+        parent !== document.body
+      ) {
         const $context = contextMap.has(parent) && contextMap.get(parent)[name];
         if ($context) {
           return $context;

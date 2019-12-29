@@ -1,6 +1,6 @@
 import { html, component } from '../../src/index.ts';
 import { getCss } from '../utils.ts';
-import { sub } from '../../src';
+import { sub, prop } from '../../src';
 
 component('nth-navbar', () => {
   const css = getCss();
@@ -42,6 +42,22 @@ component('nth-navbar', () => {
       </div>
     `;
   }
+  const getLinkCss = css => css`
+    &,
+    &:link,
+    &:active,
+    &:visited {
+      text-decoration: none;
+      color: white;
+    }
+    &:hover {
+      color: white;
+      text-decoration: underline;
+    }
+    &.active {
+      text-decoration: underline;
+    }
+  `;
   return {
     render: () => {
       return html`
@@ -85,21 +101,21 @@ component('nth-navbar', () => {
                     flex-wrap: wrap;
                     line-height: 2em;
                   }
-                  a,
-                  a:link,
-                  a:active,
-                  a:hover {
-                    text-decoration: none;
-                    color: inherit;
-                  }
-                  a:hover {
-                    text-decoration: underline;
-                  }
                 `}
               >
-                <div><a href="#/">Intro</a></div>
-                <div><a href="#/getting-started">Getting started</a></div>
-                <div><a href="#/docs">Docs</a></div>
+                <div>
+                  <nth-link ${prop('css', getLinkCss)} path="/">Intro</nth-link>
+                </div>
+                <div>
+                  <nth-link ${prop('css', getLinkCss)} path="/getting-started"
+                    >Getting started</nth-link
+                  >
+                </div>
+                <div>
+                  <nth-link ${prop('css', getLinkCss)} path="/docs"
+                    >Docs</nth-link
+                  >
+                </div>
                 <div>Github</div>
               </div>
             </div>
