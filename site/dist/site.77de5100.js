@@ -13911,6 +13911,34 @@ exports.getCss = function () {
     return src_1.clss(css.apply(css, args));
   };
 };
+
+function getIsInView() {
+  var $isInView = src_1.$state({
+    value: false
+  });
+  var element = src_1.getElement();
+  src_1.sideEffect(function () {
+    var handleScroll = function handleScroll(e) {
+      if (!$isInView.value && window.scrollY > element.offsetTop - window.innerHeight / 1.5) {
+        $isInView.value = true;
+        window.removeEventListener('scroll', handleScroll);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    requestAnimationFrame(function () {
+      handleScroll();
+    });
+    return function () {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, function () {
+    return [];
+  });
+  return $isInView;
+}
+
+exports.getIsInView = getIsInView;
 },{"goober":"node_modules/goober/dist/goober.module.js","../src/":"../src/index.ts"}],"components/nav_bar.ts":[function(require,module,exports) {
 "use strict";
 
@@ -23295,7 +23323,7 @@ exports.computerAnimation = {
 "use strict";
 
 function _templateObject26() {
-  var data = _taggedTemplateLiteral(["\n                  display: flex;\n                  @media only screen and (max-width: 600px) {\n                    display: block;\n                    opacity: 1 !important;\n                  }\n                "]);
+  var data = _taggedTemplateLiteral(["\n                font-size: 0.9em;\n                font-style: italic;\n              "]);
 
   _templateObject26 = function _templateObject26() {
     return data;
@@ -23305,7 +23333,7 @@ function _templateObject26() {
 }
 
 function _templateObject25() {
-  var data = _taggedTemplateLiteral(["\n              padding-top: 25px;\n              padding-bottom: 50px;\n              margin-left: -20px;\n              padding-left: 20px;\n              margin-right: -20px;\n              padding-right: 20px;\n            "]);
+  var data = _taggedTemplateLiteral(["\n                  margin: 0;\n                "]);
 
   _templateObject25 = function _templateObject25() {
     return data;
@@ -23315,7 +23343,7 @@ function _templateObject25() {
 }
 
 function _templateObject24() {
-  var data = _taggedTemplateLiteral(["\n            width: 100%;\n            max-width: 100%;\n            overflow: hidden;\n          "]);
+  var data = _taggedTemplateLiteral(["\n              margin: 0;\n              padding: 0;\n              > li {\n                margin-top: 10px;\n              }\n            "]);
 
   _templateObject24 = function _templateObject24() {
     return data;
@@ -23325,7 +23353,7 @@ function _templateObject24() {
 }
 
 function _templateObject23() {
-  var data = _taggedTemplateLiteral(["\n        <div\n          ", "\n        >\n          <div\n            ", "\n            ", "\n          >\n            <nth-container>\n              <div\n                ", "\n                ", "\n              >\n                ", " ", "\n              </div>\n            </nth-container>\n          </div>\n          <nth-container>\n            ", "\n          </nth-container>\n        </div>\n      "]);
+  var data = _taggedTemplateLiteral(["\n              font-weight: normal;\n            "]);
 
   _templateObject23 = function _templateObject23() {
     return data;
@@ -23335,7 +23363,7 @@ function _templateObject23() {
 }
 
 function _templateObject22() {
-  var data = _taggedTemplateLiteral(["\n                font-size: 0.9em;\n                font-style: italic;\n              "]);
+  var data = _taggedTemplateLiteral(["\n            font-family: Rubik, sans-serif;\n            color: #098ba7;\n            text-shadow: none;\n            flex: 1;\n            font-weight: normal;\n            padding-left: 40px;\n            @media only screen and (max-width: 600px) {\n              padding-left: 0px;\n              > ul {\n                padding-left: 20px;\n              }\n            }\n          "]);
 
   _templateObject22 = function _templateObject22() {
     return data;
@@ -23345,7 +23373,7 @@ function _templateObject22() {
 }
 
 function _templateObject21() {
-  var data = _taggedTemplateLiteral(["\n                  margin: 0;\n                "]);
+  var data = _taggedTemplateLiteral(["\n              width: 130%;\n              margin-left: -15%;\n            "]);
 
   _templateObject21 = function _templateObject21() {
     return data;
@@ -23355,7 +23383,7 @@ function _templateObject21() {
 }
 
 function _templateObject20() {
-  var data = _taggedTemplateLiteral(["\n              margin: 0;\n              padding: 0;\n              > li {\n                margin-top: 10px;\n              }\n            "]);
+  var data = _taggedTemplateLiteral(["\n            background: #1a505b;\n            padding-top: 4%;\n            padding-bottom: 4%;\n            border-radius: 50%;\n            max-width: 45%;\n            height: 100%;\n            @media only screen and (max-width: 600px) {\n              height: initial;\n              max-width: 100%;\n            }\n            flex: 1;\n            box-shadow: inset 0 0 9px #0000006b;\n            overflow: hidden;\n          "]);
 
   _templateObject20 = function _templateObject20() {
     return data;
@@ -23365,7 +23393,7 @@ function _templateObject20() {
 }
 
 function _templateObject19() {
-  var data = _taggedTemplateLiteral(["\n              font-weight: normal;\n            "]);
+  var data = _taggedTemplateLiteral(["\n          display: flex;\n          margin-top: 100px;\n          opacity: ", ";\n          transition: all 1s;\n          @media only screen and (max-width: 600px) {\n            display: block;\n          }\n        "]);
 
   _templateObject19 = function _templateObject19() {
     return data;
@@ -23375,7 +23403,7 @@ function _templateObject19() {
 }
 
 function _templateObject18() {
-  var data = _taggedTemplateLiteral(["\n            font-family: Rubik, sans-serif;\n            color: #098ba7;\n            text-shadow: none;\n            flex: 1;\n            font-weight: normal;\n            padding-left: 40px;\n          "]);
+  var data = _taggedTemplateLiteral(["\n      <div\n        ", "\n      >\n        <div\n          ", "\n        >\n          <div\n            ", "\n          >\n            <nth-lottie ", ">\n            </nth-lottie>\n          </div>\n        </div>\n        <div\n          ", "\n        >\n          <h1\n            ", "\n          >\n            <nth-logo ", "></nth-logo>\n            is a JavaScript framework with a focus on:\n          </h1>\n          <ul\n            ", "\n          >\n            <li>\n              <b>using modern platform features such as:</b>\n              <ul\n                ", "\n              >\n                <li>web components</li>\n                <li>proxies for change tracking</li>\n                <li>generators</li>\n                <li>\n                  es module: You don't have to use a bundler, if you don't need\n                  to.\n                </li>\n              </ul>\n            </li>\n            <li>\n              <b>'treeshakability'</b>: you decide how much or how little of the\n              framework you want to load/bundle.\n            </li>\n\n            <li>\n              <b>'composability'</b>: the architecture is functional and thus\n              highly composable.\n            </li>\n            <p\n              ", "\n            >\n              Obviously, this means that you will need to compile down for older\n              browser versions and/or provide polyfills if you have to to\n              support them.\n            </p>\n          </ul>\n        </div>\n      </div>\n    "]);
 
   _templateObject18 = function _templateObject18() {
     return data;
@@ -23385,7 +23413,7 @@ function _templateObject18() {
 }
 
 function _templateObject17() {
-  var data = _taggedTemplateLiteral(["\n              width: 130%;\n              margin-left: -15%;\n            "]);
+  var data = _taggedTemplateLiteral(["\n                  display: flex;\n                  @media only screen and (max-width: 600px) {\n                    display: block;\n                    opacity: 1 !important;\n                  }\n                "]);
 
   _templateObject17 = function _templateObject17() {
     return data;
@@ -23395,7 +23423,7 @@ function _templateObject17() {
 }
 
 function _templateObject16() {
-  var data = _taggedTemplateLiteral(["\n            background: #1a505b;\n            padding-top: 4%;\n            padding-bottom: 4%;\n            border-radius: 50%;\n            max-width: 45%;\n            flex: 1;\n            box-shadow: inset 0 0 9px #0000006b;\n            overflow: hidden;\n          "]);
+  var data = _taggedTemplateLiteral(["\n              padding-top: 25px;\n              padding-bottom: 50px;\n              margin-left: -20px;\n              padding-left: 20px;\n              margin-right: -20px;\n              padding-right: 20px;\n            "]);
 
   _templateObject16 = function _templateObject16() {
     return data;
@@ -23405,7 +23433,7 @@ function _templateObject16() {
 }
 
 function _templateObject15() {
-  var data = _taggedTemplateLiteral(["\n          display: flex;\n          margin-top: 100px;\n        "]);
+  var data = _taggedTemplateLiteral(["\n            width: 100%;\n            max-width: 100%;\n            overflow: hidden;\n          "]);
 
   _templateObject15 = function _templateObject15() {
     return data;
@@ -23415,7 +23443,7 @@ function _templateObject15() {
 }
 
 function _templateObject14() {
-  var data = _taggedTemplateLiteral(["\n      <div\n        ", "\n      >\n        <div\n          ", "\n        >\n          <div\n            ", "\n          >\n            <nth-lottie ", ">\n            </nth-lottie>\n          </div>\n        </div>\n        <div\n          ", "\n        >\n          <h1\n            ", "\n          >\n            <nth-logo ", "></nth-logo>\n            is a JavaScript framework with a focus on:\n          </h1>\n          <ul\n            ", "\n          >\n            <li>\n              <b>using modern platform features such as:</b>\n              <ul\n                ", "\n              >\n                <li>web components</li>\n                <li>proxies for change tracking</li>\n                <li>generators</li>\n                <li>\n                  es module: You don't have to use a bundler, if you don't need\n                  to.\n                </li>\n              </ul>\n            </li>\n            <li>\n              <b>'treeshakability'</b>: you decide how much or how little of the\n              framework you want to load/bundle.\n            </li>\n\n            <li>\n              <b>'composability'</b>: the architecture is functional and thus\n              highly composable.\n            </li>\n            <p\n              ", "\n            >\n              Obviously, this means that you will need to compile down for older\n              browser versions and/or provide polyfills if you have to to\n              support them.\n            </p>\n          </ul>\n        </div>\n      </div>\n    "]);
+  var data = _taggedTemplateLiteral(["\n        <div\n          ", "\n        >\n          <div\n            ", "\n            ", "\n          >\n            <nth-container>\n              <div\n                ", "\n                ", "\n              >\n                ", " ", "\n              </div>\n            </nth-container>\n          </div>\n          <nth-container>\n            <nth-intro-section-info></nth-intro-section-info>\n          </nth-container>\n        </div>\n      "]);
 
   _templateObject14 = function _templateObject14() {
     return data;
@@ -23574,6 +23602,8 @@ var carbon_svg_1 = __importDefault(require("../images/carbon.svg"));
 
 var computer_animation_1 = require("./animations/computer_animation");
 
+var utils_1 = require("../utils");
+
 src_1.component('nth-intro', function () {
   var css = utils_ts_1.getCss();
   var $animationStates = src_1.$state({
@@ -23621,18 +23651,24 @@ src_1.component('nth-intro', function () {
     return src_1.html(_templateObject10(), css(_templateObject11(), $animationStates.showImage ? '1' : '0'), css(_templateObject12()), carbon_svg_1.default, css(_templateObject13(), $animationStates.showExample ? '1' : '0'));
   }
 
-  function renderInfoSection() {
-    return src_1.html(_templateObject14(), css(_templateObject15()), css(_templateObject16()), css(_templateObject17()), src_1.prop('animationData', computer_animation_1.computerAnimation), css(_templateObject18()), css(_templateObject19()), src_1.prop('showFullName', true), css(_templateObject20()), css(_templateObject21()), css(_templateObject22()));
-  }
-
   return {
     watch: [$animationStates, $opacity],
     render: function render() {
-      return src_1.html(_templateObject23(), css(_templateObject24()), css(_templateObject25()), src_1.attr('style', "background: #098ba7; border-radius: 0 0 25% 75% / ".concat($opacity.value * 85, "px;")), css(_templateObject26()), src_1.attr('style', "opacity:".concat($opacity.value)), src_1.sub(renderTextBox()), src_1.sub(renderImage()), src_1.sub(renderInfoSection()));
+      return src_1.html(_templateObject14(), css(_templateObject15()), css(_templateObject16()), src_1.attr('style', "background: #098ba7; border-radius: 0 0 25% 75% / ".concat($opacity.value * 85, "px;")), css(_templateObject17()), src_1.attr('style', "opacity:".concat($opacity.value)), src_1.sub(renderTextBox()), src_1.sub(renderImage()));
     }
   };
 });
-},{"../../src/":"../src/index.ts","../utils.ts":"utils.ts","../images/carbon.svg":"images/carbon.svg","./animations/computer_animation":"components/animations/computer_animation.ts"}],"components/hello_world.ts":[function(require,module,exports) {
+src_1.component('nth-intro-section-info', function () {
+  var css = utils_ts_1.getCss();
+  var $isInView = utils_1.getIsInView();
+  return {
+    watch: [$isInView],
+    render: function render() {
+      return src_1.html(_templateObject18(), css(_templateObject19(), $isInView.value ? '1' : '0'), css(_templateObject20()), css(_templateObject21()), src_1.prop('animationData', computer_animation_1.computerAnimation), css(_templateObject22()), css(_templateObject23()), src_1.prop('showFullName', true), css(_templateObject24()), css(_templateObject25()), css(_templateObject26()));
+    }
+  };
+});
+},{"../../src/":"../src/index.ts","../utils.ts":"utils.ts","../images/carbon.svg":"images/carbon.svg","./animations/computer_animation":"components/animations/computer_animation.ts","../utils":"utils.ts"}],"components/hello_world.ts":[function(require,module,exports) {
 "use strict";
 
 function _templateObject() {
@@ -38549,7 +38585,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "36789" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "45715" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

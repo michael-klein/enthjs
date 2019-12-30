@@ -6,10 +6,12 @@ import {
   sub,
   attr,
   prop,
+  getElement,
 } from '../../src/';
 import { getCss } from '../utils.ts';
 import carbon from '../images/carbon.svg';
 import { computerAnimation } from './animations/computer_animation';
+import { getIsInView } from '../utils';
 
 component('nth-intro', () => {
   const css = getCss();
@@ -189,12 +191,71 @@ component('nth-intro', () => {
     `;
   }
 
-  function renderInfoSection() {
-    return html`
+  return {
+    watch: [$animationStates, $opacity],
+    render: () => {
+      return html`
+        <div
+          ${css`
+            width: 100%;
+            max-width: 100%;
+            overflow: hidden;
+          `}
+        >
+          <div
+            ${css`
+              padding-top: 25px;
+              padding-bottom: 50px;
+              margin-left: -20px;
+              padding-left: 20px;
+              margin-right: -20px;
+              padding-right: 20px;
+            `}
+            ${attr(
+              'style',
+              `background: #098ba7; border-radius: 0 0 25% 75% / ${$opacity.value *
+                85}px;`
+            )}
+          >
+            <nth-container>
+              <div
+                ${css`
+                  display: flex;
+                  @media only screen and (max-width: 600px) {
+                    display: block;
+                    opacity: 1 !important;
+                  }
+                `}
+                ${attr('style', `opacity:${$opacity.value}`)}
+              >
+                ${sub(renderTextBox())} ${sub(renderImage())}
+              </div>
+            </nth-container>
+          </div>
+          <nth-container>
+            <nth-intro-section-info></nth-intro-section-info>
+          </nth-container>
+        </div>
+      `;
+    },
+  };
+});
+
+component('nth-intro-section-info', () => {
+  const css = getCss();
+  const $isInView = getIsInView();
+  return {
+    watch: [$isInView],
+    render: () => html`
       <div
         ${css`
           display: flex;
           margin-top: 100px;
+          opacity: ${$isInView.value ? '1' : '0'};
+          transition: all 1s;
+          @media only screen and (max-width: 600px) {
+            display: block;
+          }
         `}
       >
         <div
@@ -204,6 +265,11 @@ component('nth-intro', () => {
             padding-bottom: 4%;
             border-radius: 50%;
             max-width: 45%;
+            height: 100%;
+            @media only screen and (max-width: 600px) {
+              height: initial;
+              max-width: 100%;
+            }
             flex: 1;
             box-shadow: inset 0 0 9px #0000006b;
             overflow: hidden;
@@ -227,6 +293,12 @@ component('nth-intro', () => {
             flex: 1;
             font-weight: normal;
             padding-left: 40px;
+            @media only screen and (max-width: 600px) {
+              padding-left: 0px;
+              > ul {
+                padding-left: 20px;
+              }
+            }
           `}
         >
           <h1
@@ -284,55 +356,6 @@ component('nth-intro', () => {
           </ul>
         </div>
       </div>
-    `;
-  }
-
-  return {
-    watch: [$animationStates, $opacity],
-    render: () => {
-      return html`
-        <div
-          ${css`
-            width: 100%;
-            max-width: 100%;
-            overflow: hidden;
-          `}
-        >
-          <div
-            ${css`
-              padding-top: 25px;
-              padding-bottom: 50px;
-              margin-left: -20px;
-              padding-left: 20px;
-              margin-right: -20px;
-              padding-right: 20px;
-            `}
-            ${attr(
-              'style',
-              `background: #098ba7; border-radius: 0 0 25% 75% / ${$opacity.value *
-                85}px;`
-            )}
-          >
-            <nth-container>
-              <div
-                ${css`
-                  display: flex;
-                  @media only screen and (max-width: 600px) {
-                    display: block;
-                    opacity: 1 !important;
-                  }
-                `}
-                ${attr('style', `opacity:${$opacity.value}`)}
-              >
-                ${sub(renderTextBox())} ${sub(renderImage())}
-              </div>
-            </nth-container>
-          </div>
-          <nth-container>
-            ${sub(renderInfoSection())}
-          </nth-container>
-        </div>
-      `;
-    },
+    `,
   };
 });
