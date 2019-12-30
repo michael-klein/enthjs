@@ -38557,6 +38557,12 @@ require("./components/router");
 require("./components/lottie");
 
 require("./components/logo");
+
+document.addEventListener('DOMContentLoaded', function () {
+  requestAnimationFrame(function () {
+    document.body.style.opacity = '';
+  });
+});
 },{"core-js/stable":"node_modules/core-js/stable/index.js","regenerator-runtime/runtime":"node_modules/regenerator-runtime/runtime.js","proxy-polyfill/src/proxy":"node_modules/proxy-polyfill/src/proxy.js","goober":"node_modules/goober/dist/goober.module.js","./components/nav_bar.ts":"components/nav_bar.ts","./components/container.ts":"components/container.ts","./components/intro.ts":"components/intro.ts","./components/hello_world":"components/hello_world.ts","./components/router":"components/router.ts","./components/lottie":"components/lottie.ts","./components/logo":"components/logo.ts"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -38585,7 +38591,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "36219" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "39063" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

@@ -24,3 +24,9 @@ import './components/hello_world';
 import './components/router';
 import './components/lottie';
 import './components/logo';
+
+document.addEventListener('DOMContentLoaded', function() {
+  requestAnimationFrame(() => {
+    document.body.style.opacity = '';
+  });
+});
