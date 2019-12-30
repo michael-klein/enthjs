@@ -22,3 +22,5 @@ import './components/container.ts';
 import './components/intro.ts';
 import './components/hello_world';
 import './components/router';
+import './components/lottie';
+import './components/logo';

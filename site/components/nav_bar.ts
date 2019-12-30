@@ -4,44 +4,6 @@ import { sub, prop } from '../../src';
 
 component('nth-navbar', () => {
   const css = getCss();
-
-  function renderLogo() {
-    return html`
-      <div
-        ${css`
-          color: #a2a9a9;
-          font-size: 1.3em;
-          background: #1a505b;
-          padding: 5px;
-          box-shadow: inset 0 0 3px #0000006b;
-          border-radius: 4px;
-          position: relative;
-          white-space: nowrap;
-          > span {
-            color: #ea5353;
-          }
-        `}
-      >
-        <div
-          ${css`
-            position: absolute;
-            right: -2.5em;
-            top: -0.7em;
-            font-size: 0.5em;
-            letter-spacing: 0.05em;
-            color: white;
-            border: 1px solid #e45b5b;
-            background: #ea5353;
-            padding: 2px;
-            border-radius: 2px;
-          `}
-        >
-          alpha
-        </div>
-        e<span>nth</span>-js
-      </div>
-    `;
-  }
   const getLinkCss = css => css`
     &,
     &:link,
@@ -86,7 +48,16 @@ component('nth-navbar', () => {
                 align-items: center;
               `}
             >
-              ${sub(renderLogo())}
+              <span
+                ${css`
+                  font-size: 1.3em;
+                `}
+              >
+                <nth-logo
+                  ${prop('showAlpha', true)}
+                  ${prop('showFullName', true)}
+                ></nth-logo
+              ></span>
               <div
                 ${css`
                   display: flex;

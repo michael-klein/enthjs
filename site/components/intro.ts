@@ -1,6 +1,15 @@
-import { html, $state, sideEffect, component, sub, attr } from '../../src/';
+import {
+  html,
+  $state,
+  sideEffect,
+  component,
+  sub,
+  attr,
+  prop,
+} from '../../src/';
 import { getCss } from '../utils.ts';
 import carbon from '../images/carbon.svg';
+import { computerAnimation } from './animations/computer_animation';
 
 component('nth-intro', () => {
   const css = getCss();
@@ -61,16 +70,12 @@ component('nth-intro', () => {
         Not just the
         <span
           ${css`
-            color: #ea5353;
             display: inline-block;
             line-height: 1em;
-            background: #1a505b;
-            padding: 5px;
-            box-shadow: inset 0 0 3px #0000006b;
-            border-radius: 4px;
           `}
-          >nth</span
         >
+          <nth-logo></nth-logo
+        ></span>
         JavaScript framework you found today!<span
           ${css`
             position: relative;
@@ -184,6 +189,104 @@ component('nth-intro', () => {
     `;
   }
 
+  function renderInfoSection() {
+    return html`
+      <div
+        ${css`
+          display: flex;
+          margin-top: 100px;
+        `}
+      >
+        <div
+          ${css`
+            background: #1a505b;
+            padding-top: 4%;
+            padding-bottom: 4%;
+            border-radius: 50%;
+            max-width: 45%;
+            flex: 1;
+            box-shadow: inset 0 0 9px #0000006b;
+            overflow: hidden;
+          `}
+        >
+          <div
+            ${css`
+              width: 130%;
+              margin-left: -15%;
+            `}
+          >
+            <nth-lottie ${prop('animationData', computerAnimation)}>
+            </nth-lottie>
+          </div>
+        </div>
+        <div
+          ${css`
+            font-family: Rubik, sans-serif;
+            color: #098ba7;
+            text-shadow: none;
+            flex: 1;
+            font-weight: normal;
+            padding-left: 40px;
+          `}
+        >
+          <h1
+            ${css`
+              font-weight: normal;
+            `}
+          >
+            <nth-logo ${prop('showFullName', true)}></nth-logo>
+            is a JavaScript framework with a focus on:
+          </h1>
+          <ul
+            ${css`
+              margin: 0;
+              padding: 0;
+              > li {
+                margin-top: 10px;
+              }
+            `}
+          >
+            <li>
+              <b>using modern platform features such as:</b>
+              <ul
+                ${css`
+                  margin: 0;
+                `}
+              >
+                <li>web components</li>
+                <li>proxies for change tracking</li>
+                <li>generators</li>
+                <li>
+                  es module: You don't have to use a bundler, if you don't need
+                  to.
+                </li>
+              </ul>
+            </li>
+            <li>
+              <b>'treeshakability'</b>: you decide how much or how little of the
+              framework you want to load/bundle.
+            </li>
+
+            <li>
+              <b>'composability'</b>: the architecture is functional and thus
+              highly composable.
+            </li>
+            <p
+              ${css`
+                font-size: 0.9em;
+                font-style: italic;
+              `}
+            >
+              Obviously, this means that you will need to compile down for older
+              browser versions and/or provide polyfills if you have to to
+              support them.
+            </p>
+          </ul>
+        </div>
+      </div>
+    `;
+  }
+
   return {
     watch: [$animationStates, $opacity],
     render: () => {
@@ -225,6 +328,9 @@ component('nth-intro', () => {
               </div>
             </nth-container>
           </div>
+          <nth-container>
+            ${sub(renderInfoSection())}
+          </nth-container>
         </div>
       `;
     },
