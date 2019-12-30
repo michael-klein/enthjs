@@ -1,7 +1,8 @@
 import { html, component } from '../../src/index.ts';
 import { getCss } from '../utils.ts';
-import { sub, prop } from '../../src';
-
+import { prop } from '../../src';
+import { GitHub } from 'simple-icons';
+console.log(GitHub);
 component('nth-navbar', () => {
   const css = getCss();
   const getLinkCss = css => css`
@@ -87,7 +88,19 @@ component('nth-navbar', () => {
                     >Docs</nth-link
                   >
                 </div>
-                <div>Github</div>
+                <div
+                  ${css`
+                    display: flex;
+                    > svg {
+                      fill: #e7edee;
+                      height: 17px;
+                      margin-left: 4px;
+                      filter: drop-shadow(0px 1px 1.5px rgba(0, 0, 0, 0.3));
+                    }
+                  `}
+                >
+                  Github ${GitHub.svg}
+                </div>
               </div>
             </div>
           </nth-container>

@@ -13,7 +13,8 @@
     "goober": "^1.6.1",
     "lottie-web": "^5.5.10",
     "proxy-polyfill": "^0.3.0",
-    "react-app-polyfill": "^1.0.0"
+    "react-app-polyfill": "^1.0.0",
+    "simple-icons": "^2.1.0"
   },
   "alias": {
     "react": "../node_modules/react",
