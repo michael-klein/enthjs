@@ -93,13 +93,14 @@ component('nth-navbar', () => {
                     display: flex;
                     > svg {
                       fill: #e7edee;
-                      height: 17px;
+                      height: 17px !important;
                       margin-left: 4px;
                       filter: drop-shadow(0px 1px 1.5px rgba(0, 0, 0, 0.3));
                     }
                   `}
                 >
-                  Github ${GitHub.svg}
+                  Github
+                  ${GitHub.svg.replace('<svg', '<svg style="height: 17px;" ')}
                 </div>
               </div>
             </div>
