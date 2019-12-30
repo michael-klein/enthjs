@@ -91,6 +91,7 @@ component('nth-navbar', () => {
                 <div
                   ${css`
                     display: flex;
+                    align-items: center;
                     > svg {
                       fill: #e7edee;
                       height: 17px !important;

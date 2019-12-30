@@ -267,8 +267,7 @@ component('nth-intro-section-info', () => {
             max-width: 45%;
             height: 100%;
             @media only screen and (max-width: 600px) {
-              height: initial;
-              max-width: 100%;
+              display: none;
             }
             flex: 1;
             box-shadow: inset 0 0 9px #0000006b;
