@@ -162,7 +162,15 @@ component('nth-intro', () => {
           opacity: ${$animationStates.showImage ? '1' : '0'};
         `}
       >
-        <div>
+        <div
+          ${css`
+            width: 100%;
+            position: relative;
+            @media only screen and (max-width: 600px) {
+              margin-top: 30px;
+            }
+          `}
+        >
           <img
             ${css`
               width: 100%;

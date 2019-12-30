@@ -26,7 +26,8 @@ component('nth-navbar', () => {
       return html`
         <div
           ${css`
-            margin-top: 74px;
+            height: 75px;
+            background: #098ba7;
           `}
         ></div>
         <nav
@@ -36,10 +37,11 @@ component('nth-navbar', () => {
             background: #098ba7;
             top: 0px;
             color: #f1f2f2;
-            padding-top: 20px;
-            padding-bottom: 20px;
+            padding-top: 15px;
+            padding-bottom: 15px;
             font-family: 'Rubik', sans-serif;
             z-index: 100;
+            max-height: 75px;
           `}
         >
           <nth-container>

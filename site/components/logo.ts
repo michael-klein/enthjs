@@ -17,7 +17,7 @@ component('nth-logo', () => {
           border-radius: 4px;
           position: relative;
           white-space: nowrap;
-          line-height: inherit;
+          line-height: 1.1em;
           display: inline-block;
           > span {
             color: #ea5353;
@@ -39,6 +39,7 @@ component('nth-logo', () => {
                     background: #ea5353;
                     padding: 2px;
                     border-radius: 2px;
+                    line-height: 1em;
                   `}
                 >
                   alpha
