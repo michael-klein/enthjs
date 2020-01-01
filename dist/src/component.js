@@ -1,7 +1,7 @@
 import { render } from "./render.js";
 import { schedule, PriorityLevel } from "./scheduler.js";
-import { setUpContext } from "./context.js";
-import { runSideEffects } from "./sideeffects.js";
+import { setUpContext } from "./composables/element.js";
+import { runSideEffects } from "./composables/sideeffects.js";
 export const component = (name, setup) => {
     customElements.define(name, class extends HTMLElement {
         constructor() {

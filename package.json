@@ -1,6 +1,6 @@
 {
   "name": "gen_v",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "author": "Michael Klein",
   "main": "dist/index.js",
