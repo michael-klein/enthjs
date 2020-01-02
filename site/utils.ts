@@ -19,9 +19,9 @@ export function getIsInView(): State<{
         }
       };
       window.addEventListener('scroll', handleScroll);
-      requestAnimationFrame(() => {
+      setTimeout(() => {
         handleScroll();
-      });
+      }, 100);
       return () => {
         window.removeEventListener('scroll', handleScroll);
       };

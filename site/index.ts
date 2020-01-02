@@ -17,9 +17,10 @@ glob`
     scroll-behavior: smooth;
     text-rendering: optimizeSpeed;
     line-height: 1.5;
-    height: 3000px;
     text-shadow: 0px 1px 2px rgba(0,0,0,0.3);
     overflow-x: hidden;
+    background: #083d48;
+    font-family: 'Rubik', sans-serif;
   }
   ${reset}
 `;
@@ -31,6 +32,8 @@ import './components/hello_world';
 import './components/router';
 import './components/lottie';
 import './components/logo';
+import './components/footer';
+import './components/getting_started';
 
 document.addEventListener('DOMContentLoaded', function() {
   requestAnimationFrame(() => {

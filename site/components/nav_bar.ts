@@ -85,10 +85,12 @@ component('nth-navbar', () => {
                     >Getting started</nth-link
                   >
                 </div>
-                <div>
-                  <nth-link ${prop('css', getLinkCss)} path="/docs"
-                    >Docs</nth-link
-                  >
+                <div
+                  ${css`
+                    opacity: 0.5;
+                  `}
+                >
+                  Docs
                 </div>
                 <div
                   ${css`

@@ -13913,9 +13913,9 @@ function getIsInView() {
     };
 
     window.addEventListener('scroll', handleScroll);
-    requestAnimationFrame(function () {
+    setTimeout(function () {
       handleScroll();
-    });
+    }, 100);
     return function () {
       window.removeEventListener('scroll', handleScroll);
     };
@@ -13954,8 +13954,18 @@ var icons={".NET":{title:".NET",slug:"dot-net",svg:'<svg role="img" viewBox="0 0
 },{}],"components/nav_bar.ts":[function(require,module,exports) {
 "use strict";
 
-function _templateObject8() {
+function _templateObject9() {
   var data = _taggedTemplateLiteral(["\n                    display: flex;\n                    align-items: center;\n                    > svg {\n                      fill: #e7edee;\n                      height: 17px !important;\n                      margin-left: 4px;\n                      filter: drop-shadow(0px 1px 1.5px rgba(0, 0, 0, 0.3));\n                    }\n                  "]);
+
+  _templateObject9 = function _templateObject9() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject8() {
+  var data = _taggedTemplateLiteral(["\n                    opacity: 0.5;\n                  "]);
 
   _templateObject8 = function _templateObject8() {
     return data;
@@ -14015,7 +14025,7 @@ function _templateObject3() {
 }
 
 function _templateObject2() {
-  var data = _taggedTemplateLiteral(["\n        <div\n          ", "\n        ></div>\n        <nav\n          ", "\n        >\n          <nth-container>\n            <div\n              ", "\n            >\n              <span\n                ", "\n              >\n                <nth-logo\n                  ", "\n                  ", "\n                ></nth-logo\n              ></span>\n              <div\n                ", "\n              >\n                <div>\n                  <nth-link ", " path=\"/\">Intro</nth-link>\n                </div>\n                <div>\n                  <nth-link ", " path=\"/getting-started\"\n                    >Getting started</nth-link\n                  >\n                </div>\n                <div>\n                  <nth-link ", " path=\"/docs\"\n                    >Docs</nth-link\n                  >\n                </div>\n                <div\n                  ", "\n                >\n                  Github\n                  ", "\n                </div>\n              </div>\n            </div>\n          </nth-container>\n        </nav>\n      "]);
+  var data = _taggedTemplateLiteral(["\n        <div\n          ", "\n        ></div>\n        <nav\n          ", "\n        >\n          <nth-container>\n            <div\n              ", "\n            >\n              <span\n                ", "\n              >\n                <nth-logo\n                  ", "\n                  ", "\n                ></nth-logo\n              ></span>\n              <div\n                ", "\n              >\n                <div>\n                  <nth-link ", " path=\"/\">Intro</nth-link>\n                </div>\n                <div>\n                  <nth-link ", " path=\"/getting-started\"\n                    >Getting started</nth-link\n                  >\n                </div>\n                <div\n                  ", "\n                >\n                  Docs\n                </div>\n                <div\n                  ", "\n                >\n                  Github\n                  ", "\n                </div>\n              </div>\n            </div>\n          </nth-container>\n        </nav>\n      "]);
 
   _templateObject2 = function _templateObject2() {
     return data;
@@ -14058,7 +14068,7 @@ index_ts_1.component('nth-navbar', function () {
 
   return {
     render: function render() {
-      return index_ts_1.html(_templateObject2(), css(_templateObject3()), css(_templateObject4()), css(_templateObject5()), css(_templateObject6()), src_1.prop('showAlpha', true), src_1.prop('showFullName', true), css(_templateObject7()), src_1.prop('css', getLinkCss), src_1.prop('css', getLinkCss), src_1.prop('css', getLinkCss), css(_templateObject8()), simple_icons_1.GitHub.svg.replace('<svg', '<svg style="height: 17px;" '));
+      return index_ts_1.html(_templateObject2(), css(_templateObject3()), css(_templateObject4()), css(_templateObject5()), css(_templateObject6()), src_1.prop('showAlpha', true), src_1.prop('showFullName', true), css(_templateObject7()), src_1.prop('css', getLinkCss), src_1.prop('css', getLinkCss), css(_templateObject8()), css(_templateObject9()), simple_icons_1.GitHub.svg.replace('<svg', '<svg style="height: 17px;" '));
     }
   };
 });
@@ -23347,8 +23357,38 @@ exports.computerAnimation = {
 },{}],"components/intro.ts":[function(require,module,exports) {
 "use strict";
 
+function _templateObject30() {
+  var data = _taggedTemplateLiteral(["\n                  font-size: 0.9em;\n                  font-style: italic;\n                "]);
+
+  _templateObject30 = function _templateObject30() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject29() {
+  var data = _taggedTemplateLiteral(["\n                    margin: 0;\n                  "]);
+
+  _templateObject29 = function _templateObject29() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject28() {
+  var data = _taggedTemplateLiteral(["\n                margin: 0;\n                padding: 0;\n                > li {\n                  margin-top: 10px;\n                }\n              "]);
+
+  _templateObject28 = function _templateObject28() {
+    return data;
+  };
+
+  return data;
+}
+
 function _templateObject27() {
-  var data = _taggedTemplateLiteral(["\n                font-size: 0.9em;\n                font-style: italic;\n              "]);
+  var data = _taggedTemplateLiteral(["\n                font-weight: normal;\n              "]);
 
   _templateObject27 = function _templateObject27() {
     return data;
@@ -23358,7 +23398,7 @@ function _templateObject27() {
 }
 
 function _templateObject26() {
-  var data = _taggedTemplateLiteral(["\n                  margin: 0;\n                "]);
+  var data = _taggedTemplateLiteral(["\n              font-family: Rubik, sans-serif;\n              color: #098ba7;\n              text-shadow: none;\n              flex: 1;\n              font-weight: normal;\n              padding-left: 40px;\n              @media only screen and (max-width: 600px) {\n                padding-left: 0px;\n                > ul {\n                  padding-left: 20px;\n                }\n              }\n            "]);
 
   _templateObject26 = function _templateObject26() {
     return data;
@@ -23368,7 +23408,7 @@ function _templateObject26() {
 }
 
 function _templateObject25() {
-  var data = _taggedTemplateLiteral(["\n              margin: 0;\n              padding: 0;\n              > li {\n                margin-top: 10px;\n              }\n            "]);
+  var data = _taggedTemplateLiteral(["\n                width: 130%;\n                margin-left: -15%;\n              "]);
 
   _templateObject25 = function _templateObject25() {
     return data;
@@ -23378,7 +23418,7 @@ function _templateObject25() {
 }
 
 function _templateObject24() {
-  var data = _taggedTemplateLiteral(["\n              font-weight: normal;\n            "]);
+  var data = _taggedTemplateLiteral(["\n              background: #1a505b;\n              padding-top: 4%;\n              padding-bottom: 4%;\n              border-radius: 50%;\n              max-width: 45%;\n              height: 100%;\n              @media only screen and (max-width: 600px) {\n                display: none;\n              }\n              flex: 1;\n              box-shadow: inset 0 0 9px #0000006b;\n              overflow: hidden;\n            "]);
 
   _templateObject24 = function _templateObject24() {
     return data;
@@ -23388,7 +23428,7 @@ function _templateObject24() {
 }
 
 function _templateObject23() {
-  var data = _taggedTemplateLiteral(["\n            font-family: Rubik, sans-serif;\n            color: #098ba7;\n            text-shadow: none;\n            flex: 1;\n            font-weight: normal;\n            padding-left: 40px;\n            @media only screen and (max-width: 600px) {\n              padding-left: 0px;\n              > ul {\n                padding-left: 20px;\n              }\n            }\n          "]);
+  var data = _taggedTemplateLiteral(["\n            display: flex;\n            margin-top: 100px;\n            opacity: ", ";\n            transition: all 1s;\n            @media only screen and (max-width: 600px) {\n              display: block;\n            }\n          "]);
 
   _templateObject23 = function _templateObject23() {
     return data;
@@ -23398,7 +23438,7 @@ function _templateObject23() {
 }
 
 function _templateObject22() {
-  var data = _taggedTemplateLiteral(["\n              width: 130%;\n              margin-left: -15%;\n            "]);
+  var data = _taggedTemplateLiteral(["\n      <nth-container>\n        <div\n          ", "\n        >\n          <div\n            ", "\n          >\n            <div\n              ", "\n            >\n              <nth-lottie ", ">\n              </nth-lottie>\n            </div>\n          </div>\n          <div\n            ", "\n          >\n            <h1\n              ", "\n            >\n              <nth-logo ", "></nth-logo>\n              is a JavaScript framework with a focus on:\n            </h1>\n            <ul\n              ", "\n            >\n              <li>\n                <b>using modern platform features such as:</b>\n                <ul\n                  ", "\n                >\n                  <li>web components</li>\n                  <li>proxies for change tracking</li>\n                  <li>generators</li>\n                  <li>\n                    es module: You don't have to use a bundler, if you don't\n                    need to.\n                  </li>\n                </ul>\n              </li>\n              <li>\n                <b>'treeshakability'</b>: you decide how much or how little of\n                the framework you want to load/bundle.\n              </li>\n\n              <li>\n                <b>'composability'</b>: the architecture is functional and thus\n                highly composable.\n              </li>\n              <p\n                ", "\n              >\n                Obviously, this means that you will need to compile down for\n                older browser versions and/or provide polyfills if you have to\n                to support them.\n              </p>\n            </ul>\n          </div>\n        </div></nth-container\n      >\n    "]);
 
   _templateObject22 = function _templateObject22() {
     return data;
@@ -23408,7 +23448,7 @@ function _templateObject22() {
 }
 
 function _templateObject21() {
-  var data = _taggedTemplateLiteral(["\n            background: #1a505b;\n            padding-top: 4%;\n            padding-bottom: 4%;\n            border-radius: 50%;\n            max-width: 45%;\n            height: 100%;\n            @media only screen and (max-width: 600px) {\n              display: none;\n            }\n            flex: 1;\n            box-shadow: inset 0 0 9px #0000006b;\n            overflow: hidden;\n          "]);
+  var data = _taggedTemplateLiteral(["\n              color: white;\n              font-size: 2em;\n              font-family: 'Rubik', sans-serif;\n              text-align: center;\n              margin-bottom: 10px;\n            "]);
 
   _templateObject21 = function _templateObject21() {
     return data;
@@ -23418,7 +23458,7 @@ function _templateObject21() {
 }
 
 function _templateObject20() {
-  var data = _taggedTemplateLiteral(["\n          display: flex;\n          margin-top: 100px;\n          opacity: ", ";\n          transition: all 1s;\n          @media only screen and (max-width: 600px) {\n            display: block;\n          }\n        "]);
+  var data = _taggedTemplateLiteral(["\n          background: #098ba7;\n          margin-top: 100px;\n          padding-top: 40px;\n          padding-bottom: 40px;\n          opacity: ", ";\n          transition: all 1s;\n        "]);
 
   _templateObject20 = function _templateObject20() {
     return data;
@@ -23428,7 +23468,7 @@ function _templateObject20() {
 }
 
 function _templateObject19() {
-  var data = _taggedTemplateLiteral(["\n      <div\n        ", "\n      >\n        <div\n          ", "\n        >\n          <div\n            ", "\n          >\n            <nth-lottie ", ">\n            </nth-lottie>\n          </div>\n        </div>\n        <div\n          ", "\n        >\n          <h1\n            ", "\n          >\n            <nth-logo ", "></nth-logo>\n            is a JavaScript framework with a focus on:\n          </h1>\n          <ul\n            ", "\n          >\n            <li>\n              <b>using modern platform features such as:</b>\n              <ul\n                ", "\n              >\n                <li>web components</li>\n                <li>proxies for change tracking</li>\n                <li>generators</li>\n                <li>\n                  es module: You don't have to use a bundler, if you don't need\n                  to.\n                </li>\n              </ul>\n            </li>\n            <li>\n              <b>'treeshakability'</b>: you decide how much or how little of the\n              framework you want to load/bundle.\n            </li>\n\n            <li>\n              <b>'composability'</b>: the architecture is functional and thus\n              highly composable.\n            </li>\n            <p\n              ", "\n            >\n              Obviously, this means that you will need to compile down for older\n              browser versions and/or provide polyfills if you have to to\n              support them.\n            </p>\n          </ul>\n        </div>\n      </div>\n    "]);
+  var data = _taggedTemplateLiteral(["\n      <div\n        ", "\n      >\n        <nth-container>\n          <div\n            ", "\n          >\n            Here's the obligatory example todo app in a codesandbox\n          </div>\n          <iframe\n            src=\"https://codesandbox.io/embed/jovial-lumiere-xkods?fontsize=14&hidenavigation=1&theme=light\"\n            style=\"width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;\"\n            title=\"jovial-lumiere-xkods\"\n            allow=\"geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb\"\n            sandbox=\"allow-modals allow-forms allow-popups allow-scripts allow-same-origin\"\n          ></iframe>\n        </nth-container>\n      </div>\n    "]);
 
   _templateObject19 = function _templateObject19() {
     return data;
@@ -23458,7 +23498,7 @@ function _templateObject17() {
 }
 
 function _templateObject16() {
-  var data = _taggedTemplateLiteral(["\n            width: 100%;\n            max-width: 100%;\n            overflow: hidden;\n          "]);
+  var data = _taggedTemplateLiteral(["\n            width: 100%;\n            max-width: 100%;\n            overflow: hidden;\n            background: white;\n          "]);
 
   _templateObject16 = function _templateObject16() {
     return data;
@@ -23468,7 +23508,7 @@ function _templateObject16() {
 }
 
 function _templateObject15() {
-  var data = _taggedTemplateLiteral(["\n        <div\n          ", "\n        >\n          <div\n            ", "\n            ", "\n          >\n            <nth-container>\n              <div\n                ", "\n                ", "\n              >\n                ", " ", "\n              </div>\n            </nth-container>\n          </div>\n          <nth-container>\n            <nth-intro-section-info></nth-intro-section-info>\n          </nth-container>\n        </div>\n      "]);
+  var data = _taggedTemplateLiteral(["\n        <div\n          ", "\n        >\n          <div\n            ", "\n            ", "\n          >\n            <nth-container>\n              <div\n                ", "\n                ", "\n              >\n                ", " ", "\n              </div>\n            </nth-container>\n          </div>\n          <nth-intro-section-info></nth-intro-section-info>\n          <nth-intro-section-codesandbox></nth-intro-section-codesandbox>\n        </div>\n      "]);
 
   _templateObject15 = function _templateObject15() {
     return data;
@@ -23693,13 +23733,23 @@ src_1.component('nth-intro', function () {
     }
   };
 });
+src_1.component('nth-intro-section-codesandbox', function () {
+  var css = utils_ts_1.getCss();
+  var $isInView = utils_1.getIsInView();
+  return {
+    watch: [$isInView],
+    render: function render() {
+      return src_1.html(_templateObject19(), css(_templateObject20(), $isInView.value ? '1' : '0'), css(_templateObject21()));
+    }
+  };
+});
 src_1.component('nth-intro-section-info', function () {
   var css = utils_ts_1.getCss();
   var $isInView = utils_1.getIsInView();
   return {
     watch: [$isInView],
     render: function render() {
-      return src_1.html(_templateObject19(), css(_templateObject20(), $isInView.value ? '1' : '0'), css(_templateObject21()), css(_templateObject22()), src_1.prop('animationData', computer_animation_1.computerAnimation), css(_templateObject23()), css(_templateObject24()), src_1.prop('showFullName', true), css(_templateObject25()), css(_templateObject26()), css(_templateObject27()));
+      return src_1.html(_templateObject22(), css(_templateObject23(), $isInView.value ? '1' : '0'), css(_templateObject24()), css(_templateObject25()), src_1.prop('animationData', computer_animation_1.computerAnimation), css(_templateObject26()), css(_templateObject27()), src_1.prop('showFullName', true), css(_templateObject28()), css(_templateObject29()), css(_templateObject30()));
     }
   };
 });
@@ -38550,11 +38600,93 @@ src_1.component('nth-logo', function () {
     }
   };
 });
-},{"../../src":"../src/index.ts","../utils":"utils.ts"}],"index.ts":[function(require,module,exports) {
+},{"../../src":"../src/index.ts","../utils":"utils.ts"}],"components/footer.ts":[function(require,module,exports) {
+"use strict";
+
+function _templateObject2() {
+  var data = _taggedTemplateLiteral(["\n          background: #083d48;\n          color: white;\n          font-size: 1em;\n          font-family: 'Rubik', sans-serif;\n          padding-top: 50px;\n          padding-bottom: 100px;\n          text-align: right;\n        "]);
+
+  _templateObject2 = function _templateObject2() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject() {
+  var data = _taggedTemplateLiteral(["\n      <footer\n        ", "\n      >\n        <nth-container>\xA9 2020 Michael Klein</nth-container>\n      </footer>\n    "]);
+
+  _templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+
+function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var src_1 = require("../../src");
+
+var utils_1 = require("../utils");
+
+src_1.component('nth-footer', function () {
+  var css = utils_1.getCss();
+  return {
+    render: function render() {
+      return src_1.html(_templateObject(), css(_templateObject2()));
+    }
+  };
+});
+},{"../../src":"../src/index.ts","../utils":"utils.ts"}],"components/getting_started.ts":[function(require,module,exports) {
+"use strict";
+
+function _templateObject2() {
+  var data = _taggedTemplateLiteral(["\n            background: white;\n            padding-top: 100px;\n            padding-bottom: 200px;\n          "]);
+
+  _templateObject2 = function _templateObject2() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject() {
+  var data = _taggedTemplateLiteral(["\n        <div\n          ", "\n        >\n          <nth-container>\n            coming soon\n          </nth-container>\n        </div>\n      "]);
+
+  _templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+
+function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var src_1 = require("../../src");
+
+var utils_ts_1 = require("../utils.ts");
+
+src_1.component('nth-getting-started', function () {
+  var css = utils_ts_1.getCss();
+  return {
+    render: function render() {
+      return src_1.html(_templateObject(), css(_templateObject2()));
+    }
+  };
+});
+},{"../../src":"../src/index.ts","../utils.ts":"utils.ts"}],"index.ts":[function(require,module,exports) {
 "use strict";
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n  @import url('https://fonts.googleapis.com/css?family=Muli:500|Rubik&display=swap');\n  html,\n  body {\n    margin: 0;\n    padding: 0;\n  }\n  /* Set core body defaults */\n  body {\n    min-height: 100vh;\n    scroll-behavior: smooth;\n    text-rendering: optimizeSpeed;\n    line-height: 1.5;\n    height: 3000px;\n    text-shadow: 0px 1px 2px rgba(0,0,0,0.3);\n    overflow-x: hidden;\n  }\n  ", "\n"]);
+  var data = _taggedTemplateLiteral(["\n  @import url('https://fonts.googleapis.com/css?family=Muli:500|Rubik&display=swap');\n  html,\n  body {\n    margin: 0;\n    padding: 0;\n  }\n  /* Set core body defaults */\n  body {\n    min-height: 100vh;\n    scroll-behavior: smooth;\n    text-rendering: optimizeSpeed;\n    line-height: 1.5;\n    text-shadow: 0px 1px 2px rgba(0,0,0,0.3);\n    overflow-x: hidden;\n    background: #083d48;\n    font-family: 'Rubik', sans-serif;\n  }\n  ", "\n"]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -38595,12 +38727,16 @@ require("./components/lottie");
 
 require("./components/logo");
 
+require("./components/footer");
+
+require("./components/getting_started");
+
 document.addEventListener('DOMContentLoaded', function () {
   requestAnimationFrame(function () {
     document.body.style.opacity = '';
   });
 });
-},{"core-js/stable":"node_modules/core-js/stable/index.js","regenerator-runtime/runtime":"node_modules/regenerator-runtime/runtime.js","proxy-polyfill/src/proxy":"node_modules/proxy-polyfill/src/proxy.js","goober":"node_modules/goober/dist/goober.module.js","./utils":"utils.ts","./components/nav_bar.ts":"components/nav_bar.ts","./components/container.ts":"components/container.ts","./components/intro.ts":"components/intro.ts","./components/hello_world":"components/hello_world.ts","./components/router":"components/router.ts","./components/lottie":"components/lottie.ts","./components/logo":"components/logo.ts"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"core-js/stable":"node_modules/core-js/stable/index.js","regenerator-runtime/runtime":"node_modules/regenerator-runtime/runtime.js","proxy-polyfill/src/proxy":"node_modules/proxy-polyfill/src/proxy.js","goober":"node_modules/goober/dist/goober.module.js","./utils":"utils.ts","./components/nav_bar.ts":"components/nav_bar.ts","./components/container.ts":"components/container.ts","./components/intro.ts":"components/intro.ts","./components/hello_world":"components/hello_world.ts","./components/router":"components/router.ts","./components/lottie":"components/lottie.ts","./components/logo":"components/logo.ts","./components/footer":"components/footer.ts","./components/getting_started":"components/getting_started.ts"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -38628,7 +38764,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "43809" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "39401" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
