@@ -1,6 +1,6 @@
 {
-  "name": "gen_v",
-  "version": "0.1.2",
+  "name": "enthjs",
+  "version": "0.1.3",
   "license": "MIT",
   "author": "Michael Klein",
   "main": "dist/index.js",
