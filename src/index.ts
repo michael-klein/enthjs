@@ -14,5 +14,6 @@ export { prop } from './directives/prop';
 export { input } from './directives/input';
 export { on } from './directives/on';
 export { attr } from './directives/attr';
+export { frag } from './directives/frag';
 export { list, key } from './directives/list';
 export { getElement } from './composables/element';

@@ -34,6 +34,7 @@ import './components/lottie';
 import './components/logo';
 import './components/footer';
 import './components/getting_started';
+import './components/highlight';
 
 document.addEventListener('DOMContentLoaded', function() {
   requestAnimationFrame(() => {

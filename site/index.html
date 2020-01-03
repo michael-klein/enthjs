@@ -12,13 +12,19 @@
     <nth-router>
       <nth-navbar></nth-navbar>
       <nth-route path="/">
-        <nth-intro></nth-intro>
+        <template>
+          <nth-intro></nth-intro>
+        </template>
       </nth-route>
       <nth-route path="/getting-started">
-        <nth-getting-started></nth-getting-started>
+        <template>
+          <nth-getting-started></nth-getting-started>
+        </template>
       </nth-route>
     </nth-router>
     <nth-footer></nth-footer>
     <script src="./index.ts"></script>
+    <link rel="stylesheet" href="./node_modules/prismjs/themes/prism.css" id="prismstyle"></link>
+    <link rel="stylesheet" href="./prism_theme.css" id="prismtheme"></link>
   </body>
 </html>

@@ -12719,8 +12719,10 @@ var generatorMap = new WeakMap();
 
 var render = function render(container, htmlResult) {
   var fragment;
+  var init = false;
 
   if (!renderedNodesMap.has(container)) {
+    init = true;
     var _generators = [];
     generatorMap.set(container, _generators);
     fragment = htmlResult.template.content.cloneNode(true);
@@ -12801,7 +12803,7 @@ var render = function render(container, htmlResult) {
                     break;
                 }
               });
-            });
+            }, init ? _scheduler.PriorityLevel.IMMEDIATE : undefined);
 
           case 6:
           case "end":
@@ -13056,6 +13058,7 @@ var component = function component(name, setup) {
       _this.renderQueued = false;
       _this.nextRenderQueued = false;
       _this.watch = [];
+      _this.init = true;
       _this.wasConnected = false;
 
       _this.attachShadow({
@@ -13110,8 +13113,9 @@ var component = function component(name, setup) {
         if (!this.renderQueued) {
           this.renderQueued = true;
           (0, _scheduler.schedule)(function () {
+            _this3.init = false;
             (0, _render.render)(_this3.shadowRoot, _this3.render());
-          }, _scheduler.PriorityLevel.USER_BLOCKING).then(function _callee() {
+          }, this.init ? _scheduler.PriorityLevel.IMMEDIATE : undefined).then(function _callee() {
             return regeneratorRuntime.async(function _callee$(_context) {
               while (1) {
                 switch (_context.prev = _context.next) {
@@ -13521,6 +13525,93 @@ regeneratorRuntime.mark(function _callee(node, name, value) {
   }, _callee);
 }));
 exports.attr = attr;
+},{"../directive":"../src/directive.ts"}],"../src/directives/frag.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.frag = void 0;
+
+var _directive = require("../directive");
+
+var frag = (0, _directive.createDirective)(
+/*#__PURE__*/
+regeneratorRuntime.mark(function _callee2(node, html) {
+  return regeneratorRuntime.wrap(function _callee2$(_context2) {
+    while (1) {
+      switch (_context2.prev = _context2.next) {
+        case 0:
+          if (!(node.nodeType === 3)) {
+            _context2.next = 2;
+            break;
+          }
+
+          return _context2.delegateYield(
+          /*#__PURE__*/
+          regeneratorRuntime.mark(function _callee() {
+            var start, result, template, prevChildren, _frag;
+
+            return regeneratorRuntime.wrap(function _callee$(_context) {
+              while (1) {
+                switch (_context.prev = _context.next) {
+                  case 0:
+                    start = document.createComment('');
+                    result = [{
+                      type: _directive.DOMUpdateType.REPLACE_NODE,
+                      node: node,
+                      newNode: start
+                    }];
+                    template = document.createElement('template');
+                    prevChildren = [];
+
+                  case 4:
+                    template.innerHTML = html;
+                    _frag = template.content;
+                    prevChildren.forEach(function (child) {
+                      result.push({
+                        type: _directive.DOMUpdateType.REMOVE,
+                        node: child
+                      });
+                    });
+                    prevChildren = [];
+
+                    _frag.childNodes.forEach(function (child) {
+                      prevChildren.push(child);
+                      result.push({
+                        type: _directive.DOMUpdateType.INSERT_BEFORE,
+                        node: start,
+                        newNode: child
+                      });
+                    });
+
+                    _context.next = 11;
+                    return result;
+
+                  case 11:
+                    html = _context.sent[0];
+                    result = [];
+
+                  case 13:
+                    _context.next = 4;
+                    break;
+
+                  case 15:
+                  case "end":
+                    return _context.stop();
+                }
+              }
+            }, _callee);
+          })(), "t0", 2);
+
+        case 2:
+        case "end":
+          return _context2.stop();
+      }
+    }
+  }, _callee2);
+}));
+exports.frag = frag;
 },{"../directive":"../src/directive.ts"}],"../src/directives/list.ts":[function(require,module,exports) {
 "use strict";
 
@@ -13824,6 +13915,12 @@ Object.defineProperty(exports, "attr", {
     return _attr.attr;
   }
 });
+Object.defineProperty(exports, "frag", {
+  enumerable: true,
+  get: function () {
+    return _frag.frag;
+  }
+});
 Object.defineProperty(exports, "list", {
   enumerable: true,
   get: function () {
@@ -13875,10 +13972,12 @@ var _on = require("./directives/on");
 
 var _attr = require("./directives/attr");
 
+var _frag = require("./directives/frag");
+
 var _list = require("./directives/list");
 
 var _element = require("./composables/element");
-},{"./composables/context":"../src/composables/context.ts","./directives/clss":"../src/directives/clss.ts","./html":"../src/html.ts","./render":"../src/render.ts","./directives/sub":"../src/directives/sub.ts","./component":"../src/component.ts","./composables/properties":"../src/composables/properties.ts","./composables/attributes":"../src/composables/attributes.ts","./composables/sideeffects":"../src/composables/sideeffects.ts","./reactivity":"../src/reactivity.ts","./directive":"../src/directive.ts","./directives/text":"../src/directives/text.ts","./directives/prop":"../src/directives/prop.ts","./directives/input":"../src/directives/input.ts","./directives/on":"../src/directives/on.ts","./directives/attr":"../src/directives/attr.ts","./directives/list":"../src/directives/list.ts","./composables/element":"../src/composables/element.ts"}],"utils.ts":[function(require,module,exports) {
+},{"./composables/context":"../src/composables/context.ts","./directives/clss":"../src/directives/clss.ts","./html":"../src/html.ts","./render":"../src/render.ts","./directives/sub":"../src/directives/sub.ts","./component":"../src/component.ts","./composables/properties":"../src/composables/properties.ts","./composables/attributes":"../src/composables/attributes.ts","./composables/sideeffects":"../src/composables/sideeffects.ts","./reactivity":"../src/reactivity.ts","./directive":"../src/directive.ts","./directives/text":"../src/directives/text.ts","./directives/prop":"../src/directives/prop.ts","./directives/input":"../src/directives/input.ts","./directives/on":"../src/directives/on.ts","./directives/attr":"../src/directives/attr.ts","./directives/frag":"../src/directives/frag.ts","./directives/list":"../src/directives/list.ts","./composables/element":"../src/composables/element.ts"}],"utils.ts":[function(require,module,exports) {
 "use strict";
 
 var __importStar = this && this.__importStar || function (mod) {
@@ -14113,9 +14212,7 @@ src_1.component('nth-container', function () {
     }
   };
 });
-},{"../../src/":"../src/index.ts","../utils.ts":"utils.ts"}],"images/carbon.svg":[function(require,module,exports) {
-module.exports = "/carbon.c4d35d1c.svg";
-},{}],"components/animations/computer_animation.ts":[function(require,module,exports) {
+},{"../../src/":"../src/index.ts","../utils.ts":"utils.ts"}],"components/animations/computer_animation.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -23357,18 +23454,8 @@ exports.computerAnimation = {
 },{}],"components/intro.ts":[function(require,module,exports) {
 "use strict";
 
-function _templateObject30() {
-  var data = _taggedTemplateLiteral(["\n                  font-size: 0.9em;\n                  font-style: italic;\n                "]);
-
-  _templateObject30 = function _templateObject30() {
-    return data;
-  };
-
-  return data;
-}
-
 function _templateObject29() {
-  var data = _taggedTemplateLiteral(["\n                    margin: 0;\n                  "]);
+  var data = _taggedTemplateLiteral(["\n                  font-size: 0.9em;\n                  font-style: italic;\n                "]);
 
   _templateObject29 = function _templateObject29() {
     return data;
@@ -23378,7 +23465,7 @@ function _templateObject29() {
 }
 
 function _templateObject28() {
-  var data = _taggedTemplateLiteral(["\n                margin: 0;\n                padding: 0;\n                > li {\n                  margin-top: 10px;\n                }\n              "]);
+  var data = _taggedTemplateLiteral(["\n                    margin: 0;\n                  "]);
 
   _templateObject28 = function _templateObject28() {
     return data;
@@ -23388,7 +23475,7 @@ function _templateObject28() {
 }
 
 function _templateObject27() {
-  var data = _taggedTemplateLiteral(["\n                font-weight: normal;\n              "]);
+  var data = _taggedTemplateLiteral(["\n                margin: 0;\n                padding: 0;\n                > li {\n                  margin-top: 10px;\n                }\n              "]);
 
   _templateObject27 = function _templateObject27() {
     return data;
@@ -23398,7 +23485,7 @@ function _templateObject27() {
 }
 
 function _templateObject26() {
-  var data = _taggedTemplateLiteral(["\n              font-family: Rubik, sans-serif;\n              color: #098ba7;\n              text-shadow: none;\n              flex: 1;\n              font-weight: normal;\n              padding-left: 40px;\n              @media only screen and (max-width: 600px) {\n                padding-left: 0px;\n                > ul {\n                  padding-left: 20px;\n                }\n              }\n            "]);
+  var data = _taggedTemplateLiteral(["\n                font-weight: normal;\n              "]);
 
   _templateObject26 = function _templateObject26() {
     return data;
@@ -23408,7 +23495,7 @@ function _templateObject26() {
 }
 
 function _templateObject25() {
-  var data = _taggedTemplateLiteral(["\n                width: 130%;\n                margin-left: -15%;\n              "]);
+  var data = _taggedTemplateLiteral(["\n              font-family: Rubik, sans-serif;\n              color: #098ba7;\n              text-shadow: none;\n              flex: 1;\n              font-weight: normal;\n              padding-left: 40px;\n              @media only screen and (max-width: 600px) {\n                padding-left: 0px;\n                > ul {\n                  padding-left: 20px;\n                }\n              }\n            "]);
 
   _templateObject25 = function _templateObject25() {
     return data;
@@ -23418,7 +23505,7 @@ function _templateObject25() {
 }
 
 function _templateObject24() {
-  var data = _taggedTemplateLiteral(["\n              background: #1a505b;\n              padding-top: 4%;\n              padding-bottom: 4%;\n              border-radius: 50%;\n              max-width: 45%;\n              height: 100%;\n              @media only screen and (max-width: 600px) {\n                display: none;\n              }\n              flex: 1;\n              box-shadow: inset 0 0 9px #0000006b;\n              overflow: hidden;\n            "]);
+  var data = _taggedTemplateLiteral(["\n                width: 130%;\n                margin-left: -15%;\n              "]);
 
   _templateObject24 = function _templateObject24() {
     return data;
@@ -23428,7 +23515,7 @@ function _templateObject24() {
 }
 
 function _templateObject23() {
-  var data = _taggedTemplateLiteral(["\n            display: flex;\n            margin-top: 100px;\n            opacity: ", ";\n            transition: all 1s;\n            @media only screen and (max-width: 600px) {\n              display: block;\n            }\n          "]);
+  var data = _taggedTemplateLiteral(["\n              background: #1a505b;\n              padding-top: 4%;\n              padding-bottom: 4%;\n              border-radius: 50%;\n              max-width: 45%;\n              height: 100%;\n              @media only screen and (max-width: 600px) {\n                display: none;\n              }\n              flex: 1;\n              box-shadow: inset 0 0 9px #0000006b;\n              overflow: hidden;\n            "]);
 
   _templateObject23 = function _templateObject23() {
     return data;
@@ -23438,7 +23525,7 @@ function _templateObject23() {
 }
 
 function _templateObject22() {
-  var data = _taggedTemplateLiteral(["\n      <nth-container>\n        <div\n          ", "\n        >\n          <div\n            ", "\n          >\n            <div\n              ", "\n            >\n              <nth-lottie ", ">\n              </nth-lottie>\n            </div>\n          </div>\n          <div\n            ", "\n          >\n            <h1\n              ", "\n            >\n              <nth-logo ", "></nth-logo>\n              is a JavaScript framework with a focus on:\n            </h1>\n            <ul\n              ", "\n            >\n              <li>\n                <b>using modern platform features such as:</b>\n                <ul\n                  ", "\n                >\n                  <li>web components</li>\n                  <li>proxies for change tracking</li>\n                  <li>generators</li>\n                  <li>\n                    es module: You don't have to use a bundler, if you don't\n                    need to.\n                  </li>\n                </ul>\n              </li>\n              <li>\n                <b>'treeshakability'</b>: you decide how much or how little of\n                the framework you want to load/bundle.\n              </li>\n\n              <li>\n                <b>'composability'</b>: the architecture is functional and thus\n                highly composable.\n              </li>\n              <p\n                ", "\n              >\n                Obviously, this means that you will need to compile down for\n                older browser versions and/or provide polyfills if you have to\n                to support them.\n              </p>\n            </ul>\n          </div>\n        </div></nth-container\n      >\n    "]);
+  var data = _taggedTemplateLiteral(["\n            display: flex;\n            margin-top: 100px;\n            opacity: ", ";\n            transition: all 1s;\n            @media only screen and (max-width: 600px) {\n              display: block;\n            }\n          "]);
 
   _templateObject22 = function _templateObject22() {
     return data;
@@ -23448,7 +23535,7 @@ function _templateObject22() {
 }
 
 function _templateObject21() {
-  var data = _taggedTemplateLiteral(["\n              color: white;\n              font-size: 2em;\n              font-family: 'Rubik', sans-serif;\n              text-align: center;\n              margin-bottom: 10px;\n            "]);
+  var data = _taggedTemplateLiteral(["\n      <nth-container>\n        <div\n          ", "\n        >\n          <div\n            ", "\n          >\n            <div\n              ", "\n            >\n              <nth-lottie ", ">\n              </nth-lottie>\n            </div>\n          </div>\n          <div\n            ", "\n          >\n            <h1\n              ", "\n            >\n              <nth-logo ", "></nth-logo>\n              is a JavaScript framework with a focus on:\n            </h1>\n            <ul\n              ", "\n            >\n              <li>\n                <b>using modern platform features such as:</b>\n                <ul\n                  ", "\n                >\n                  <li>web components</li>\n                  <li>proxies for change tracking</li>\n                  <li>generators</li>\n                  <li>\n                    es module: You don't have to use a bundler, if you don't\n                    need to.\n                  </li>\n                </ul>\n              </li>\n              <li>\n                <b>'treeshakability'</b>: you decide how much or how little of\n                the framework you want to load/bundle.\n              </li>\n\n              <li>\n                <b>'composability'</b>: the architecture is functional and thus\n                highly composable.\n              </li>\n              <p\n                ", "\n              >\n                Obviously, this means that you will need to compile down for\n                older browser versions and/or provide polyfills if you have to\n                to support them.\n              </p>\n            </ul>\n          </div>\n        </div></nth-container\n      >\n    "]);
 
   _templateObject21 = function _templateObject21() {
     return data;
@@ -23458,7 +23545,7 @@ function _templateObject21() {
 }
 
 function _templateObject20() {
-  var data = _taggedTemplateLiteral(["\n          background: #098ba7;\n          margin-top: 100px;\n          padding-top: 40px;\n          padding-bottom: 40px;\n          opacity: ", ";\n          transition: all 1s;\n        "]);
+  var data = _taggedTemplateLiteral(["\n              color: white;\n              font-size: 2em;\n              font-family: 'Rubik', sans-serif;\n              text-align: center;\n              margin-bottom: 10px;\n            "]);
 
   _templateObject20 = function _templateObject20() {
     return data;
@@ -23468,7 +23555,7 @@ function _templateObject20() {
 }
 
 function _templateObject19() {
-  var data = _taggedTemplateLiteral(["\n      <div\n        ", "\n      >\n        <nth-container>\n          <div\n            ", "\n          >\n            Here's the obligatory example todo app in a codesandbox\n          </div>\n          <iframe\n            src=\"https://codesandbox.io/embed/jovial-lumiere-xkods?fontsize=14&hidenavigation=1&theme=light\"\n            style=\"width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;\"\n            title=\"jovial-lumiere-xkods\"\n            allow=\"geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb\"\n            sandbox=\"allow-modals allow-forms allow-popups allow-scripts allow-same-origin\"\n          ></iframe>\n        </nth-container>\n      </div>\n    "]);
+  var data = _taggedTemplateLiteral(["\n          background: #098ba7;\n          margin-top: 100px;\n          padding-top: 40px;\n          padding-bottom: 40px;\n          opacity: ", ";\n          transition: all 1s;\n        "]);
 
   _templateObject19 = function _templateObject19() {
     return data;
@@ -23478,7 +23565,7 @@ function _templateObject19() {
 }
 
 function _templateObject18() {
-  var data = _taggedTemplateLiteral(["\n                  display: flex;\n                  @media only screen and (max-width: 600px) {\n                    display: block;\n                    opacity: 1 !important;\n                  }\n                "]);
+  var data = _taggedTemplateLiteral(["\n      <div\n        ", "\n      >\n        <nth-container>\n          <div\n            ", "\n          >\n            Here's the obligatory example todo app in a codesandbox\n          </div>\n          <iframe\n            src=\"https://codesandbox.io/embed/jovial-lumiere-xkods?fontsize=14&hidenavigation=1&theme=light\"\n            style=\"width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;\"\n            title=\"jovial-lumiere-xkods\"\n            allow=\"geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb\"\n            sandbox=\"allow-modals allow-forms allow-popups allow-scripts allow-same-origin\"\n          ></iframe>\n        </nth-container>\n      </div>\n    "]);
 
   _templateObject18 = function _templateObject18() {
     return data;
@@ -23488,7 +23575,7 @@ function _templateObject18() {
 }
 
 function _templateObject17() {
-  var data = _taggedTemplateLiteral(["\n              padding-top: 25px;\n              padding-bottom: 50px;\n              margin-left: -20px;\n              padding-left: 20px;\n              margin-right: -20px;\n              padding-right: 20px;\n            "]);
+  var data = _taggedTemplateLiteral(["\n                  display: flex;\n                  @media only screen and (max-width: 600px) {\n                    display: block;\n                    opacity: 1 !important;\n                  }\n                "]);
 
   _templateObject17 = function _templateObject17() {
     return data;
@@ -23498,7 +23585,7 @@ function _templateObject17() {
 }
 
 function _templateObject16() {
-  var data = _taggedTemplateLiteral(["\n            width: 100%;\n            max-width: 100%;\n            overflow: hidden;\n            background: white;\n          "]);
+  var data = _taggedTemplateLiteral(["\n              padding-top: 25px;\n              padding-bottom: 50px;\n              margin-left: -20px;\n              padding-left: 20px;\n              margin-right: -20px;\n              padding-right: 20px;\n            "]);
 
   _templateObject16 = function _templateObject16() {
     return data;
@@ -23508,7 +23595,7 @@ function _templateObject16() {
 }
 
 function _templateObject15() {
-  var data = _taggedTemplateLiteral(["\n        <div\n          ", "\n        >\n          <div\n            ", "\n            ", "\n          >\n            <nth-container>\n              <div\n                ", "\n                ", "\n              >\n                ", " ", "\n              </div>\n            </nth-container>\n          </div>\n          <nth-intro-section-info></nth-intro-section-info>\n          <nth-intro-section-codesandbox></nth-intro-section-codesandbox>\n        </div>\n      "]);
+  var data = _taggedTemplateLiteral(["\n            width: 100%;\n            max-width: 100%;\n            overflow: hidden;\n            background: white;\n          "]);
 
   _templateObject15 = function _templateObject15() {
     return data;
@@ -23518,7 +23605,7 @@ function _templateObject15() {
 }
 
 function _templateObject14() {
-  var data = _taggedTemplateLiteral(["\n            position: absolute;\n            right: 10px;\n            bottom: 30px;\n            background: #1a505b;\n            padding: 10px;\n            border: 1px solid #098ba75e;\n            border-radius: 5px;\n            transition: all 0.5s ease-out;\n            opacity: ", ";\n          "]);
+  var data = _taggedTemplateLiteral(["\n        <div\n          ", "\n        >\n          <div\n            ", "\n            ", "\n          >\n            <nth-container>\n              <div\n                ", "\n                ", "\n              >\n                ", " ", "\n              </div>\n            </nth-container>\n          </div>\n          <nth-intro-section-info></nth-intro-section-info>\n          <nth-intro-section-codesandbox></nth-intro-section-codesandbox>\n        </div>\n      "]);
 
   _templateObject14 = function _templateObject14() {
     return data;
@@ -23528,7 +23615,7 @@ function _templateObject14() {
 }
 
 function _templateObject13() {
-  var data = _taggedTemplateLiteral(["\n              width: 100%;\n            "]);
+  var data = _taggedTemplateLiteral(["\n            position: absolute;\n            right: 10px;\n            bottom: 30px;\n            background: #1a505b;\n            padding: 10px;\n            border: 1px solid #098ba75e;\n            border-radius: 5px;\n            transition: all 0.5s ease-out;\n            opacity: ", ";\n          "]);
 
   _templateObject13 = function _templateObject13() {
     return data;
@@ -23558,7 +23645,7 @@ function _templateObject11() {
 }
 
 function _templateObject10() {
-  var data = _taggedTemplateLiteral(["\n      <div\n        ", "\n      >\n        <div\n          ", "\n        >\n          <img\n            ", "\n            src=\".", "\"\n          />\n        </div>\n        <div\n          ", "\n        >\n          <nth-hello-world\n            style=\"color:white; font-family:'Rubik', sans-serif; letter-spacing: .05em;\"\n          ></nth-hello-world>\n        </div>\n      </div>\n    "]);
+  var data = _taggedTemplateLiteral(["\n      <div\n        ", "\n      >\n        <div\n          ", "\n        >\n          <nth-highlight\n            ", "\n            ", "\n          >\n          </nth-highlight>\n        </div>\n        <div\n          ", "\n        >\n          <nth-hello-world\n            style=\"color:white; font-family:'Rubik', sans-serif; letter-spacing: .05em;\"\n          ></nth-hello-world>\n        </div>\n      </div>\n    "]);
 
   _templateObject10 = function _templateObject10() {
     return data;
@@ -23659,12 +23746,6 @@ function _templateObject() {
 
 function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
 
-var __importDefault = this && this.__importDefault || function (mod) {
-  return mod && mod.__esModule ? mod : {
-    "default": mod
-  };
-};
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -23672,8 +23753,6 @@ Object.defineProperty(exports, "__esModule", {
 var src_1 = require("../../src/");
 
 var utils_ts_1 = require("../utils.ts");
-
-var carbon_svg_1 = __importDefault(require("../images/carbon.svg"));
 
 var computer_animation_1 = require("./animations/computer_animation");
 
@@ -23723,13 +23802,13 @@ src_1.component('nth-intro', function () {
   }
 
   function renderImage() {
-    return src_1.html(_templateObject10(), css(_templateObject11(), $animationStates.showImage ? '1' : '0'), css(_templateObject12()), css(_templateObject13()), carbon_svg_1.default, css(_templateObject14(), $animationStates.showExample ? '1' : '0'));
+    return src_1.html(_templateObject10(), css(_templateObject11(), $animationStates.showImage ? '1' : '0'), css(_templateObject12()), src_1.attr('style', 'font-size: 0.9em'), src_1.prop('code', "\n              import { html, component, $state, \n                attr, input, text, $attr } from 'enthjs';\n\n              component('nth-hello-world', () => {\n                const $input = $state({ value: 'Hello World!' });\n                const $style = $attr('style', 'color: white;');\n                return {\n                  watch: [$input, $style],\n                  render: () => {\n                    return html`\n                      <div ${attr('style', $style.value)}>\n                        <div>${text($input.value)}</div>\n                        <div>\n                          <input\n                            type=\"text\"\n                            ${attr('value', $input.value)}\n                            ${input(value => ($input.value = value))}\n                          />\n                        </div>\n                      </div>\n                    `;\n                  },\n                };\n              });\n              "), css(_templateObject13(), $animationStates.showExample ? '1' : '0'));
   }
 
   return {
     watch: [$animationStates, $opacity],
     render: function render() {
-      return src_1.html(_templateObject15(), css(_templateObject16()), css(_templateObject17()), src_1.attr('style', "background: #098ba7; border-radius: 0 0 25% 75% / ".concat($opacity.value * 85, "px;")), css(_templateObject18()), src_1.attr('style', "opacity:".concat($opacity.value)), src_1.sub(renderTextBox()), src_1.sub(renderImage()));
+      return src_1.html(_templateObject14(), css(_templateObject15()), css(_templateObject16()), src_1.attr('style', "background: #098ba7; border-radius: 0 0 25% 75% / ".concat($opacity.value * 85, "px;")), css(_templateObject17()), src_1.attr('style', "opacity:".concat($opacity.value)), src_1.sub(renderTextBox()), src_1.sub(renderImage()));
     }
   };
 });
@@ -23739,7 +23818,7 @@ src_1.component('nth-intro-section-codesandbox', function () {
   return {
     watch: [$isInView],
     render: function render() {
-      return src_1.html(_templateObject19(), css(_templateObject20(), $isInView.value ? '1' : '0'), css(_templateObject21()));
+      return src_1.html(_templateObject18(), css(_templateObject19(), $isInView.value ? '1' : '0'), css(_templateObject20()));
     }
   };
 });
@@ -23749,11 +23828,11 @@ src_1.component('nth-intro-section-info', function () {
   return {
     watch: [$isInView],
     render: function render() {
-      return src_1.html(_templateObject22(), css(_templateObject23(), $isInView.value ? '1' : '0'), css(_templateObject24()), css(_templateObject25()), src_1.prop('animationData', computer_animation_1.computerAnimation), css(_templateObject26()), css(_templateObject27()), src_1.prop('showFullName', true), css(_templateObject28()), css(_templateObject29()), css(_templateObject30()));
+      return src_1.html(_templateObject21(), css(_templateObject22(), $isInView.value ? '1' : '0'), css(_templateObject23()), css(_templateObject24()), src_1.prop('animationData', computer_animation_1.computerAnimation), css(_templateObject25()), css(_templateObject26()), src_1.prop('showFullName', true), css(_templateObject27()), css(_templateObject28()), css(_templateObject29()));
     }
   };
 });
-},{"../../src/":"../src/index.ts","../utils.ts":"utils.ts","../images/carbon.svg":"images/carbon.svg","./animations/computer_animation":"components/animations/computer_animation.ts","../utils":"utils.ts"}],"components/hello_world.ts":[function(require,module,exports) {
+},{"../../src/":"../src/index.ts","../utils.ts":"utils.ts","./animations/computer_animation":"components/animations/computer_animation.ts","../utils":"utils.ts"}],"components/hello_world.ts":[function(require,module,exports) {
 "use strict";
 
 function _templateObject() {
@@ -23791,28 +23870,8 @@ src_1.component('nth-hello-world', function () {
 },{"../../src/":"../src/index.ts"}],"components/router.ts":[function(require,module,exports) {
 "use strict";
 
-function _templateObject6() {
-  var data = _taggedTemplateLiteral(["\n        <a\n          ", "\n          ", "\n          ", "\n          ><slot></slot\n        ></a>\n      "]);
-
-  _templateObject6 = function _templateObject6() {
-    return data;
-  };
-
-  return data;
-}
-
-function _templateObject5() {
-  var data = _taggedTemplateLiteral([""]);
-
-  _templateObject5 = function _templateObject5() {
-    return data;
-  };
-
-  return data;
-}
-
 function _templateObject4() {
-  var data = _taggedTemplateLiteral([""]);
+  var data = _taggedTemplateLiteral(["\n        <a\n          ", "\n          ", "\n          ", "\n          ><slot></slot\n        ></a>\n      "]);
 
   _templateObject4 = function _templateObject4() {
     return data;
@@ -23822,7 +23881,7 @@ function _templateObject4() {
 }
 
 function _templateObject3() {
-  var data = _taggedTemplateLiteral(["\n                <slot></slot>\n              "]);
+  var data = _taggedTemplateLiteral([""]);
 
   _templateObject3 = function _templateObject3() {
     return data;
@@ -23890,10 +23949,11 @@ src_1.component('nth-router', function () {
 src_1.component('nth-route', function () {
   var $context = routerContext.get();
   var $path = src_1.$attr('path');
+  var template = src_1.getElement().querySelector('template');
   return {
     watch: [$context, $path],
     render: function render() {
-      return src_1.html(_templateObject2(), src_1.sub($context.currentPath === $path.value ? src_1.html(_templateObject3()) : src_1.html(_templateObject4())));
+      return src_1.html(_templateObject2(), src_1.frag($context.currentPath === $path.value ? template.innerHTML : ''));
     }
   };
 });
@@ -23901,7 +23961,7 @@ src_1.component('nth-link', function () {
   var $path = src_1.$attr('path');
   var css = utils_1.getCss();
   var $css = src_1.$prop('css', function (c) {
-    return css(_templateObject5());
+    return css(_templateObject3());
   });
   var $classes = src_1.$state({
     value: $css.value(css)
@@ -23915,7 +23975,7 @@ src_1.component('nth-link', function () {
   return {
     watch: [$context, $path, $classes, $css],
     render: function render() {
-      return src_1.html(_templateObject6(), src_1.attr('href', '#' + $path.value), $classes.value, src_1.clss($context.currentPath === $path.value ? 'active' : ''));
+      return src_1.html(_templateObject4(), src_1.attr('href', '#' + $path.value), $classes.value, src_1.clss($context.currentPath === $path.value ? 'active' : ''));
     }
   };
 });
@@ -38655,7 +38715,7 @@ function _templateObject2() {
 }
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n        <div\n          ", "\n        >\n          <nth-container>\n            coming soon\n          </nth-container>\n        </div>\n      "]);
+  var data = _taggedTemplateLiteral(["\n        <div\n          ", "\n        >\n          <nth-container>\n            <nth-highlight>\n              ", "\n            </nth-highlight>\n          </nth-container>\n        </div>\n      "]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -38678,11 +38738,1080 @@ src_1.component('nth-getting-started', function () {
   var css = utils_ts_1.getCss();
   return {
     render: function render() {
-      return src_1.html(_templateObject(), css(_templateObject2()));
+      return src_1.html(_templateObject(), css(_templateObject2()), "\n              function test() {\n                console.log(\"hi\")\n              }\n              ");
     }
   };
 });
-},{"../../src":"../src/index.ts","../utils.ts":"utils.ts"}],"index.ts":[function(require,module,exports) {
+},{"../../src":"../src/index.ts","../utils.ts":"utils.ts"}],"node_modules/prismjs/prism.js":[function(require,module,exports) {
+var global = arguments[3];
+
+/* **********************************************
+     Begin prism-core.js
+********************************************** */
+
+var _self = (typeof window !== 'undefined')
+	? window   // if in browser
+	: (
+		(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope)
+		? self // if in worker
+		: {}   // if in node js
+	);
+
+/**
+ * Prism: Lightweight, robust, elegant syntax highlighting
+ * MIT license http://www.opensource.org/licenses/mit-license.php/
+ * @author Lea Verou http://lea.verou.me
+ */
+
+var Prism = (function (_self){
+
+// Private helper vars
+var lang = /\blang(?:uage)?-([\w-]+)\b/i;
+var uniqueId = 0;
+
+var _ = {
+	manual: _self.Prism && _self.Prism.manual,
+	disableWorkerMessageHandler: _self.Prism && _self.Prism.disableWorkerMessageHandler,
+	util: {
+		encode: function (tokens) {
+			if (tokens instanceof Token) {
+				return new Token(tokens.type, _.util.encode(tokens.content), tokens.alias);
+			} else if (Array.isArray(tokens)) {
+				return tokens.map(_.util.encode);
+			} else {
+				return tokens.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\u00a0/g, ' ');
+			}
+		},
+
+		type: function (o) {
+			return Object.prototype.toString.call(o).slice(8, -1);
+		},
+
+		objId: function (obj) {
+			if (!obj['__id']) {
+				Object.defineProperty(obj, '__id', { value: ++uniqueId });
+			}
+			return obj['__id'];
+		},
+
+		// Deep clone a language definition (e.g. to extend it)
+		clone: function deepClone(o, visited) {
+			var clone, id, type = _.util.type(o);
+			visited = visited || {};
+
+			switch (type) {
+				case 'Object':
+					id = _.util.objId(o);
+					if (visited[id]) {
+						return visited[id];
+					}
+					clone = {};
+					visited[id] = clone;
+
+					for (var key in o) {
+						if (o.hasOwnProperty(key)) {
+							clone[key] = deepClone(o[key], visited);
+						}
+					}
+
+					return clone;
+
+				case 'Array':
+					id = _.util.objId(o);
+					if (visited[id]) {
+						return visited[id];
+					}
+					clone = [];
+					visited[id] = clone;
+
+					o.forEach(function (v, i) {
+						clone[i] = deepClone(v, visited);
+					});
+
+					return clone;
+
+				default:
+					return o;
+			}
+		}
+	},
+
+	languages: {
+		extend: function (id, redef) {
+			var lang = _.util.clone(_.languages[id]);
+
+			for (var key in redef) {
+				lang[key] = redef[key];
+			}
+
+			return lang;
+		},
+
+		/**
+		 * Insert a token before another token in a language literal
+		 * As this needs to recreate the object (we cannot actually insert before keys in object literals),
+		 * we cannot just provide an object, we need an object and a key.
+		 * @param inside The key (or language id) of the parent
+		 * @param before The key to insert before.
+		 * @param insert Object with the key/value pairs to insert
+		 * @param root The object that contains `inside`. If equal to Prism.languages, it can be omitted.
+		 */
+		insertBefore: function (inside, before, insert, root) {
+			root = root || _.languages;
+			var grammar = root[inside];
+			var ret = {};
+
+			for (var token in grammar) {
+				if (grammar.hasOwnProperty(token)) {
+
+					if (token == before) {
+						for (var newToken in insert) {
+							if (insert.hasOwnProperty(newToken)) {
+								ret[newToken] = insert[newToken];
+							}
+						}
+					}
+
+					// Do not insert token which also occur in insert. See #1525
+					if (!insert.hasOwnProperty(token)) {
+						ret[token] = grammar[token];
+					}
+				}
+			}
+
+			var old = root[inside];
+			root[inside] = ret;
+
+			// Update references in other language definitions
+			_.languages.DFS(_.languages, function(key, value) {
+				if (value === old && key != inside) {
+					this[key] = ret;
+				}
+			});
+
+			return ret;
+		},
+
+		// Traverse a language definition with Depth First Search
+		DFS: function DFS(o, callback, type, visited) {
+			visited = visited || {};
+
+			var objId = _.util.objId;
+
+			for (var i in o) {
+				if (o.hasOwnProperty(i)) {
+					callback.call(o, i, o[i], type || i);
+
+					var property = o[i],
+					    propertyType = _.util.type(property);
+
+					if (propertyType === 'Object' && !visited[objId(property)]) {
+						visited[objId(property)] = true;
+						DFS(property, callback, null, visited);
+					}
+					else if (propertyType === 'Array' && !visited[objId(property)]) {
+						visited[objId(property)] = true;
+						DFS(property, callback, i, visited);
+					}
+				}
+			}
+		}
+	},
+	plugins: {},
+
+	highlightAll: function(async, callback) {
+		_.highlightAllUnder(document, async, callback);
+	},
+
+	highlightAllUnder: function(container, async, callback) {
+		var env = {
+			callback: callback,
+			selector: 'code[class*="language-"], [class*="language-"] code, code[class*="lang-"], [class*="lang-"] code'
+		};
+
+		_.hooks.run('before-highlightall', env);
+
+		var elements = container.querySelectorAll(env.selector);
+
+		for (var i=0, element; element = elements[i++];) {
+			_.highlightElement(element, async === true, env.callback);
+		}
+	},
+
+	highlightElement: function(element, async, callback) {
+		// Find language
+		var language = 'none', grammar, parent = element;
+
+		while (parent && !lang.test(parent.className)) {
+			parent = parent.parentNode;
+		}
+
+		if (parent) {
+			language = (parent.className.match(lang) || [,'none'])[1].toLowerCase();
+			grammar = _.languages[language];
+		}
+
+		// Set language on the element, if not present
+		element.className = element.className.replace(lang, '').replace(/\s+/g, ' ') + ' language-' + language;
+
+		if (element.parentNode) {
+			// Set language on the parent, for styling
+			parent = element.parentNode;
+
+			if (/pre/i.test(parent.nodeName)) {
+				parent.className = parent.className.replace(lang, '').replace(/\s+/g, ' ') + ' language-' + language;
+			}
+		}
+
+		var code = element.textContent;
+
+		var env = {
+			element: element,
+			language: language,
+			grammar: grammar,
+			code: code
+		};
+
+		var insertHighlightedCode = function (highlightedCode) {
+			env.highlightedCode = highlightedCode;
+
+			_.hooks.run('before-insert', env);
+
+			env.element.innerHTML = env.highlightedCode;
+
+			_.hooks.run('after-highlight', env);
+			_.hooks.run('complete', env);
+			callback && callback.call(env.element);
+		}
+
+		_.hooks.run('before-sanity-check', env);
+
+		if (!env.code) {
+			_.hooks.run('complete', env);
+			return;
+		}
+
+		_.hooks.run('before-highlight', env);
+
+		if (!env.grammar) {
+			insertHighlightedCode(_.util.encode(env.code));
+			return;
+		}
+
+		if (async && _self.Worker) {
+			var worker = new Worker(_.filename);
+
+			worker.onmessage = function(evt) {
+				insertHighlightedCode(evt.data);
+			};
+
+			worker.postMessage(JSON.stringify({
+				language: env.language,
+				code: env.code,
+				immediateClose: true
+			}));
+		}
+		else {
+			insertHighlightedCode(_.highlight(env.code, env.grammar, env.language));
+		}
+	},
+
+	highlight: function (text, grammar, language) {
+		var env = {
+			code: text,
+			grammar: grammar,
+			language: language
+		};
+		_.hooks.run('before-tokenize', env);
+		env.tokens = _.tokenize(env.code, env.grammar);
+		_.hooks.run('after-tokenize', env);
+		return Token.stringify(_.util.encode(env.tokens), env.language);
+	},
+
+	matchGrammar: function (text, strarr, grammar, index, startPos, oneshot, target) {
+		for (var token in grammar) {
+			if(!grammar.hasOwnProperty(token) || !grammar[token]) {
+				continue;
+			}
+
+			if (token == target) {
+				return;
+			}
+
+			var patterns = grammar[token];
+			patterns = (_.util.type(patterns) === "Array") ? patterns : [patterns];
+
+			for (var j = 0; j < patterns.length; ++j) {
+				var pattern = patterns[j],
+					inside = pattern.inside,
+					lookbehind = !!pattern.lookbehind,
+					greedy = !!pattern.greedy,
+					lookbehindLength = 0,
+					alias = pattern.alias;
+
+				if (greedy && !pattern.pattern.global) {
+					// Without the global flag, lastIndex won't work
+					var flags = pattern.pattern.toString().match(/[imuy]*$/)[0];
+					pattern.pattern = RegExp(pattern.pattern.source, flags + "g");
+				}
+
+				pattern = pattern.pattern || pattern;
+
+				// Don’t cache length as it changes during the loop
+				for (var i = index, pos = startPos; i < strarr.length; pos += strarr[i].length, ++i) {
+
+					var str = strarr[i];
+
+					if (strarr.length > text.length) {
+						// Something went terribly wrong, ABORT, ABORT!
+						return;
+					}
+
+					if (str instanceof Token) {
+						continue;
+					}
+
+					if (greedy && i != strarr.length - 1) {
+						pattern.lastIndex = pos;
+						var match = pattern.exec(text);
+						if (!match) {
+							break;
+						}
+
+						var from = match.index + (lookbehind ? match[1].length : 0),
+						    to = match.index + match[0].length,
+						    k = i,
+						    p = pos;
+
+						for (var len = strarr.length; k < len && (p < to || (!strarr[k].type && !strarr[k - 1].greedy)); ++k) {
+							p += strarr[k].length;
+							// Move the index i to the element in strarr that is closest to from
+							if (from >= p) {
+								++i;
+								pos = p;
+							}
+						}
+
+						// If strarr[i] is a Token, then the match starts inside another Token, which is invalid
+						if (strarr[i] instanceof Token) {
+							continue;
+						}
+
+						// Number of tokens to delete and replace with the new match
+						delNum = k - i;
+						str = text.slice(pos, p);
+						match.index -= pos;
+					} else {
+						pattern.lastIndex = 0;
+
+						var match = pattern.exec(str),
+							delNum = 1;
+					}
+
+					if (!match) {
+						if (oneshot) {
+							break;
+						}
+
+						continue;
+					}
+
+					if(lookbehind) {
+						lookbehindLength = match[1] ? match[1].length : 0;
+					}
+
+					var from = match.index + lookbehindLength,
+					    match = match[0].slice(lookbehindLength),
+					    to = from + match.length,
+					    before = str.slice(0, from),
+					    after = str.slice(to);
+
+					var args = [i, delNum];
+
+					if (before) {
+						++i;
+						pos += before.length;
+						args.push(before);
+					}
+
+					var wrapped = new Token(token, inside? _.tokenize(match, inside) : match, alias, match, greedy);
+
+					args.push(wrapped);
+
+					if (after) {
+						args.push(after);
+					}
+
+					Array.prototype.splice.apply(strarr, args);
+
+					if (delNum != 1)
+						_.matchGrammar(text, strarr, grammar, i, pos, true, token);
+
+					if (oneshot)
+						break;
+				}
+			}
+		}
+	},
+
+	tokenize: function(text, grammar) {
+		var strarr = [text];
+
+		var rest = grammar.rest;
+
+		if (rest) {
+			for (var token in rest) {
+				grammar[token] = rest[token];
+			}
+
+			delete grammar.rest;
+		}
+
+		_.matchGrammar(text, strarr, grammar, 0, 0, false);
+
+		return strarr;
+	},
+
+	hooks: {
+		all: {},
+
+		add: function (name, callback) {
+			var hooks = _.hooks.all;
+
+			hooks[name] = hooks[name] || [];
+
+			hooks[name].push(callback);
+		},
+
+		run: function (name, env) {
+			var callbacks = _.hooks.all[name];
+
+			if (!callbacks || !callbacks.length) {
+				return;
+			}
+
+			for (var i=0, callback; callback = callbacks[i++];) {
+				callback(env);
+			}
+		}
+	},
+
+	Token: Token
+};
+
+_self.Prism = _;
+
+function Token(type, content, alias, matchedStr, greedy) {
+	this.type = type;
+	this.content = content;
+	this.alias = alias;
+	// Copy of the full string this token was created from
+	this.length = (matchedStr || "").length|0;
+	this.greedy = !!greedy;
+}
+
+Token.stringify = function(o, language) {
+	if (typeof o == 'string') {
+		return o;
+	}
+
+	if (Array.isArray(o)) {
+		return o.map(function(element) {
+			return Token.stringify(element, language);
+		}).join('');
+	}
+
+	var env = {
+		type: o.type,
+		content: Token.stringify(o.content, language),
+		tag: 'span',
+		classes: ['token', o.type],
+		attributes: {},
+		language: language
+	};
+
+	if (o.alias) {
+		var aliases = Array.isArray(o.alias) ? o.alias : [o.alias];
+		Array.prototype.push.apply(env.classes, aliases);
+	}
+
+	_.hooks.run('wrap', env);
+
+	var attributes = Object.keys(env.attributes).map(function(name) {
+		return name + '="' + (env.attributes[name] || '').replace(/"/g, '&quot;') + '"';
+	}).join(' ');
+
+	return '<' + env.tag + ' class="' + env.classes.join(' ') + '"' + (attributes ? ' ' + attributes : '') + '>' + env.content + '</' + env.tag + '>';
+};
+
+if (!_self.document) {
+	if (!_self.addEventListener) {
+		// in Node.js
+		return _;
+	}
+
+	if (!_.disableWorkerMessageHandler) {
+		// In worker
+		_self.addEventListener('message', function (evt) {
+			var message = JSON.parse(evt.data),
+				lang = message.language,
+				code = message.code,
+				immediateClose = message.immediateClose;
+
+			_self.postMessage(_.highlight(code, _.languages[lang], lang));
+			if (immediateClose) {
+				_self.close();
+			}
+		}, false);
+	}
+
+	return _;
+}
+
+//Get current script and highlight
+var script = document.currentScript || [].slice.call(document.getElementsByTagName("script")).pop();
+
+if (script) {
+	_.filename = script.src;
+
+	if (!_.manual && !script.hasAttribute('data-manual')) {
+		if(document.readyState !== "loading") {
+			if (window.requestAnimationFrame) {
+				window.requestAnimationFrame(_.highlightAll);
+			} else {
+				window.setTimeout(_.highlightAll, 16);
+			}
+		}
+		else {
+			document.addEventListener('DOMContentLoaded', _.highlightAll);
+		}
+	}
+}
+
+return _;
+
+})(_self);
+
+if (typeof module !== 'undefined' && module.exports) {
+	module.exports = Prism;
+}
+
+// hack for components to work correctly in node.js
+if (typeof global !== 'undefined') {
+	global.Prism = Prism;
+}
+
+
+/* **********************************************
+     Begin prism-markup.js
+********************************************** */
+
+Prism.languages.markup = {
+	'comment': /<!--[\s\S]*?-->/,
+	'prolog': /<\?[\s\S]+?\?>/,
+	'doctype': /<!DOCTYPE[\s\S]+?>/i,
+	'cdata': /<!\[CDATA\[[\s\S]*?]]>/i,
+	'tag': {
+		pattern: /<\/?(?!\d)[^\s>\/=$<%]+(?:\s(?:\s*[^\s>\/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/i,
+		greedy: true,
+		inside: {
+			'tag': {
+				pattern: /^<\/?[^\s>\/]+/i,
+				inside: {
+					'punctuation': /^<\/?/,
+					'namespace': /^[^\s>\/:]+:/
+				}
+			},
+			'attr-value': {
+				pattern: /=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+)/i,
+				inside: {
+					'punctuation': [
+						/^=/,
+						{
+							pattern: /^(\s*)["']|["']$/,
+							lookbehind: true
+						}
+					]
+				}
+			},
+			'punctuation': /\/?>/,
+			'attr-name': {
+				pattern: /[^\s>\/]+/,
+				inside: {
+					'namespace': /^[^\s>\/:]+:/
+				}
+			}
+
+		}
+	},
+	'entity': /&#?[\da-z]{1,8};/i
+};
+
+Prism.languages.markup['tag'].inside['attr-value'].inside['entity'] =
+	Prism.languages.markup['entity'];
+
+// Plugin to make entity title show the real entity, idea by Roman Komarov
+Prism.hooks.add('wrap', function(env) {
+
+	if (env.type === 'entity') {
+		env.attributes['title'] = env.content.replace(/&amp;/, '&');
+	}
+});
+
+Object.defineProperty(Prism.languages.markup.tag, 'addInlined', {
+	/**
+	 * Adds an inlined language to markup.
+	 *
+	 * An example of an inlined language is CSS with `<style>` tags.
+	 *
+	 * @param {string} tagName The name of the tag that contains the inlined language. This name will be treated as
+	 * case insensitive.
+	 * @param {string} lang The language key.
+	 * @example
+	 * addInlined('style', 'css');
+	 */
+	value: function addInlined(tagName, lang) {
+		var includedCdataInside = {};
+		includedCdataInside['language-' + lang] = {
+			pattern: /(^<!\[CDATA\[)[\s\S]+?(?=\]\]>$)/i,
+			lookbehind: true,
+			inside: Prism.languages[lang]
+		};
+		includedCdataInside['cdata'] = /^<!\[CDATA\[|\]\]>$/i;
+
+		var inside = {
+			'included-cdata': {
+				pattern: /<!\[CDATA\[[\s\S]*?\]\]>/i,
+				inside: includedCdataInside
+			}
+		};
+		inside['language-' + lang] = {
+			pattern: /[\s\S]+/,
+			inside: Prism.languages[lang]
+		};
+
+		var def = {};
+		def[tagName] = {
+			pattern: RegExp(/(<__[\s\S]*?>)(?:<!\[CDATA\[[\s\S]*?\]\]>\s*|[\s\S])*?(?=<\/__>)/.source.replace(/__/g, tagName), 'i'),
+			lookbehind: true,
+			greedy: true,
+			inside: inside
+		};
+
+		Prism.languages.insertBefore('markup', 'cdata', def);
+	}
+});
+
+Prism.languages.xml = Prism.languages.extend('markup', {});
+Prism.languages.html = Prism.languages.markup;
+Prism.languages.mathml = Prism.languages.markup;
+Prism.languages.svg = Prism.languages.markup;
+
+
+/* **********************************************
+     Begin prism-css.js
+********************************************** */
+
+(function (Prism) {
+
+	var string = /("|')(?:\\(?:\r\n|[\s\S])|(?!\1)[^\\\r\n])*\1/;
+
+	Prism.languages.css = {
+		'comment': /\/\*[\s\S]*?\*\//,
+		'atrule': {
+			pattern: /@[\w-]+[\s\S]*?(?:;|(?=\s*\{))/,
+			inside: {
+				'rule': /@[\w-]+/
+				// See rest below
+			}
+		},
+		'url': {
+			pattern: RegExp('url\\((?:' + string.source + '|[^\n\r()]*)\\)', 'i'),
+			inside: {
+				'function': /^url/i,
+				'punctuation': /^\(|\)$/
+			}
+		},
+		'selector': RegExp('[^{}\\s](?:[^{};"\']|' + string.source + ')*?(?=\\s*\\{)'),
+		'string': {
+			pattern: string,
+			greedy: true
+		},
+		'property': /[-_a-z\xA0-\uFFFF][-\w\xA0-\uFFFF]*(?=\s*:)/i,
+		'important': /!important\b/i,
+		'function': /[-a-z0-9]+(?=\()/i,
+		'punctuation': /[(){};:,]/
+	};
+
+	Prism.languages.css['atrule'].inside.rest = Prism.languages.css;
+
+	var markup = Prism.languages.markup;
+	if (markup) {
+		markup.tag.addInlined('style', 'css');
+
+		Prism.languages.insertBefore('inside', 'attr-value', {
+			'style-attr': {
+				pattern: /\s*style=("|')(?:\\[\s\S]|(?!\1)[^\\])*\1/i,
+				inside: {
+					'attr-name': {
+						pattern: /^\s*style/i,
+						inside: markup.tag.inside
+					},
+					'punctuation': /^\s*=\s*['"]|['"]\s*$/,
+					'attr-value': {
+						pattern: /.+/i,
+						inside: Prism.languages.css
+					}
+				},
+				alias: 'language-css'
+			}
+		}, markup.tag);
+	}
+
+}(Prism));
+
+
+/* **********************************************
+     Begin prism-clike.js
+********************************************** */
+
+Prism.languages.clike = {
+	'comment': [
+		{
+			pattern: /(^|[^\\])\/\*[\s\S]*?(?:\*\/|$)/,
+			lookbehind: true
+		},
+		{
+			pattern: /(^|[^\\:])\/\/.*/,
+			lookbehind: true,
+			greedy: true
+		}
+	],
+	'string': {
+		pattern: /(["'])(?:\\(?:\r\n|[\s\S])|(?!\1)[^\\\r\n])*\1/,
+		greedy: true
+	},
+	'class-name': {
+		pattern: /((?:\b(?:class|interface|extends|implements|trait|instanceof|new)\s+)|(?:catch\s+\())[\w.\\]+/i,
+		lookbehind: true,
+		inside: {
+			punctuation: /[.\\]/
+		}
+	},
+	'keyword': /\b(?:if|else|while|do|for|return|in|instanceof|function|new|try|throw|catch|finally|null|break|continue)\b/,
+	'boolean': /\b(?:true|false)\b/,
+	'function': /\w+(?=\()/,
+	'number': /\b0x[\da-f]+\b|(?:\b\d+\.?\d*|\B\.\d+)(?:e[+-]?\d+)?/i,
+	'operator': /--?|\+\+?|!=?=?|<=?|>=?|==?=?|&&?|\|\|?|\?|\*|\/|~|\^|%/,
+	'punctuation': /[{}[\];(),.:]/
+};
+
+
+/* **********************************************
+     Begin prism-javascript.js
+********************************************** */
+
+Prism.languages.javascript = Prism.languages.extend('clike', {
+	'class-name': [
+		Prism.languages.clike['class-name'],
+		{
+			pattern: /(^|[^$\w\xA0-\uFFFF])[_$A-Z\xA0-\uFFFF][$\w\xA0-\uFFFF]*(?=\.(?:prototype|constructor))/,
+			lookbehind: true
+		}
+	],
+	'keyword': [
+		{
+			pattern: /((?:^|})\s*)(?:catch|finally)\b/,
+			lookbehind: true
+		},
+		{
+			pattern: /(^|[^.])\b(?:as|async(?=\s*(?:function\b|\(|[$\w\xA0-\uFFFF]|$))|await|break|case|class|const|continue|debugger|default|delete|do|else|enum|export|extends|for|from|function|get|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|set|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield)\b/,
+			lookbehind: true
+		},
+	],
+	'number': /\b(?:(?:0[xX](?:[\dA-Fa-f](?:_[\dA-Fa-f])?)+|0[bB](?:[01](?:_[01])?)+|0[oO](?:[0-7](?:_[0-7])?)+)n?|(?:\d(?:_\d)?)+n|NaN|Infinity)\b|(?:\b(?:\d(?:_\d)?)+\.?(?:\d(?:_\d)?)*|\B\.(?:\d(?:_\d)?)+)(?:[Ee][+-]?(?:\d(?:_\d)?)+)?/,
+	// Allow for all non-ASCII characters (See http://stackoverflow.com/a/2008444)
+	'function': /#?[_$a-zA-Z\xA0-\uFFFF][$\w\xA0-\uFFFF]*(?=\s*(?:\.\s*(?:apply|bind|call)\s*)?\()/,
+	'operator': /-[-=]?|\+[+=]?|!=?=?|<<?=?|>>?>?=?|=(?:==?|>)?|&[&=]?|\|[|=]?|\*\*?=?|\/=?|~|\^=?|%=?|\?|\.{3}/
+});
+
+Prism.languages.javascript['class-name'][0].pattern = /(\b(?:class|interface|extends|implements|instanceof|new)\s+)[\w.\\]+/;
+
+Prism.languages.insertBefore('javascript', 'keyword', {
+	'regex': {
+		pattern: /((?:^|[^$\w\xA0-\uFFFF."'\])\s])\s*)\/(\[(?:[^\]\\\r\n]|\\.)*]|\\.|[^/\\\[\r\n])+\/[gimyus]{0,6}(?=\s*($|[\r\n,.;})\]]))/,
+		lookbehind: true,
+		greedy: true
+	},
+	// This must be declared before keyword because we use "function" inside the look-forward
+	'function-variable': {
+		pattern: /#?[_$a-zA-Z\xA0-\uFFFF][$\w\xA0-\uFFFF]*(?=\s*[=:]\s*(?:async\s*)?(?:\bfunction\b|(?:\((?:[^()]|\([^()]*\))*\)|[_$a-zA-Z\xA0-\uFFFF][$\w\xA0-\uFFFF]*)\s*=>))/,
+		alias: 'function'
+	},
+	'parameter': [
+		{
+			pattern: /(function(?:\s+[_$A-Za-z\xA0-\uFFFF][$\w\xA0-\uFFFF]*)?\s*\(\s*)(?!\s)(?:[^()]|\([^()]*\))+?(?=\s*\))/,
+			lookbehind: true,
+			inside: Prism.languages.javascript
+		},
+		{
+			pattern: /[_$a-z\xA0-\uFFFF][$\w\xA0-\uFFFF]*(?=\s*=>)/i,
+			inside: Prism.languages.javascript
+		},
+		{
+			pattern: /(\(\s*)(?!\s)(?:[^()]|\([^()]*\))+?(?=\s*\)\s*=>)/,
+			lookbehind: true,
+			inside: Prism.languages.javascript
+		},
+		{
+			pattern: /((?:\b|\s|^)(?!(?:as|async|await|break|case|catch|class|const|continue|debugger|default|delete|do|else|enum|export|extends|finally|for|from|function|get|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|set|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield)(?![$\w\xA0-\uFFFF]))(?:[_$A-Za-z\xA0-\uFFFF][$\w\xA0-\uFFFF]*\s*)\(\s*)(?!\s)(?:[^()]|\([^()]*\))+?(?=\s*\)\s*\{)/,
+			lookbehind: true,
+			inside: Prism.languages.javascript
+		}
+	],
+	'constant': /\b[A-Z](?:[A-Z_]|\dx?)*\b/
+});
+
+Prism.languages.insertBefore('javascript', 'string', {
+	'template-string': {
+		pattern: /`(?:\\[\s\S]|\${(?:[^{}]|{(?:[^{}]|{[^}]*})*})+}|(?!\${)[^\\`])*`/,
+		greedy: true,
+		inside: {
+			'template-punctuation': {
+				pattern: /^`|`$/,
+				alias: 'string'
+			},
+			'interpolation': {
+				pattern: /((?:^|[^\\])(?:\\{2})*)\${(?:[^{}]|{(?:[^{}]|{[^}]*})*})+}/,
+				lookbehind: true,
+				inside: {
+					'interpolation-punctuation': {
+						pattern: /^\${|}$/,
+						alias: 'punctuation'
+					},
+					rest: Prism.languages.javascript
+				}
+			},
+			'string': /[\s\S]+/
+		}
+	}
+});
+
+if (Prism.languages.markup) {
+	Prism.languages.markup.tag.addInlined('script', 'javascript');
+}
+
+Prism.languages.js = Prism.languages.javascript;
+
+
+/* **********************************************
+     Begin prism-file-highlight.js
+********************************************** */
+
+(function () {
+	if (typeof self === 'undefined' || !self.Prism || !self.document || !document.querySelector) {
+		return;
+	}
+
+	/**
+	 * @param {Element} [container=document]
+	 */
+	self.Prism.fileHighlight = function(container) {
+		container = container || document;
+
+		var Extensions = {
+			'js': 'javascript',
+			'py': 'python',
+			'rb': 'ruby',
+			'ps1': 'powershell',
+			'psm1': 'powershell',
+			'sh': 'bash',
+			'bat': 'batch',
+			'h': 'c',
+			'tex': 'latex'
+		};
+
+		Array.prototype.slice.call(container.querySelectorAll('pre[data-src]')).forEach(function (pre) {
+			// ignore if already loaded
+			if (pre.hasAttribute('data-src-loaded')) {
+				return;
+			}
+
+			// load current
+			var src = pre.getAttribute('data-src');
+
+			var language, parent = pre;
+			var lang = /\blang(?:uage)?-([\w-]+)\b/i;
+			while (parent && !lang.test(parent.className)) {
+				parent = parent.parentNode;
+			}
+
+			if (parent) {
+				language = (pre.className.match(lang) || [, ''])[1];
+			}
+
+			if (!language) {
+				var extension = (src.match(/\.(\w+)$/) || [, ''])[1];
+				language = Extensions[extension] || extension;
+			}
+
+			var code = document.createElement('code');
+			code.className = 'language-' + language;
+
+			pre.textContent = '';
+
+			code.textContent = 'Loading…';
+
+			pre.appendChild(code);
+
+			var xhr = new XMLHttpRequest();
+
+			xhr.open('GET', src, true);
+
+			xhr.onreadystatechange = function () {
+				if (xhr.readyState == 4) {
+
+					if (xhr.status < 400 && xhr.responseText) {
+						code.textContent = xhr.responseText;
+
+						Prism.highlightElement(code);
+						// mark as loaded
+						pre.setAttribute('data-src-loaded', '');
+					}
+					else if (xhr.status >= 400) {
+						code.textContent = '✖ Error ' + xhr.status + ' while fetching file: ' + xhr.statusText;
+					}
+					else {
+						code.textContent = '✖ Error: File does not exist or is empty';
+					}
+				}
+			};
+
+			xhr.send(null);
+		});
+
+		if (Prism.plugins.toolbar) {
+			Prism.plugins.toolbar.registerButton('download-file', function (env) {
+				var pre = env.element.parentNode;
+				if (!pre || !/pre/i.test(pre.nodeName) || !pre.hasAttribute('data-src') || !pre.hasAttribute('data-download-link')) {
+					return;
+				}
+				var src = pre.getAttribute('data-src');
+				var a = document.createElement('a');
+				a.textContent = pre.getAttribute('data-download-link-label') || 'Download';
+				a.setAttribute('download', '');
+				a.href = src;
+				return a;
+			});
+		}
+
+	};
+
+	document.addEventListener('DOMContentLoaded', function () {
+		// execute inside handler, for dropping Event as argument
+		self.Prism.fileHighlight();
+	});
+
+})();
+
+},{}],"components/highlight.ts":[function(require,module,exports) {
+"use strict";
+
+function _templateObject() {
+  var data = _taggedTemplateLiteral(["\n        <code ", ">\n          <pre ", ">\n", "</pre\n          >\n        </code>\n      "]);
+
+  _templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+
+function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+  }
+  result["default"] = mod;
+  return result;
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var src_1 = require("../../src");
+
+var Prism = __importStar(require("prismjs"));
+
+function filterInitialEmptyLines(parts) {
+  var found = false;
+  return parts.filter(function (p) {
+    if (!found) {
+      if (p.trim().length === 0) {
+        return false;
+      }
+    }
+
+    found = true;
+    return true;
+  });
+}
+
+function decodeEntities(encodedString) {
+  var translate_re = /&(nbsp|amp|quot|lt|gt);/g;
+  var translate = {
+    nbsp: ' ',
+    amp: '&',
+    quot: '"',
+    lt: '<',
+    gt: '>'
+  };
+  return encodedString.replace(translate_re, function (match, entity) {
+    return translate[entity];
+  }).replace(/&#(\d+);/gi, function (match, numStr) {
+    var num = parseInt(numStr, 10);
+    return String.fromCharCode(num);
+  });
+}
+
+src_1.component('nth-highlight', function () {
+  var $language = src_1.$attr('language', 'javascript');
+  var element = src_1.getElement();
+  var $code = src_1.$prop('code', '');
+  var $style = src_1.$attr('style', '');
+  src_1.sideEffect(function () {
+    element.shadowRoot.appendChild(document.querySelector('#prismstyle').cloneNode(true));
+    element.shadowRoot.appendChild(document.querySelector('#prismtheme').cloneNode(true));
+  }, function () {
+    return [];
+  });
+  var text = decodeEntities($code.value);
+  var shortestSpaces = '';
+  var parts = text.split(/\n/g);
+  parts = filterInitialEmptyLines(parts);
+  parts = filterInitialEmptyLines(parts.reverse()).reverse();
+  var modifiedText = parts.map(function (p) {
+    var spaces = p.toLowerCase().split(/\S+/g)[0];
+
+    if (spaces[0] === ' ' && (!shortestSpaces || spaces.length < shortestSpaces.length)) {
+      shortestSpaces = spaces;
+    }
+
+    return p;
+  }).map(function (p) {
+    return p.replace(shortestSpaces, '');
+  }).join('\n');
+  return {
+    render: function render() {
+      return src_1.html(_templateObject(), src_1.clss("language-".concat($language.value)), src_1.attr('style', $style.value), src_1.frag(Prism.highlight(modifiedText, Prism.languages.javascript, $language.value)));
+    }
+  };
+});
+},{"../../src":"../src/index.ts","prismjs":"node_modules/prismjs/prism.js"}],"index.ts":[function(require,module,exports) {
 "use strict";
 
 function _templateObject() {
@@ -38731,12 +39860,14 @@ require("./components/footer");
 
 require("./components/getting_started");
 
+require("./components/highlight");
+
 document.addEventListener('DOMContentLoaded', function () {
   requestAnimationFrame(function () {
     document.body.style.opacity = '';
   });
 });
-},{"core-js/stable":"node_modules/core-js/stable/index.js","regenerator-runtime/runtime":"node_modules/regenerator-runtime/runtime.js","proxy-polyfill/src/proxy":"node_modules/proxy-polyfill/src/proxy.js","goober":"node_modules/goober/dist/goober.module.js","./utils":"utils.ts","./components/nav_bar.ts":"components/nav_bar.ts","./components/container.ts":"components/container.ts","./components/intro.ts":"components/intro.ts","./components/hello_world":"components/hello_world.ts","./components/router":"components/router.ts","./components/lottie":"components/lottie.ts","./components/logo":"components/logo.ts","./components/footer":"components/footer.ts","./components/getting_started":"components/getting_started.ts"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"core-js/stable":"node_modules/core-js/stable/index.js","regenerator-runtime/runtime":"node_modules/regenerator-runtime/runtime.js","proxy-polyfill/src/proxy":"node_modules/proxy-polyfill/src/proxy.js","goober":"node_modules/goober/dist/goober.module.js","./utils":"utils.ts","./components/nav_bar.ts":"components/nav_bar.ts","./components/container.ts":"components/container.ts","./components/intro.ts":"components/intro.ts","./components/hello_world":"components/hello_world.ts","./components/router":"components/router.ts","./components/lottie":"components/lottie.ts","./components/logo":"components/logo.ts","./components/footer":"components/footer.ts","./components/getting_started":"components/getting_started.ts","./components/highlight":"components/highlight.ts"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -38764,7 +39895,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "39401" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "35003" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

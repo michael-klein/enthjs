@@ -9,6 +9,8 @@ import {
   attr,
   $prop,
   sideEffect,
+  getElement,
+  frag,
 } from '../../src';
 import { getCss } from '../utils';
 
@@ -46,18 +48,12 @@ component('nth-router', () => {
 component('nth-route', () => {
   const $context = routerContext.get();
   const $path = $attr('path');
-
+  const template = getElement().querySelector('template');
   return {
     watch: [$context, $path],
     render: () =>
       html`
-        ${sub(
-          $context.currentPath === $path.value
-            ? html`
-                <slot></slot>
-              `
-            : html``
-        )}
+        ${frag($context.currentPath === $path.value ? template.innerHTML : '')}
       `,
   };
 });

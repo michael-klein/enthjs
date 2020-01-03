@@ -19,6 +19,7 @@ export const component = (name: string, setup: Setup) => {
       private render: () => HTMLResult;
       private watch: State<{}>[] = [];
       private watchOff: (() => void)[];
+      private init = true;
       constructor() {
         super();
         this.attachShadow({ mode: 'open' });
@@ -57,9 +58,13 @@ export const component = (name: string, setup: Setup) => {
       private performRender() {
         if (!this.renderQueued) {
           this.renderQueued = true;
-          schedule(() => {
-            render(this.shadowRoot as any, this.render());
-          }, PriorityLevel.USER_BLOCKING)
+          schedule(
+            () => {
+              this.init = false;
+              render(this.shadowRoot as any, this.render());
+            },
+            this.init ? PriorityLevel.IMMEDIATE : undefined
+          )
             .then(async () => await runSideEffects(this))
             .then(() => {
               this.renderQueued = false;

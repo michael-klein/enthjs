@@ -15,7 +15,13 @@ component('nth-getting-started', () => {
           `}
         >
           <nth-container>
-            coming soon
+            <nth-highlight>
+              ${`
+              function test() {
+                console.log("hi")
+              }
+              `}
+            </nth-highlight>
           </nth-container>
         </div>
       `;
