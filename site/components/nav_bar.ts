@@ -2,7 +2,6 @@ import { html, component } from '../../src/index.ts';
 import { getCss } from '../utils.ts';
 import { prop } from '../../src';
 import { GitHub } from 'simple-icons';
-console.log(GitHub);
 component('nth-navbar', () => {
   const css = getCss();
   const getLinkCss = css => css`

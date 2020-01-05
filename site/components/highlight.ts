@@ -9,8 +9,8 @@ import {
   frag,
   $prop,
 } from '../../src';
-import { getCss } from '../utils.ts';
 import * as Prism from 'prismjs';
+import SimpleBar from 'simplebar';
 
 function filterInitialEmptyLines(parts: string[]): string[] {
   let found = false;
@@ -55,6 +55,10 @@ component('nth-highlight', () => {
       element.shadowRoot.appendChild(
         document.querySelector('#prismtheme').cloneNode(true)
       );
+      element.shadowRoot.appendChild(
+        document.querySelector('#simplebar').cloneNode(true)
+      );
+      new SimpleBar(element.shadowRoot.querySelector('pre'));
     },
     () => []
   );
@@ -77,6 +81,7 @@ component('nth-highlight', () => {
     .map(p => p.replace(shortestSpaces, ''))
     .join('\n');
   return {
+    watch: [$style],
     render: () => {
       return html`
         <code ${clss(`language-${$language.value}`)}>

@@ -27,7 +27,7 @@ glob`
 
 import './components/nav_bar.ts';
 import './components/container.ts';
-import './components/intro.ts';
+import './components/intro/intro.ts';
 import './components/hello_world';
 import './components/router';
 import './components/lottie';
@@ -35,6 +35,7 @@ import './components/logo';
 import './components/footer';
 import './components/getting_started';
 import './components/highlight';
+import './components/to_do';
 
 document.addEventListener('DOMContentLoaded', function() {
   requestAnimationFrame(() => {

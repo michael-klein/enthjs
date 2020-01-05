@@ -7,11 +7,10 @@ import {
   attr,
   prop,
   getElement,
-} from '../../src/';
-import { getCss } from '../utils.ts';
-import carbon from '../images/carbon.svg';
-import { computerAnimation } from './animations/computer_animation';
-import { getIsInView } from '../utils';
+} from '../../../src';
+import { getCss } from '../../utils.ts';
+import './intro_code';
+import './intro_info';
 
 component('nth-intro', () => {
   const css = getCss();
@@ -269,170 +268,9 @@ component('nth-intro', () => {
             </nth-container>
           </div>
           <nth-intro-section-info></nth-intro-section-info>
-          <nth-intro-section-codesandbox></nth-intro-section-codesandbox>
+          <nth-intro-section-code></nth-intro-section-code>
         </div>
       `;
     },
-  };
-});
-
-component('nth-intro-section-codesandbox', () => {
-  const css = getCss();
-  const $isInView = getIsInView();
-  return {
-    watch: [$isInView],
-    render: () => html`
-      <div
-        ${css`
-          background: #098ba7;
-          margin-top: 100px;
-          padding-top: 40px;
-          padding-bottom: 40px;
-          opacity: ${$isInView.value ? '1' : '0'};
-          transition: all 1s;
-        `}
-      >
-        <nth-container>
-          <div
-            ${css`
-              color: white;
-              font-size: 2em;
-              font-family: 'Rubik', sans-serif;
-              text-align: center;
-              margin-bottom: 10px;
-            `}
-          >
-            Here's the obligatory example todo app in a codesandbox
-          </div>
-          <iframe
-            src="https://codesandbox.io/embed/jovial-lumiere-xkods?fontsize=14&hidenavigation=1&theme=light"
-            style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;"
-            title="jovial-lumiere-xkods"
-            allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
-            sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
-          ></iframe>
-        </nth-container>
-      </div>
-    `,
-  };
-});
-
-component('nth-intro-section-info', () => {
-  const css = getCss();
-  const $isInView = getIsInView();
-  return {
-    watch: [$isInView],
-    render: () => html`
-      <nth-container>
-        <div
-          ${css`
-            display: flex;
-            margin-top: 100px;
-            opacity: ${$isInView.value ? '1' : '0'};
-            transition: all 1s;
-            @media only screen and (max-width: 600px) {
-              display: block;
-            }
-          `}
-        >
-          <div
-            ${css`
-              background: #1a505b;
-              padding-top: 4%;
-              padding-bottom: 4%;
-              border-radius: 50%;
-              max-width: 45%;
-              height: 100%;
-              @media only screen and (max-width: 600px) {
-                display: none;
-              }
-              flex: 1;
-              box-shadow: inset 0 0 9px #0000006b;
-              overflow: hidden;
-            `}
-          >
-            <div
-              ${css`
-                width: 130%;
-                margin-left: -15%;
-              `}
-            >
-              <nth-lottie ${prop('animationData', computerAnimation)}>
-              </nth-lottie>
-            </div>
-          </div>
-          <div
-            ${css`
-              font-family: Rubik, sans-serif;
-              color: #098ba7;
-              text-shadow: none;
-              flex: 1;
-              font-weight: normal;
-              padding-left: 40px;
-              @media only screen and (max-width: 600px) {
-                padding-left: 0px;
-                > ul {
-                  padding-left: 20px;
-                }
-              }
-            `}
-          >
-            <h1
-              ${css`
-                font-weight: normal;
-              `}
-            >
-              <nth-logo ${prop('showFullName', true)}></nth-logo>
-              is a JavaScript framework with a focus on:
-            </h1>
-            <ul
-              ${css`
-                margin: 0;
-                padding: 0;
-                > li {
-                  margin-top: 10px;
-                }
-              `}
-            >
-              <li>
-                <b>using modern platform features such as:</b>
-                <ul
-                  ${css`
-                    margin: 0;
-                  `}
-                >
-                  <li>web components</li>
-                  <li>proxies for change tracking</li>
-                  <li>generators</li>
-                  <li>
-                    es module: You don't have to use a bundler, if you don't
-                    need to.
-                  </li>
-                </ul>
-              </li>
-              <li>
-                <b>'treeshakability'</b>: you decide how much or how little of
-                the framework you want to load/bundle.
-              </li>
-
-              <li>
-                <b>'composability'</b>: the architecture is functional and thus
-                highly composable.
-              </li>
-              <p
-                ${css`
-                  font-size: 0.9em;
-                  font-style: italic;
-                `}
-              >
-                Obviously, this means that you will need to compile down for
-                older browser versions and/or provide polyfills if you have to
-                to support them.
-              </p>
-            </ul>
-          </div>
-        </div></nth-container
-      >
-    `,
   };
 });
