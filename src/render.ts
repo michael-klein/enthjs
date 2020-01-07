@@ -31,13 +31,30 @@ export const render = (
     htmlResult.directives.forEach((directiveData, id) => {
       switch (directiveData.t) {
         case DirectiveType.TEXT:
-          const placeholder = fragment.querySelector(getTextMarker(id));
-          const textNode = placeholder.firstChild;
+          const textMarker = getTextMarker(id);
+          const placeholder = fragment.querySelector(textMarker);
+          let textNode;
+          let isTextArea = false;
+          if (placeholder) {
+            textNode = placeholder.firstChild;
+          } else {
+            isTextArea = true;
+            const textareas = fragment.querySelectorAll('textarea');
+            for (let i = 0; i < textareas.length; i++) {
+              const area = textareas[i];
+              if (area.innerText.includes(textMarker)) {
+                textNode = area.firstChild;
+                break;
+              }
+            }
+          }
           generators[id] = directiveData.d.factory(
             textNode,
             ...directiveData.d.args
           );
-          placeholder.parentNode.replaceChild(textNode, placeholder);
+          if (!isTextArea) {
+            placeholder.parentNode.replaceChild(textNode, placeholder);
+          }
           break;
         case DirectiveType.ATTRIBUTE:
         case DirectiveType.ATTRIBUTE_VALUE:

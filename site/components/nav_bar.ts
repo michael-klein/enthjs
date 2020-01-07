@@ -25,8 +25,11 @@ component('nth-navbar', () => {
       return html`
         <div
           ${css`
-            height: 75px;
+            height: 64px;
             background: #098ba7;
+            @media only screen and (max-width: 600px) {
+              display: none;
+            }
           `}
         ></div>
         <nav
@@ -40,7 +43,12 @@ component('nth-navbar', () => {
             padding-bottom: 15px;
             font-family: 'Rubik', sans-serif;
             z-index: 100;
-            max-height: 75px;
+            height: 64px;
+            @media only screen and (max-width: 600px) {
+              top: initial;
+              bottom: 0px;
+              height: auto;
+            }
           `}
         >
           <nth-container>
@@ -82,6 +90,11 @@ component('nth-navbar', () => {
                 <div>
                   <nth-link ${prop('css', getLinkCss)} path="/getting-started"
                     >Getting started</nth-link
+                  >
+                </div>
+                <div>
+                  <nth-link ${prop('css', getLinkCss)} path="/repl"
+                    >repl</nth-link
                   >
                 </div>
                 <div

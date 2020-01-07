@@ -48,9 +48,16 @@ component('nth-router', () => {
 component('nth-route', () => {
   const $context = routerContext.get();
   const $path = $attr('path');
+  const $title = $attr('title');
   const template = getElement().querySelector('template');
+  sideEffect(
+    () => {
+      if ($context.currentPath === $path.value) document.title = $title.value;
+    },
+    () => [$context.currentPath]
+  );
   return {
-    watch: [$context, $path],
+    watch: [$context, $path, $title],
     render: () =>
       html`
         ${frag($context.currentPath === $path.value ? template.innerHTML : '')}

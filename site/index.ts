@@ -11,7 +11,9 @@ glob`
     margin: 0;
     padding: 0;
   }
-  /* Set core body defaults */
+  html {
+    height: 100%;
+  }
   body {
     min-height: 100vh;
     scroll-behavior: smooth;
@@ -21,6 +23,9 @@ glob`
     overflow-x: hidden;
     background: #083d48;
     font-family: 'Rubik', sans-serif;
+    &.repl {
+      height: 100%;
+    }
   }
   ${reset}
 `;
@@ -36,6 +41,7 @@ import './components/footer';
 import './components/getting_started';
 import './components/highlight';
 import './components/to_do';
+import './components/repl';
 
 document.addEventListener('DOMContentLoaded', function() {
   requestAnimationFrame(() => {
