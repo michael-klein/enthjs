@@ -931,6 +931,7 @@ var DynamicData = function DynamicData(dataIn) {
   this.attribute = dataIn.attribute;
   this.dx = dataIn.dx;
   this.staticValue = dataIn.staticValue;
+  this.prevValues = dataIn.prevValues || [];
 };
 
 exports.DynamicData = DynamicData;
@@ -1043,21 +1044,15 @@ var html = function html(staticParts) {
     result = _objectSpread({}, result, {
       dynamicData: result.dynamicData.map(function (data, id) {
         if (!isDirective(dynamicParts[id])) {
-          var attribute = data.attribute,
-              type = data.type;
-          return new DynamicData({
-            attribute: attribute,
-            type: type,
+          return new DynamicData(_objectSpread({}, data, {
+            directive: undefined,
             staticValue: dynamicParts[id]
-          });
+          }));
         } else {
-          var _attribute = data.attribute,
-              _type = data.type;
-          return new DynamicData({
-            attribute: _attribute,
-            type: _type,
+          return new DynamicData(_objectSpread({}, data, {
+            staticValue: undefined,
             directive: dynamicParts[id]
-          });
+          }));
         }
       })
     });
@@ -1326,7 +1321,8 @@ var render = function render(container, htmlResult) {
 
   var generators = generatorMap.get(container);
   var promise = Promise.all(htmlResult.dynamicData.map(function _callee(data, id) {
-    var result, domUpdate;
+    var _data$prevValues, result, domUpdate;
+
     return regeneratorRuntime.async(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
@@ -1334,25 +1330,35 @@ var render = function render(container, htmlResult) {
             applyFallback(data, fallback);
 
             if (!data.directive) {
-              _context.next = 10;
+              _context.next = 13;
               break;
             }
 
-            _context.next = 4;
+            if (!(data.prevValues.length !== data.directive.args.length || data.prevValues.findIndex(function (arg, index) {
+              return data.directive.args[index] !== arg || data.directive.args[index] instanceof Object;
+            }) > -1)) {
+              _context.next = 13;
+              break;
+            }
+
+            _context.next = 5;
             return regeneratorRuntime.awrap(generators[id].next(data.directive.args));
 
-          case 4:
+          case 5:
             result = _context.sent;
+            data.prevValues.length = 0;
+
+            (_data$prevValues = data.prevValues).push.apply(_data$prevValues, _toConsumableArray(data.directive.args));
 
             if (!result.value) {
-              _context.next = 10;
+              _context.next = 13;
               break;
             }
 
-            _context.next = 8;
+            _context.next = 11;
             return regeneratorRuntime.awrap(result.value);
 
-          case 8:
+          case 11:
             domUpdate = _context.sent;
             return _context.abrupt("return", (0, _scheduler.schedule)(function () {
               domUpdate.forEach(function (d) {
@@ -1392,7 +1398,7 @@ var render = function render(container, htmlResult) {
               });
             }, init ? _scheduler.PriorityLevel.IMMEDIATE : undefined));
 
-          case 10:
+          case 13:
           case "end":
             return _context.stop();
         }
@@ -1821,7 +1827,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "37555" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "34991" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

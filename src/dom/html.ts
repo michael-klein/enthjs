@@ -17,6 +17,7 @@ export interface DynamicDataInterface {
   type?: DirectiveType;
   attribute?: string;
   dx?: number;
+  prevValues?: any[];
 }
 
 export class DynamicData implements DynamicDataInterface {
@@ -26,6 +27,7 @@ export class DynamicData implements DynamicDataInterface {
   public attribute?: string;
   public dx?: number;
   public staticValue?: any;
+  public prevValues?: any[];
 
   constructor(dataIn: DynamicDataInterface) {
     this.directive = dataIn.directive;
@@ -34,6 +36,7 @@ export class DynamicData implements DynamicDataInterface {
     this.attribute = dataIn.attribute;
     this.dx = dataIn.dx;
     this.staticValue = dataIn.staticValue;
+    this.prevValues = dataIn.prevValues || [];
   }
 }
 
@@ -141,17 +144,15 @@ export const html = (
       ...result,
       dynamicData: result.dynamicData.map((data, id) => {
         if (!isDirective(dynamicParts[id])) {
-          const { attribute, type } = data;
           return new DynamicData({
-            attribute,
-            type,
+            ...data,
+            directive: undefined,
             staticValue: dynamicParts[id],
           });
         } else {
-          const { attribute, type } = data;
           return new DynamicData({
-            attribute,
-            type,
+            ...data,
+            staticValue: undefined,
             directive: dynamicParts[id],
           });
         }
