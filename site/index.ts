@@ -1,50 +1,88 @@
-import 'core-js/stable';
 import 'regenerator-runtime/runtime';
-import 'proxy-polyfill/src/proxy';
-import { glob } from 'goober';
-import { reset } from './utils';
+import { html, DirectiveType } from '../src/dom/html';
+import { render } from '../src/dom/render';
+import { text } from '../src/dom/directives/text';
+import { sub } from '../src/dom/directives/sub';
+import { attr } from '../src/dom/directives/attr';
+import { input } from '../src/dom/directives/input';
 
-glob`
-  @import url('https://fonts.googleapis.com/css?family=Muli:500|Rubik&display=swap');
-  html,
-  body {
-    margin: 0;
-    padding: 0;
-  }
-  html {
-    height: 100%;
-  }
-  body {
-    min-height: 100vh;
-    scroll-behavior: smooth;
-    text-rendering: optimizeSpeed;
-    line-height: 1.5;
-    text-shadow: 0px 1px 2px rgba(0,0,0,0.3);
-    overflow-x: hidden;
-    background: #083d48;
-    font-family: 'Rubik', sans-serif;
-    &.repl {
-      height: 100%;
+let count = 0;
+let renderPromise: Promise<void>;
+let nextQueued = false;
+let value = '';
+function queueRender() {
+  if (!renderPromise) {
+    renderPromise = render(
+      document.body,
+      html`
+        <div>
+          ${sub(html`
+            <div>
+              <div>${'hello'}</div>
+              <div>
+                ${html`
+                  <span>foo</span>
+                `}
+              </div>
+              <div ${'loool'} ${attr('data-test', `${count}`)}>
+                ${text(`${count}`)}
+              </div>
+            </div>
+          `)}
+        </div>
+        <div>
+          ${sub(html`
+            <div>
+              <div ${text(`${count}`)}>${'world'}</div>
+              <div ${'loool'}>${text(`${count}`)}</div>
+            </div>
+          `)}
+        </div>
+        <div>
+          <div>input value: ${value}</div>
+          <div>
+            <input
+              type="text"
+              ${attr('value', value)}
+              ${input(v => {
+                value = v;
+                queueRender();
+              })}
+            />
+          </div>
+        </div>
+      `,
+      data => {
+        if (
+          (data.type === DirectiveType.TEXT &&
+            typeof data.staticValue === 'string') ||
+          typeof data.staticValue === 'number'
+        ) {
+          data.directive = text(data.staticValue + '');
+        }
+        if (
+          data.type === DirectiveType.TEXT &&
+          typeof data.staticValue === 'object' &&
+          data.staticValue.dynamicData
+        ) {
+          data.directive = sub(data.staticValue);
+        }
+        return data;
+      }
+    ).then(() => {
+      renderPromise = undefined;
+    });
+  } else {
+    if (nextQueued) {
+      renderPromise.then(() => {
+        nextQueued = undefined;
+        queueRender();
+      });
     }
   }
-  ${reset}
-`;
+}
 
-import './components/nav_bar.ts';
-import './components/container.ts';
-import './components/intro/intro.ts';
-import './components/hello_world';
-import './components/router';
-import './components/lottie';
-import './components/logo';
-import './components/footer';
-import './components/getting_started';
-import './components/highlight';
-import './components/to_do';
-import './components/repl';
-
-document.addEventListener('DOMContentLoaded', function() {
-  requestAnimationFrame(() => {
-    document.body.style.opacity = '';
-  });
-});
+setInterval(() => {
+  count++;
+  queueRender();
+}, 1000);
