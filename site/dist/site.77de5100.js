@@ -853,6 +853,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.createDirective = createDirective;
 exports.IS_DIRECTIVE = exports.DOMUpdateType = void 0;
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 var DOMUpdateType;
 exports.DOMUpdateType = DOMUpdateType;
 
@@ -867,22 +870,19 @@ exports.DOMUpdateType = DOMUpdateType;
   DOMUpdateType[DOMUpdateType["SET_ATTRIBUTE"] = 7] = "SET_ATTRIBUTE";
 })(DOMUpdateType || (exports.DOMUpdateType = DOMUpdateType = {}));
 
-var IS_DIRECTIVE = Symbol('directive');
+var IS_DIRECTIVE = Symbol.for('directive');
 exports.IS_DIRECTIVE = IS_DIRECTIVE;
 
 function createDirective(factory) {
   return function (factory) {
     var directive = function directive() {
+      var _ref;
+
       for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
         args[_key] = arguments[_key];
       }
 
-      return {
-        is: IS_DIRECTIVE,
-        factory: factory,
-        args: args,
-        directive: directive
-      };
+      return _ref = {}, _defineProperty(_ref, IS_DIRECTIVE, true), _defineProperty(_ref, "factory", factory), _defineProperty(_ref, "args", args), _defineProperty(_ref, "directive", directive), _ref;
     };
 
     return directive;
@@ -895,7 +895,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.isDirective = isDirective;
-exports.html = exports.getAttributeMarker = exports.getTextMarker = exports.DynamicData = exports.DirectiveType = void 0;
+exports.html = exports.getAttributeMarker = exports.getTextMarker = exports.DirectiveType = void 0;
 
 var _directive = require("./directive");
 
@@ -906,8 +906,6 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var isLetter = function isLetter(c) {
   return c.toLowerCase() != c.toUpperCase();
@@ -922,20 +920,6 @@ exports.DirectiveType = DirectiveType;
   DirectiveType[DirectiveType["ATTRIBUTE_VALUE"] = 2] = "ATTRIBUTE_VALUE";
 })(DirectiveType || (exports.DirectiveType = DirectiveType = {}));
 
-var DynamicData = function DynamicData(dataIn) {
-  _classCallCheck(this, DynamicData);
-
-  this.directive = dataIn.directive;
-  this.marker = dataIn.marker;
-  this.type = dataIn.type;
-  this.attribute = dataIn.attribute;
-  this.dx = dataIn.dx;
-  this.staticValue = dataIn.staticValue;
-  this.prevValues = dataIn.prevValues || [];
-};
-
-exports.DynamicData = DynamicData;
-
 var getTextMarker = function getTextMarker(id) {
   return "tm-".concat(id);
 };
@@ -949,7 +933,7 @@ var getAttributeMarker = function getAttributeMarker(id) {
 exports.getAttributeMarker = getAttributeMarker;
 
 function isDirective(thing) {
-  return _typeof(thing) === 'object' && thing.is && thing.is === _directive.IS_DIRECTIVE;
+  return _typeof(thing) === 'object' && thing[_directive.IS_DIRECTIVE];
 }
 
 var resultCache = new WeakMap();
@@ -970,7 +954,9 @@ var html = function html(staticParts) {
       var staticPart = staticParts[i];
       appendedStatic += staticPart;
       var dx = 0;
-      var id = dynamicData.push(new DynamicData({})) - 1;
+      var id = dynamicData.push({
+        staticParts: staticParts
+      }) - 1;
       var currentDynamicData = dynamicData[id];
 
       if (isDirective(dynamicPart)) {
@@ -1044,15 +1030,15 @@ var html = function html(staticParts) {
     result = _objectSpread({}, result, {
       dynamicData: result.dynamicData.map(function (data, id) {
         if (!isDirective(dynamicParts[id])) {
-          return new DynamicData(_objectSpread({}, data, {
+          return _objectSpread({}, data, {
             directive: undefined,
             staticValue: dynamicParts[id]
-          }));
+          });
         } else {
-          return new DynamicData(_objectSpread({}, data, {
+          return _objectSpread({}, data, {
             staticValue: undefined,
             directive: dynamicParts[id]
-          }));
+          });
         }
       })
     });
@@ -1155,6 +1141,7 @@ exports.schedule = schedule;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.defineFallback = defineFallback;
 exports.render = exports.clear = void 0;
 
 var _html = require("./html");
@@ -1184,6 +1171,14 @@ var clear = function clear(container) {
 
 exports.clear = clear;
 
+var currentFallback = function currentFallback(data) {
+  return data;
+};
+
+function defineFallback(fallback) {
+  currentFallback = fallback;
+}
+
 var insertAttributeMarker = function insertAttributeMarker(marker, si, appendedStatic) {
   while (si++) {
     var char = appendedStatic.charAt(si);
@@ -1200,13 +1195,13 @@ var insertAttributeMarker = function insertAttributeMarker(marker, si, appendedS
   return appendedStatic;
 };
 
-function createTemplate(htmlResult, fallback) {
+function createTemplate(htmlResult) {
   var appendedStatic = '';
   var dynamicData = htmlResult.dynamicData,
       staticParts = htmlResult.staticParts;
 
   for (var i = 0; i < dynamicData.length; i++) {
-    var data = applyFallback(dynamicData[i], fallback);
+    var data = applyFallback(dynamicData[i], currentFallback);
     var staticPart = staticParts[i];
     appendedStatic += staticPart;
 
@@ -1302,66 +1297,79 @@ function applyFallback(data, fallback) {
   return data;
 }
 
-var currentFallback;
+var containerDataCache = new WeakMap();
 
 var render = function render(container, htmlResult) {
-  var fallback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : currentFallback || function (data) {
-    return data;
-  };
-  currentFallback = fallback;
   var fragment;
   var init = false;
+  var dataCache = containerDataCache.get(container) || {};
+  containerDataCache.set(container, dataCache);
 
   if (!renderedNodesMap.has(container)) {
     init = true;
-    var template = createTemplate(htmlResult, fallback);
+    var template = createTemplate(htmlResult);
     processTemplate(template, container, htmlResult);
     fragment = template.content;
   }
 
   var generators = generatorMap.get(container);
+
+  if (dataCache.staticParts !== htmlResult.staticParts) {
+    dataCache.staticParts = htmlResult.staticParts;
+    dataCache.states = [];
+    dataCache.prevValues = [];
+  }
+
   var promise = Promise.all(htmlResult.dynamicData.map(function _callee(data, id) {
-    var _data$prevValues, result, domUpdate;
+    var _dataCache$prevValues, result, domUpdates;
 
     return regeneratorRuntime.async(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            applyFallback(data, fallback);
+            if (!dataCache.prevValues[id]) {
+              dataCache.prevValues[id] = [];
+            }
+
+            applyFallback(data, currentFallback);
 
             if (!data.directive) {
-              _context.next = 13;
+              _context.next = 15;
               break;
             }
 
-            if (!(data.prevValues.length !== data.directive.args.length || data.prevValues.findIndex(function (arg, index) {
+            if (!(dataCache.prevValues[id].length !== data.directive.args.length || dataCache.prevValues[id].findIndex(function (arg, index) {
               return data.directive.args[index] !== arg || data.directive.args[index] instanceof Object;
             }) > -1)) {
-              _context.next = 13;
+              _context.next = 15;
               break;
             }
 
-            _context.next = 5;
+            if (dataCache.states[id] === undefined) {
+              dataCache.states[id] = {};
+            }
+
+            _context.next = 7;
             return regeneratorRuntime.awrap(generators[id].next(data.directive.args));
 
-          case 5:
+          case 7:
             result = _context.sent;
-            data.prevValues.length = 0;
+            _context.next = 10;
+            return regeneratorRuntime.awrap(result.value);
 
-            (_data$prevValues = data.prevValues).push.apply(_data$prevValues, _toConsumableArray(data.directive.args));
+          case 10:
+            domUpdates = _context.sent;
+            dataCache.prevValues[id].length = 0;
 
-            if (!result.value) {
-              _context.next = 13;
+            (_dataCache$prevValues = dataCache.prevValues[id]).push.apply(_dataCache$prevValues, _toConsumableArray(data.directive.args));
+
+            if (!domUpdates) {
+              _context.next = 15;
               break;
             }
 
-            _context.next = 11;
-            return regeneratorRuntime.awrap(result.value);
-
-          case 11:
-            domUpdate = _context.sent;
             return _context.abrupt("return", (0, _scheduler.schedule)(function () {
-              domUpdate.forEach(function (d) {
+              domUpdates.forEach(function (d) {
                 switch (d.type) {
                   case _directive.DOMUpdateType.TEXT:
                     d.node.textContent = d.value;
@@ -1398,15 +1406,13 @@ var render = function render(container, htmlResult) {
               });
             }, init ? _scheduler.PriorityLevel.IMMEDIATE : undefined));
 
-          case 13:
+          case 15:
           case "end":
             return _context.stop();
         }
       }
     });
-  })).then(function () {
-    currentFallback = undefined;
-  });
+  }));
 
   if (fragment) {
     container.appendChild(fragment);
@@ -1772,26 +1778,16 @@ function queueRender() {
     renderPromise = render_1.render(document.body, html_1.html(_templateObject(), sub_1.sub(html_1.html(_templateObject2(), 'hello', html_1.html(_templateObject3()), 'loool', attr_1.attr('data-test', "".concat(count)), text_1.text("".concat(count)))), sub_1.sub(html_1.html(_templateObject4(), text_1.text("".concat(count)), 'world', 'loool', text_1.text("".concat(count)))), value, attr_1.attr('value', value), input_1.input(function (v) {
       value = v;
       queueRender();
-    })), function (data) {
-      if (data.type === html_1.DirectiveType.TEXT && typeof data.staticValue === 'string' || typeof data.staticValue === 'number') {
-        data.directive = text_1.text(data.staticValue + '');
-      }
-
-      if (data.type === html_1.DirectiveType.TEXT && _typeof(data.staticValue) === 'object' && data.staticValue.dynamicData) {
-        data.directive = sub_1.sub(data.staticValue);
-      }
-
-      return data;
-    }).then(function () {
+    }))).then(function () {
       renderPromise = undefined;
+
+      if (nextQueued) {
+        nextQueued = false;
+        queueRender();
+      }
     });
   } else {
-    if (nextQueued) {
-      renderPromise.then(function () {
-        nextQueued = undefined;
-        queueRender();
-      });
-    }
+    nextQueued = true;
   }
 }
 
@@ -1799,6 +1795,17 @@ setInterval(function () {
   count++;
   queueRender();
 }, 1000);
+render_1.defineFallback(function (data) {
+  if (data.type === html_1.DirectiveType.TEXT && (typeof data.staticValue === 'string' || typeof data.staticValue === 'number')) {
+    data.directive = text_1.text(data.staticValue + '');
+  }
+
+  if (data.type === html_1.DirectiveType.TEXT && _typeof(data.staticValue) === 'object' && data.staticValue.dynamicData) {
+    data.directive = sub_1.sub(data.staticValue);
+  }
+
+  return data;
+});
 },{"regenerator-runtime/runtime":"node_modules/regenerator-runtime/runtime.js","../src/dom/html":"../src/dom/html.ts","../src/dom/render":"../src/dom/render.ts","../src/dom/directives/text":"../src/dom/directives/text.ts","../src/dom/directives/sub":"../src/dom/directives/sub.ts","../src/dom/directives/attr":"../src/dom/directives/attr.ts","../src/dom/directives/input":"../src/dom/directives/input.ts"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -1827,7 +1834,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "34991" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "34717" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

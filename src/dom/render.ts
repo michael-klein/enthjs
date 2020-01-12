@@ -5,8 +5,9 @@ import {
   getAttributeMarker,
   DynamicData,
 } from './html';
-import { DirectiveGenerator, DOMUpdate, DOMUpdateType } from './directive';
+import { DOMUpdateType, DirectiveGenerator } from './directive';
 import { schedule, PriorityLevel } from '../scheduler/scheduler';
+
 const renderedNodesMap: WeakMap<HTMLElement, Node[]> = new WeakMap();
 export const clear = (container: HTMLElement) => {
   if (renderedNodesMap.has(container)) {
@@ -16,6 +17,11 @@ export const clear = (container: HTMLElement) => {
     renderedNodesMap.delete(container);
   }
 };
+export type Fallback = (data: DynamicData) => DynamicData;
+let currentFallback: Fallback = data => data;
+export function defineFallback(fallback: Fallback): void {
+  currentFallback = fallback;
+}
 
 const insertAttributeMarker = (
   marker: string,
@@ -36,14 +42,11 @@ const insertAttributeMarker = (
   return appendedStatic;
 };
 
-function createTemplate(
-  htmlResult: HTMLResult,
-  fallback: (data: DynamicData) => DynamicData
-): HTMLTemplateElement {
+function createTemplate(htmlResult: HTMLResult): HTMLTemplateElement {
   let appendedStatic: string = '';
   const { dynamicData, staticParts } = htmlResult;
   for (let i = 0; i < dynamicData.length; i++) {
-    let data = applyFallback(dynamicData[i], fallback);
+    let data = applyFallback(dynamicData[i], currentFallback);
     const staticPart = staticParts[i];
     appendedStatic += staticPart;
     if (data.staticValue) {
@@ -104,6 +107,7 @@ function processTemplate(
               }
             }
           }
+
           generators[id] = data.directive.factory.call(
             { type: data.type },
             textNode,
@@ -129,10 +133,7 @@ function processTemplate(
   renderedNodesMap.set(container, Array.from(fragment.childNodes));
 }
 
-function applyFallback(
-  data: DynamicData,
-  fallback: (data: DynamicData) => DynamicData
-): DynamicData {
+function applyFallback(data: DynamicData, fallback: Fallback): DynamicData {
   if (!data.directive) {
     Object.assign(data, fallback(data));
     if (data.directive) {
@@ -142,44 +143,60 @@ function applyFallback(
   return data;
 }
 
-let currentFallback: (data: DynamicData) => DynamicData;
+interface CachedData {
+  staticParts?: TemplateStringsArray;
+  states?: any[];
+  prevValues?: any[][];
+}
+const containerDataCache: WeakMap<HTMLElement, CachedData> = new WeakMap();
+
 export const render = (
   container: HTMLElement,
-  htmlResult: HTMLResult,
-  fallback: (data: DynamicData) => DynamicData = currentFallback ||
-    (data => data)
+  htmlResult: HTMLResult
 ): Promise<void> => {
-  currentFallback = fallback;
   let fragment: DocumentFragment;
   let init = false;
+  const dataCache: CachedData = containerDataCache.get(container) || {};
+  containerDataCache.set(container, dataCache);
   if (!renderedNodesMap.has(container)) {
     init = true;
-    const template = createTemplate(htmlResult, fallback);
+    const template = createTemplate(htmlResult);
     processTemplate(template, container, htmlResult);
     fragment = template.content;
   }
   const generators: DirectiveGenerator[] = generatorMap.get(container);
 
+  if (dataCache.staticParts !== htmlResult.staticParts) {
+    dataCache.staticParts = htmlResult.staticParts;
+    dataCache.states = [];
+    dataCache.prevValues = [];
+  }
   const promise = Promise.all(
     htmlResult.dynamicData.map(async (data, id) => {
-      applyFallback(data, fallback);
+      if (!dataCache.prevValues[id]) {
+        dataCache.prevValues[id] = [];
+      }
+      applyFallback(data, currentFallback);
       if (data.directive) {
         if (
-          data.prevValues.length !== data.directive.args.length ||
-          data.prevValues.findIndex(
+          dataCache.prevValues[id].length !== data.directive.args.length ||
+          dataCache.prevValues[id].findIndex(
             (arg, index) =>
               data.directive.args[index] !== arg ||
               data.directive.args[index] instanceof Object
           ) > -1
         ) {
+          if (dataCache.states[id] === undefined) {
+            dataCache.states[id] = {};
+          }
           const result = await generators[id].next(data.directive.args);
-          data.prevValues.length = 0;
-          data.prevValues.push(...data.directive.args);
-          if (result.value) {
-            const domUpdate: DOMUpdate[] = await result.value;
+          const domUpdates = await result.value;
+          dataCache.prevValues[id].length = 0;
+          dataCache.prevValues[id].push(...data.directive.args);
+          if (domUpdates) {
             return schedule(
               () => {
-                domUpdate.forEach(d => {
+                domUpdates.forEach(d => {
                   switch (d.type) {
                     case DOMUpdateType.TEXT:
                       d.node.textContent = d.value;
@@ -214,9 +231,7 @@ export const render = (
         }
       }
     })
-  ).then(() => {
-    currentFallback = undefined;
-  });
+  );
   if (fragment) {
     container.appendChild(fragment);
   }

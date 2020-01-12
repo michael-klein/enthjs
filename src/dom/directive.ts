@@ -32,10 +32,12 @@ export type DirectiveGeneratorFactory<
   node: N,
   ...initialArgs: Args
 ) => DirectiveGenerator<Args>;
+export const IS_DIRECTIVE = Symbol.for('directive');
 export interface DirectiveResult<
   N extends Node = Node,
   Args extends any[] = any[]
 > {
+  [IS_DIRECTIVE]: true;
   factory: DirectiveGeneratorFactory<N, Args>;
   args: Args;
   directive: Directive;
@@ -43,7 +45,6 @@ export interface DirectiveResult<
 export type Directive<N extends Node = Node, Args extends any[] = any[]> = (
   ...args: Args
 ) => DirectiveResult<N, Args>;
-export const IS_DIRECTIVE = Symbol('directive');
 export function createDirective<
   Args extends any[],
   N extends Node = any,
@@ -59,7 +60,7 @@ export function createDirective<
   return ((factory: F) => {
     const directive = function(...args: Args) {
       return {
-        is: IS_DIRECTIVE,
+        [IS_DIRECTIVE]: true,
         factory,
         args,
         directive,

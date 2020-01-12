@@ -10,39 +10,20 @@ export enum DirectiveType {
   ATTRIBUTE_VALUE,
 }
 
-export interface DynamicDataInterface {
+export interface DynamicData {
   directive?: DirectiveResult;
   staticValue?: any;
   marker?: string;
   type?: DirectiveType;
   attribute?: string;
   dx?: number;
-  prevValues?: any[];
-}
-
-export class DynamicData implements DynamicDataInterface {
-  public directive: DirectiveResult;
-  public marker?: string;
-  public type?: DirectiveType;
-  public attribute?: string;
-  public dx?: number;
-  public staticValue?: any;
-  public prevValues?: any[];
-
-  constructor(dataIn: DynamicDataInterface) {
-    this.directive = dataIn.directive;
-    this.marker = dataIn.marker;
-    this.type = dataIn.type;
-    this.attribute = dataIn.attribute;
-    this.dx = dataIn.dx;
-    this.staticValue = dataIn.staticValue;
-    this.prevValues = dataIn.prevValues || [];
-  }
+  staticParts: TemplateStringsArray;
 }
 
 export const getTextMarker = (id: number): string => {
   return `tm-${id}`;
 };
+
 export const getAttributeMarker = (id: number): string => {
   return `data-am-${id}`;
 };
@@ -54,7 +35,7 @@ export interface HTMLResult {
 }
 export type HTML = typeof html;
 export function isDirective(thing: any): boolean {
-  return typeof thing === 'object' && thing.is && thing.is === IS_DIRECTIVE;
+  return typeof thing === 'object' && thing[IS_DIRECTIVE];
 }
 let resultCache: WeakMap<TemplateStringsArray, HTMLResult> = new WeakMap();
 export const html = (
@@ -70,7 +51,7 @@ export const html = (
       const staticPart = staticParts[i];
       appendedStatic += staticPart;
       let dx: number = 0;
-      let id = dynamicData.push(new DynamicData({})) - 1;
+      let id = dynamicData.push({ staticParts }) - 1;
       const currentDynamicData: DynamicData = dynamicData[id];
       if (isDirective(dynamicPart)) {
         currentDynamicData.directive = dynamicPart;
@@ -144,17 +125,17 @@ export const html = (
       ...result,
       dynamicData: result.dynamicData.map((data, id) => {
         if (!isDirective(dynamicParts[id])) {
-          return new DynamicData({
+          return {
             ...data,
             directive: undefined,
             staticValue: dynamicParts[id],
-          });
+          };
         } else {
-          return new DynamicData({
+          return {
             ...data,
             staticValue: undefined,
             directive: dynamicParts[id],
-          });
+          };
         }
       }),
     };

@@ -1,6 +1,6 @@
 import 'regenerator-runtime/runtime';
 import { html, DirectiveType } from '../src/dom/html';
-import { render } from '../src/dom/render';
+import { render, defineFallback } from '../src/dom/render';
 import { text } from '../src/dom/directives/text';
 import { sub } from '../src/dom/directives/sub';
 import { attr } from '../src/dom/directives/attr';
@@ -51,34 +51,16 @@ function queueRender() {
             />
           </div>
         </div>
-      `,
-      data => {
-        if (
-          (data.type === DirectiveType.TEXT &&
-            typeof data.staticValue === 'string') ||
-          typeof data.staticValue === 'number'
-        ) {
-          data.directive = text(data.staticValue + '');
-        }
-        if (
-          data.type === DirectiveType.TEXT &&
-          typeof data.staticValue === 'object' &&
-          data.staticValue.dynamicData
-        ) {
-          data.directive = sub(data.staticValue);
-        }
-        return data;
-      }
+      `
     ).then(() => {
       renderPromise = undefined;
+      if (nextQueued) {
+        nextQueued = false;
+        queueRender();
+      }
     });
   } else {
-    if (nextQueued) {
-      renderPromise.then(() => {
-        nextQueued = undefined;
-        queueRender();
-      });
-    }
+    nextQueued = true;
   }
 }
 
@@ -86,3 +68,21 @@ setInterval(() => {
   count++;
   queueRender();
 }, 1000);
+
+defineFallback(data => {
+  if (
+    data.type === DirectiveType.TEXT &&
+    (typeof data.staticValue === 'string' ||
+      typeof data.staticValue === 'number')
+  ) {
+    data.directive = text(data.staticValue + '');
+  }
+  if (
+    data.type === DirectiveType.TEXT &&
+    typeof data.staticValue === 'object' &&
+    data.staticValue.dynamicData
+  ) {
+    data.directive = sub(data.staticValue);
+  }
+  return data;
+});
