@@ -8,7 +8,7 @@ import {
 import { DOMUpdateType, DirectiveGenerator } from './directive';
 import { schedule, PriorityLevel } from '../scheduler/scheduler';
 
-const renderedNodesMap: WeakMap<HTMLElement, Node[]> = new WeakMap();
+const renderedNodesMap: WeakMap<Node, Node[]> = new WeakMap();
 export const clear = (container: HTMLElement) => {
   if (renderedNodesMap.has(container)) {
     renderedNodesMap
@@ -76,10 +76,10 @@ export type DirectiveFallback = (data: DynamicData) => DynamicData;
 export interface DirectiveFallbacks {
   [DirectiveType.ATTRIBUTE]: DirectiveFallback;
 }
-const generatorMap: WeakMap<HTMLElement, DirectiveGenerator[]> = new WeakMap();
+const generatorMap: WeakMap<Node, DirectiveGenerator[]> = new WeakMap();
 function processTemplate(
   template: HTMLTemplateElement,
-  container: HTMLElement,
+  container: Node,
   htmlResult: HTMLResult
 ): void {
   const generators: DirectiveGenerator[] = [];
@@ -148,10 +148,9 @@ interface CachedData {
   states?: any[];
   prevValues?: any[][];
 }
-const containerDataCache: WeakMap<HTMLElement, CachedData> = new WeakMap();
-
+const containerDataCache: WeakMap<Node, CachedData> = new WeakMap();
 export const render = (
-  container: HTMLElement,
+  container: Node,
   htmlResult: HTMLResult
 ): Promise<void> => {
   let fragment: DocumentFragment;

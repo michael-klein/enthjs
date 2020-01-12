@@ -5,16 +5,58 @@ import { text } from '../src/dom/directives/text';
 import { sub } from '../src/dom/directives/sub';
 import { attr } from '../src/dom/directives/attr';
 import { input } from '../src/dom/directives/input';
+import { component, connected } from '../src/dom/component';
+import { State, $state } from '../src/reactivity/reactivity';
 
-let count = 0;
-let renderPromise: Promise<void>;
-let nextQueued = false;
-let value = '';
-function queueRender() {
-  if (!renderPromise) {
-    renderPromise = render(
-      document.body,
-      html`
+defineFallback(data => {
+  if (
+    data.type === DirectiveType.TEXT &&
+    (typeof data.staticValue === 'string' ||
+      typeof data.staticValue === 'number')
+  ) {
+    data.directive = text(data.staticValue + '');
+  }
+  if (
+    data.type === DirectiveType.ATTRIBUTE_VALUE &&
+    (typeof data.staticValue === 'string' ||
+      typeof data.staticValue === 'number')
+  ) {
+    data.directive = attr(data.attribute, data.staticValue + '');
+  }
+  if (
+    data.type === DirectiveType.TEXT &&
+    typeof data.staticValue === 'object' &&
+    data.staticValue.dynamicData
+  ) {
+    data.directive = sub(data.staticValue);
+  }
+  return data;
+});
+
+function countUp(): State<{ count: number }> {
+  const $count = $state({ count: 0 });
+  connected(() => {
+    const id = setInterval(() => {
+      $count.count++;
+    }, 1000);
+    return () => clearInterval(id);
+  });
+  return $count;
+}
+
+component('test-component', function*(
+  state: State<{ count: number; value: string }>
+) {
+  state.value = '';
+  state.count = 0;
+
+  const $count = countUp();
+  state.merge($count);
+
+  for (;;) {
+    yield () => {
+      const { value, count } = state;
+      return html`
         <div>
           ${html`
             <div>
@@ -45,51 +87,12 @@ function queueRender() {
               type="text"
               value="${value}"
               ${input(v => {
-                value = v;
-                queueRender();
+                state.value = v;
               })}
             />
           </div>
         </div>
-      `
-    ).then(() => {
-      renderPromise = undefined;
-      if (nextQueued) {
-        nextQueued = false;
-        queueRender();
-      }
-    });
-  } else {
-    nextQueued = true;
+      `;
+    };
   }
-}
-
-setInterval(() => {
-  count++;
-  queueRender();
-}, 1000);
-
-defineFallback(data => {
-  if (
-    data.type === DirectiveType.TEXT &&
-    (typeof data.staticValue === 'string' ||
-      typeof data.staticValue === 'number')
-  ) {
-    data.directive = text(data.staticValue + '');
-  }
-  if (
-    data.type === DirectiveType.ATTRIBUTE_VALUE &&
-    (typeof data.staticValue === 'string' ||
-      typeof data.staticValue === 'number')
-  ) {
-    data.directive = attr(data.attribute, data.staticValue + '');
-  }
-  if (
-    data.type === DirectiveType.TEXT &&
-    typeof data.staticValue === 'object' &&
-    data.staticValue.dynamicData
-  ) {
-    data.directive = sub(data.staticValue);
-  }
-  return data;
 });
