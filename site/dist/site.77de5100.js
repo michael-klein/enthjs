@@ -1331,7 +1331,7 @@ var render = function render(container, htmlResult) {
               dataCache.prevValues[id] = [];
             }
 
-            applyFallback(data, currentFallback);
+            data = applyFallback(data, currentFallback);
 
             if (!data.directive) {
               _context.next = 15;
@@ -1412,7 +1412,7 @@ var render = function render(container, htmlResult) {
         }
       }
     });
-  }));
+  })).then(function () {});
 
   if (fragment) {
     container.appendChild(fragment);
@@ -1622,7 +1622,7 @@ regeneratorRuntime.mark(function _callee(node, name, value) {
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
-          if (!(node instanceof HTMLElement && this.type === _html.DirectiveType.ATTRIBUTE)) {
+          if (!(node instanceof HTMLElement && (this.type === _html.DirectiveType.ATTRIBUTE || this.type === _html.DirectiveType.ATTRIBUTE_VALUE))) {
             _context.next = 9;
             break;
           }
@@ -1739,7 +1739,7 @@ function _templateObject2() {
 }
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n        <div>\n          ", "\n        </div>\n        <div>\n          ", "\n        </div>\n        <div>\n          <div>input value: ", "</div>\n          <div>\n            <input\n              type=\"text\"\n              ", "\n              ", "\n            />\n          </div>\n        </div>\n      "]);
+  var data = _taggedTemplateLiteral(["\n        <div>\n          ", "\n        </div>\n        <div>\n          ", "\n        </div>\n        <div>\n          <div>input value: ", "</div>\n          <div>\n            <input\n              type=\"text\"\n              value=\"", "\"\n              ", "\n            />\n          </div>\n        </div>\n      "]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -1775,7 +1775,7 @@ var value = '';
 
 function queueRender() {
   if (!renderPromise) {
-    renderPromise = render_1.render(document.body, html_1.html(_templateObject(), sub_1.sub(html_1.html(_templateObject2(), 'hello', html_1.html(_templateObject3()), 'loool', attr_1.attr('data-test', "".concat(count)), text_1.text("".concat(count)))), sub_1.sub(html_1.html(_templateObject4(), text_1.text("".concat(count)), 'world', 'loool', text_1.text("".concat(count)))), value, attr_1.attr('value', value), input_1.input(function (v) {
+    renderPromise = render_1.render(document.body, html_1.html(_templateObject(), html_1.html(_templateObject2(), 'hello', html_1.html(_templateObject3()), 'loool', attr_1.attr('data-test', "".concat(count)), "".concat(count)), html_1.html(_templateObject4(), count, 'world', 'loool', count), value, value, input_1.input(function (v) {
       value = v;
       queueRender();
     }))).then(function () {
@@ -1798,6 +1798,10 @@ setInterval(function () {
 render_1.defineFallback(function (data) {
   if (data.type === html_1.DirectiveType.TEXT && (typeof data.staticValue === 'string' || typeof data.staticValue === 'number')) {
     data.directive = text_1.text(data.staticValue + '');
+  }
+
+  if (data.type === html_1.DirectiveType.ATTRIBUTE_VALUE && (typeof data.staticValue === 'string' || typeof data.staticValue === 'number')) {
+    data.directive = attr_1.attr(data.attribute, data.staticValue + '');
   }
 
   if (data.type === html_1.DirectiveType.TEXT && _typeof(data.staticValue) === 'object' && data.staticValue.dynamicData) {

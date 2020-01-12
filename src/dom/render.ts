@@ -176,7 +176,7 @@ export const render = (
       if (!dataCache.prevValues[id]) {
         dataCache.prevValues[id] = [];
       }
-      applyFallback(data, currentFallback);
+      data = applyFallback(data, currentFallback);
       if (data.directive) {
         if (
           dataCache.prevValues[id].length !== data.directive.args.length ||
@@ -231,7 +231,7 @@ export const render = (
         }
       }
     })
-  );
+  ).then(() => {});
   if (fragment) {
     container.appendChild(fragment);
   }

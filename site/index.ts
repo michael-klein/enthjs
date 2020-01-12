@@ -16,7 +16,7 @@ function queueRender() {
       document.body,
       html`
         <div>
-          ${sub(html`
+          ${html`
             <div>
               <div>${'hello'}</div>
               <div>
@@ -25,25 +25,25 @@ function queueRender() {
                 `}
               </div>
               <div ${'loool'} ${attr('data-test', `${count}`)}>
-                ${text(`${count}`)}
+                ${`${count}`}
               </div>
             </div>
-          `)}
+          `}
         </div>
         <div>
-          ${sub(html`
+          ${html`
             <div>
-              <div ${text(`${count}`)}>${'world'}</div>
-              <div ${'loool'}>${text(`${count}`)}</div>
+              <div ${count}>${'world'}</div>
+              <div ${'loool'}>${count}</div>
             </div>
-          `)}
+          `}
         </div>
         <div>
           <div>input value: ${value}</div>
           <div>
             <input
               type="text"
-              ${attr('value', value)}
+              value="${value}"
               ${input(v => {
                 value = v;
                 queueRender();
@@ -76,6 +76,13 @@ defineFallback(data => {
       typeof data.staticValue === 'number')
   ) {
     data.directive = text(data.staticValue + '');
+  }
+  if (
+    data.type === DirectiveType.ATTRIBUTE_VALUE &&
+    (typeof data.staticValue === 'string' ||
+      typeof data.staticValue === 'number')
+  ) {
+    data.directive = attr(data.attribute, data.staticValue + '');
   }
   if (
     data.type === DirectiveType.TEXT &&

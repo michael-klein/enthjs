@@ -6,7 +6,11 @@ export const attr = createDirective(function*(
   name: string,
   value: string
 ) {
-  if (node instanceof HTMLElement && this.type === DirectiveType.ATTRIBUTE) {
+  if (
+    node instanceof HTMLElement &&
+    (this.type === DirectiveType.ATTRIBUTE ||
+      this.type === DirectiveType.ATTRIBUTE_VALUE)
+  ) {
     for (;;) {
       const result: DOMUpdate[] = [
         {
