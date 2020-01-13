@@ -34,8 +34,8 @@ export type DirectiveGeneratorFactory<
 ) => DirectiveGenerator<Args>;
 export const IS_DIRECTIVE = Symbol.for('directive');
 export interface DirectiveResult<
-  N extends Node = Node,
-  Args extends any[] = any[]
+  N extends Node = any,
+  Args extends any[] = any
 > {
   [IS_DIRECTIVE]: true;
   factory: DirectiveGeneratorFactory<N, Args>;

@@ -1048,7 +1048,59 @@ var html = function html(staticParts) {
 };
 
 exports.html = html;
-},{"./directive":"../src/dom/directive.ts"}],"../src/scheduler/scheduler.ts":[function(require,module,exports) {
+},{"./directive":"../src/dom/directive.ts"}],"../src/dom/directives/attr.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.attr = void 0;
+
+var _directive = require("../directive");
+
+var _html = require("../html");
+
+var attr = (0, _directive.createDirective)(
+/*#__PURE__*/
+regeneratorRuntime.mark(function _callee(node, name, value) {
+  var result, newArgs;
+  return regeneratorRuntime.wrap(function _callee$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          if (!(node instanceof HTMLElement && (this.type === _html.DirectiveType.ATTRIBUTE || this.type === _html.DirectiveType.ATTRIBUTE_VALUE))) {
+            _context.next = 9;
+            break;
+          }
+
+        case 1:
+          result = [{
+            type: _directive.DOMUpdateType.SET_ATTRIBUTE,
+            node: node,
+            value: value,
+            name: name
+          }];
+          _context.next = 4;
+          return result;
+
+        case 4:
+          newArgs = _context.sent;
+          name = newArgs[0];
+          value = newArgs[1];
+
+        case 7:
+          _context.next = 1;
+          break;
+
+        case 9:
+        case "end":
+          return _context.stop();
+      }
+    }
+  }, _callee, this);
+}));
+exports.attr = attr;
+},{"../directive":"../src/dom/directive.ts","../html":"../src/dom/html.ts"}],"../src/scheduler/scheduler.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1135,6 +1187,151 @@ var schedule = function schedule(cb) {
 };
 
 exports.schedule = schedule;
+},{}],"../src/dom/directives/input.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.input = void 0;
+
+var _directive = require("../directive");
+
+var _scheduler = require("../../scheduler/scheduler");
+
+var input = (0, _directive.createDirective)(
+/*#__PURE__*/
+regeneratorRuntime.mark(function _callee(node, cb) {
+  var cbRef;
+  return regeneratorRuntime.wrap(function _callee$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          cbRef = {
+            cb: cb
+          };
+          node.addEventListener('input', function (e) {
+            var value = e.target.value;
+            (0, _scheduler.schedule)(function () {
+              return cbRef.cb(value);
+            }, _scheduler.PriorityLevel.NORMAL);
+          });
+
+        case 2:
+          _context.next = 4;
+          return;
+
+        case 4:
+          cbRef.cb = _context.sent[0];
+
+        case 5:
+          _context.next = 2;
+          break;
+
+        case 7:
+        case "end":
+          return _context.stop();
+      }
+    }
+  }, _callee);
+}));
+exports.input = input;
+},{"../directive":"../src/dom/directive.ts","../../scheduler/scheduler":"../src/scheduler/scheduler.ts"}],"../src/reactivity/reactivity.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.$state = void 0;
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+var isProxyMap = new WeakSet();
+
+function proxify(obj, onChange) {
+  var initialized = false;
+
+  var onChangeWrapped = function onChangeWrapped() {
+    if (initialized) {
+      onChange();
+    }
+  };
+
+  var proxy = new Proxy(obj, {
+    get: function get(obj, prop) {
+      if (obj[prop] && _typeof(obj[prop]) === 'object' && !isProxyMap.has(obj[prop]) && prop !== 'on' && initialized) {
+        obj[prop] = proxify(obj[prop], onChange);
+      }
+
+      return obj[prop];
+    },
+    set: function set(obj, prop, value) {
+      if ((obj[prop] !== value || !initialized) && prop !== '__$p' && prop !== 'on') {
+        if (_typeof(value) === 'object' && !isProxyMap.has(obj[prop])) {
+          value = proxify(value, onChangeWrapped);
+        }
+
+        obj[prop] = value;
+        onChangeWrapped();
+      } else if (prop === 'on') {
+        obj[prop] = value;
+      }
+
+      return true;
+    }
+  });
+  Object.keys(obj).forEach(function (key) {
+    proxy[key] = obj[key];
+  });
+  isProxyMap.add(proxy);
+  initialized = true;
+  return proxy;
+}
+
+var $state = function $state() {
+  var initialState = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  var listeners = [];
+  var canEmit = true;
+  var proxy = proxify(initialState, function () {
+    if (canEmit) {
+      listeners.forEach(function (l) {
+        return l(proxy);
+      });
+    }
+  });
+
+  proxy.on = function (listener) {
+    listeners.push(listener);
+    return function () {
+      var index = listeners.indexOf(listener);
+
+      if (index > 1) {
+        listeners.splice(index, 1);
+      }
+    };
+  };
+
+  proxy.merge = function (otherState) {
+    var performMerge = function performMerge(value) {
+      Object.keys(value).forEach(function (key) {
+        if (!['on', 'merge'].includes(key)) {
+          proxy[key] = value[key];
+        }
+      });
+    };
+
+    otherState.on(function (value) {
+      performMerge(value);
+    });
+    canEmit = false;
+    performMerge(otherState);
+    canEmit = true;
+  };
+
+  return proxy;
+};
+
+exports.$state = $state;
 },{}],"../src/dom/render.ts":[function(require,module,exports) {
 "use strict";
 
@@ -1422,7 +1619,440 @@ var render = function render(container, htmlResult) {
 };
 
 exports.render = render;
-},{"./html":"../src/dom/html.ts","./directive":"../src/dom/directive.ts","../scheduler/scheduler":"../src/scheduler/scheduler.ts"}],"../src/dom/directives/text.ts":[function(require,module,exports) {
+},{"./html":"../src/dom/html.ts","./directive":"../src/dom/directive.ts","../scheduler/scheduler":"../src/scheduler/scheduler.ts"}],"../src/dom/component.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.sideEffect = sideEffect;
+exports.connected = connected;
+exports.component = component;
+
+var _reactivity = require("../reactivity/reactivity");
+
+var _render = require("./render");
+
+var _scheduler = require("../scheduler/scheduler");
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _wrapNativeSuper(Class) { var _cache = typeof Map === "function" ? new Map() : undefined; _wrapNativeSuper = function _wrapNativeSuper(Class) { if (Class === null || !_isNativeFunction(Class)) return Class; if (typeof Class !== "function") { throw new TypeError("Super expression must either be null or a function"); } if (typeof _cache !== "undefined") { if (_cache.has(Class)) return _cache.get(Class); _cache.set(Class, Wrapper); } function Wrapper() { return _construct(Class, arguments, _getPrototypeOf(this).constructor); } Wrapper.prototype = Object.create(Class.prototype, { constructor: { value: Wrapper, enumerable: false, writable: true, configurable: true } }); return _setPrototypeOf(Wrapper, Class); }; return _wrapNativeSuper(Class); }
+
+function isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+
+function _construct(Parent, args, Class) { if (isNativeReflectConstruct()) { _construct = Reflect.construct; } else { _construct = function _construct(Parent, args, Class) { var a = [null]; a.push.apply(a, args); var Constructor = Function.bind.apply(Parent, a); var instance = new Constructor(); if (Class) _setPrototypeOf(instance, Class.prototype); return instance; }; } return _construct.apply(null, arguments); }
+
+function _isNativeFunction(fn) { return Function.toString.call(fn).indexOf("[native code]") !== -1; }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+var COMPONENT_CONTEXT = Symbol.for('component_context');
+
+function getContext() {
+  if (window[COMPONENT_CONTEXT]) {
+    return window[COMPONENT_CONTEXT];
+  }
+
+  return undefined;
+}
+
+function sideEffect(cb, deps) {
+  var context = getContext();
+
+  if (context) {
+    context.sideEffects.push({
+      cb: cb,
+      deps: deps
+    });
+  }
+}
+
+function connected(cb) {
+  var context = getContext();
+
+  if (context) {
+    context.connectedListeners.push(cb);
+  }
+}
+
+function component(name, factory) {
+  customElements.define(name,
+  /*#__PURE__*/
+  function (_HTMLElement) {
+    _inherits(_class, _HTMLElement);
+
+    function _class() {
+      var _this;
+
+      _classCallCheck(this, _class);
+
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).call(this));
+      _this.disconnectedListeners = [];
+      _this.context = {
+        connectedListeners: [],
+        sideEffects: []
+      };
+      _this.connected = false;
+      window[COMPONENT_CONTEXT] = _this.context;
+
+      _this.attachShadow({
+        mode: 'open'
+      });
+
+      _this.$s = (0, _reactivity.$state)({});
+      _this.generator = factory(_this.$s);
+      return _this;
+    }
+
+    _createClass(_class, [{
+      key: "canRunSideEffect",
+      value: function canRunSideEffect(sideEffect) {
+        sideEffect.canRun = sideEffect.canRun || !sideEffect.deps || !sideEffect.prevDeps;
+
+        if (!sideEffect.canRun) {
+          var deps = sideEffect.deps();
+
+          if (sideEffect.prevDeps) {
+            if (deps.findIndex(function (dep, key) {
+              return sideEffect.prevDeps[key] !== dep;
+            }) > -1) {
+              sideEffect.canRun = true;
+            }
+          } else {
+            sideEffect.canRun = true;
+          }
+
+          sideEffect.prevDeps = deps;
+        } else {
+          if (sideEffect.deps) {
+            sideEffect.prevDeps = sideEffect.deps();
+          }
+        }
+
+        return sideEffect.canRun;
+      }
+    }, {
+      key: "runSideEffects",
+      value: function runSideEffects() {
+        var _this2 = this;
+
+        var promises, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _loop, _iterator, _step;
+
+        return regeneratorRuntime.async(function runSideEffects$(_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                promises = [];
+                _iteratorNormalCompletion = true;
+                _didIteratorError = false;
+                _iteratorError = undefined;
+                _context2.prev = 4;
+
+                _loop = function _loop() {
+                  var sideEffect = _step.value;
+
+                  if (_this2.canRunSideEffect(sideEffect)) {
+                    sideEffect.canRun = undefined;
+                    promises.push(new Promise(function _callee(resolve) {
+                      return regeneratorRuntime.async(function _callee$(_context) {
+                        while (1) {
+                          switch (_context.prev = _context.next) {
+                            case 0:
+                              _context.next = 2;
+                              return regeneratorRuntime.awrap((0, _scheduler.schedule)(function () {
+                                sideEffect.cleanUp = sideEffect.cb();
+                              }, _scheduler.PriorityLevel.LOW));
+
+                            case 2:
+                              resolve();
+
+                            case 3:
+                            case "end":
+                              return _context.stop();
+                          }
+                        }
+                      });
+                    }));
+                  }
+                };
+
+                for (_iterator = this.context.sideEffects[Symbol.iterator](); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                  _loop();
+                }
+
+                _context2.next = 13;
+                break;
+
+              case 9:
+                _context2.prev = 9;
+                _context2.t0 = _context2["catch"](4);
+                _didIteratorError = true;
+                _iteratorError = _context2.t0;
+
+              case 13:
+                _context2.prev = 13;
+                _context2.prev = 14;
+
+                if (!_iteratorNormalCompletion && _iterator.return != null) {
+                  _iterator.return();
+                }
+
+              case 16:
+                _context2.prev = 16;
+
+                if (!_didIteratorError) {
+                  _context2.next = 19;
+                  break;
+                }
+
+                throw _iteratorError;
+
+              case 19:
+                return _context2.finish(16);
+
+              case 20:
+                return _context2.finish(13);
+
+              case 21:
+                _context2.next = 23;
+                return regeneratorRuntime.awrap(Promise.all(promises));
+
+              case 23:
+              case "end":
+                return _context2.stop();
+            }
+          }
+        }, null, this, [[4, 9, 13, 21], [14,, 16, 20]]);
+      }
+    }, {
+      key: "runCleanUps",
+      value: function runCleanUps() {
+        var _this3 = this;
+
+        var force,
+            promises,
+            _iteratorNormalCompletion2,
+            _didIteratorError2,
+            _iteratorError2,
+            _loop2,
+            _iterator2,
+            _step2,
+            _args4 = arguments;
+
+        return regeneratorRuntime.async(function runCleanUps$(_context4) {
+          while (1) {
+            switch (_context4.prev = _context4.next) {
+              case 0:
+                force = _args4.length > 0 && _args4[0] !== undefined ? _args4[0] : false;
+                promises = [];
+                _iteratorNormalCompletion2 = true;
+                _didIteratorError2 = false;
+                _iteratorError2 = undefined;
+                _context4.prev = 5;
+
+                _loop2 = function _loop2() {
+                  var sideEffect = _step2.value;
+
+                  if (_this3.canRunSideEffect(sideEffect) || force) {
+                    if (sideEffect.cleanUp) {
+                      promises.push(new Promise(function _callee2(resolve) {
+                        return regeneratorRuntime.async(function _callee2$(_context3) {
+                          while (1) {
+                            switch (_context3.prev = _context3.next) {
+                              case 0:
+                                _context3.next = 2;
+                                return regeneratorRuntime.awrap((0, _scheduler.schedule)(function () {
+                                  sideEffect.cleanUp();
+                                  sideEffect.cleanUp = undefined;
+                                }, _scheduler.PriorityLevel.LOW));
+
+                              case 2:
+                                resolve();
+
+                              case 3:
+                              case "end":
+                                return _context3.stop();
+                            }
+                          }
+                        });
+                      }));
+                    }
+                  }
+                };
+
+                for (_iterator2 = this.context.sideEffects[Symbol.iterator](); !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                  _loop2();
+                }
+
+                _context4.next = 14;
+                break;
+
+              case 10:
+                _context4.prev = 10;
+                _context4.t0 = _context4["catch"](5);
+                _didIteratorError2 = true;
+                _iteratorError2 = _context4.t0;
+
+              case 14:
+                _context4.prev = 14;
+                _context4.prev = 15;
+
+                if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+                  _iterator2.return();
+                }
+
+              case 17:
+                _context4.prev = 17;
+
+                if (!_didIteratorError2) {
+                  _context4.next = 20;
+                  break;
+                }
+
+                throw _iteratorError2;
+
+              case 20:
+                return _context4.finish(17);
+
+              case 21:
+                return _context4.finish(14);
+
+              case 22:
+                _context4.next = 24;
+                return regeneratorRuntime.awrap(Promise.all(promises));
+
+              case 24:
+              case "end":
+                return _context4.stop();
+            }
+          }
+        }, null, this, [[5, 10, 14, 22], [15,, 17, 21]]);
+      }
+    }, {
+      key: "connectedCallback",
+      value: function connectedCallback() {
+        var _this4 = this;
+
+        if (!this.connected) {
+          this.connected = true;
+          var nextQueued = false;
+
+          var performRender = function performRender() {
+            if (!_this4.renderPromise) {
+              var value = _this4.generator.next().value;
+
+              window[COMPONENT_CONTEXT] = undefined;
+
+              if (value) {
+                _this4.renderPromise = new Promise(function _callee3(resolve) {
+                  return regeneratorRuntime.async(function _callee3$(_context5) {
+                    while (1) {
+                      switch (_context5.prev = _context5.next) {
+                        case 0:
+                          _context5.next = 2;
+                          return regeneratorRuntime.awrap(_this4.runCleanUps());
+
+                        case 2:
+                          _context5.next = 4;
+                          return regeneratorRuntime.awrap((0, _render.render)(_this4.shadowRoot, value()));
+
+                        case 4:
+                          _context5.next = 6;
+                          return regeneratorRuntime.awrap(_this4.runSideEffects());
+
+                        case 6:
+                          _this4.renderPromise = undefined;
+
+                          if (nextQueued) {
+                            nextQueued = false;
+                            performRender();
+                          }
+
+                          resolve();
+
+                        case 9:
+                        case "end":
+                          return _context5.stop();
+                      }
+                    }
+                  });
+                });
+              }
+            } else {
+              nextQueued = true;
+            }
+          };
+
+          performRender();
+          this.stopRenderLoop = this.$s.on(function () {
+            performRender();
+          });
+        }
+
+        this.disconnectedListeners = this.context.connectedListeners.map(function (cb) {
+          return cb();
+        }).filter(function (l) {
+          return l;
+        });
+      }
+    }, {
+      key: "disconnectedCallback",
+      value: function disconnectedCallback() {
+        return regeneratorRuntime.async(function disconnectedCallback$(_context6) {
+          while (1) {
+            switch (_context6.prev = _context6.next) {
+              case 0:
+                if (!this.connected) {
+                  _context6.next = 9;
+                  break;
+                }
+
+                if (this.stopRenderLoop) {
+                  this.stopRenderLoop();
+                }
+
+                this.connected = false;
+                this.disconnectedListeners.forEach(function (cb) {
+                  return cb();
+                });
+                this.disconnectedListeners = [];
+                _context6.next = 7;
+                return regeneratorRuntime.awrap(this.renderPromise);
+
+              case 7:
+                this.runCleanUps(true);
+                this.context.sideEffects.forEach(function (sideEffect) {
+                  sideEffect.prevDeps = undefined;
+                });
+
+              case 9:
+              case "end":
+                return _context6.stop();
+            }
+          }
+        }, null, this);
+      }
+    }]);
+
+    return _class;
+  }(_wrapNativeSuper(HTMLElement)));
+}
+},{"../reactivity/reactivity":"../src/reactivity/reactivity.ts","./render":"../src/dom/render.ts","../scheduler/scheduler":"../src/scheduler/scheduler.ts"}],"../src/dom/directives/text.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1602,332 +2232,68 @@ function () {
   };
 }());
 exports.sub = sub;
-},{"../directive":"../src/dom/directive.ts","../html":"../src/dom/html.ts","../render":"../src/dom/render.ts"}],"../src/dom/directives/attr.ts":[function(require,module,exports) {
+},{"../directive":"../src/dom/directive.ts","../html":"../src/dom/html.ts","../render":"../src/dom/render.ts"}],"../src/dom/default_fallback.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.attr = void 0;
-
-var _directive = require("../directive");
-
-var _html = require("../html");
-
-var attr = (0, _directive.createDirective)(
-/*#__PURE__*/
-regeneratorRuntime.mark(function _callee(node, name, value) {
-  var result, newArgs;
-  return regeneratorRuntime.wrap(function _callee$(_context) {
-    while (1) {
-      switch (_context.prev = _context.next) {
-        case 0:
-          if (!(node instanceof HTMLElement && (this.type === _html.DirectiveType.ATTRIBUTE || this.type === _html.DirectiveType.ATTRIBUTE_VALUE))) {
-            _context.next = 9;
-            break;
-          }
-
-        case 1:
-          result = [{
-            type: _directive.DOMUpdateType.SET_ATTRIBUTE,
-            node: node,
-            value: value,
-            name: name
-          }];
-          _context.next = 4;
-          return result;
-
-        case 4:
-          newArgs = _context.sent;
-          name = newArgs[0];
-          value = newArgs[1];
-
-        case 7:
-          _context.next = 1;
-          break;
-
-        case 9:
-        case "end":
-          return _context.stop();
-      }
-    }
-  }, _callee, this);
-}));
-exports.attr = attr;
-},{"../directive":"../src/dom/directive.ts","../html":"../src/dom/html.ts"}],"../src/dom/directives/input.ts":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.input = void 0;
-
-var _directive = require("../directive");
-
-var _scheduler = require("../../scheduler/scheduler");
-
-var input = (0, _directive.createDirective)(
-/*#__PURE__*/
-regeneratorRuntime.mark(function _callee(node, cb) {
-  var cbRef;
-  return regeneratorRuntime.wrap(function _callee$(_context) {
-    while (1) {
-      switch (_context.prev = _context.next) {
-        case 0:
-          cbRef = {
-            cb: cb
-          };
-          node.addEventListener('input', function (e) {
-            var value = e.target.value;
-            (0, _scheduler.schedule)(function () {
-              return cbRef.cb(value);
-            }, _scheduler.PriorityLevel.NORMAL);
-          });
-
-        case 2:
-          _context.next = 4;
-          return;
-
-        case 4:
-          cbRef.cb = _context.sent[0];
-
-        case 5:
-          _context.next = 2;
-          break;
-
-        case 7:
-        case "end":
-          return _context.stop();
-      }
-    }
-  }, _callee);
-}));
-exports.input = input;
-},{"../directive":"../src/dom/directive.ts","../../scheduler/scheduler":"../src/scheduler/scheduler.ts"}],"../src/reactivity/reactivity.ts":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.$state = void 0;
-
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-var isProxyMap = new WeakSet();
-
-function proxify(obj, onChange) {
-  var initialized = false;
-
-  var onChangeWrapped = function onChangeWrapped() {
-    if (initialized) {
-      onChange();
-    }
-  };
-
-  var proxy = new Proxy(obj, {
-    get: function get(obj, prop) {
-      if (obj[prop] && _typeof(obj[prop]) === 'object' && !isProxyMap.has(obj[prop]) && prop !== 'on' && initialized) {
-        obj[prop] = proxify(obj[prop], onChange);
-      }
-
-      return obj[prop];
-    },
-    set: function set(obj, prop, value) {
-      if ((obj[prop] !== value || !initialized) && prop !== '__$p' && prop !== 'on') {
-        if (_typeof(value) === 'object' && !isProxyMap.has(obj[prop])) {
-          value = proxify(value, onChangeWrapped);
-        }
-
-        obj[prop] = value;
-        onChangeWrapped();
-      } else if (prop === 'on') {
-        obj[prop] = value;
-      }
-
-      return true;
-    }
-  });
-  Object.keys(obj).forEach(function (key) {
-    proxy[key] = obj[key];
-  });
-  isProxyMap.add(proxy);
-  initialized = true;
-  return proxy;
-}
-
-var $state = function $state() {
-  var initialState = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-  var listeners = [];
-  var proxy = proxify(initialState, function () {
-    listeners.forEach(function (l) {
-      return l(proxy);
-    });
-  });
-
-  proxy.on = function (listener) {
-    listeners.push(listener);
-    return function () {
-      var index = listeners.indexOf(listener);
-
-      if (index > 1) {
-        listeners.splice(index, 1);
-      }
-    };
-  };
-
-  proxy.merge = function (otherState) {
-    otherState.on(function (value) {
-      Object.keys(value).forEach(function (key) {
-        proxy[key] = value[key];
-      });
-    });
-  };
-
-  return proxy;
-};
-
-exports.$state = $state;
-},{}],"../src/dom/component.ts":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.connected = connected;
-exports.component = component;
-
-var _reactivity = require("../reactivity/reactivity");
+exports.applyDefaultFallback = applyDefaultFallback;
 
 var _render = require("./render");
 
+var _html = require("./html");
+
+var _attr = require("./directives/attr");
+
+var _text = require("./directives/text");
+
+var _sub = require("./directives/sub");
+
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _wrapNativeSuper(Class) { var _cache = typeof Map === "function" ? new Map() : undefined; _wrapNativeSuper = function _wrapNativeSuper(Class) { if (Class === null || !_isNativeFunction(Class)) return Class; if (typeof Class !== "function") { throw new TypeError("Super expression must either be null or a function"); } if (typeof _cache !== "undefined") { if (_cache.has(Class)) return _cache.get(Class); _cache.set(Class, Wrapper); } function Wrapper() { return _construct(Class, arguments, _getPrototypeOf(this).constructor); } Wrapper.prototype = Object.create(Class.prototype, { constructor: { value: Wrapper, enumerable: false, writable: true, configurable: true } }); return _setPrototypeOf(Wrapper, Class); }; return _wrapNativeSuper(Class); }
-
-function isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
-
-function _construct(Parent, args, Class) { if (isNativeReflectConstruct()) { _construct = Reflect.construct; } else { _construct = function _construct(Parent, args, Class) { var a = [null]; a.push.apply(a, args); var Constructor = Function.bind.apply(Parent, a); var instance = new Constructor(); if (Class) _setPrototypeOf(instance, Class.prototype); return instance; }; } return _construct.apply(null, arguments); }
-
-function _isNativeFunction(fn) { return Function.toString.call(fn).indexOf("[native code]") !== -1; }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-var COMPONENT_CONTEXT = Symbol.for('component_context');
-
-function getContext() {
-  if (window[COMPONENT_CONTEXT]) {
-    return window[COMPONENT_CONTEXT];
-  }
-
-  return undefined;
-}
-
-function connected(cb) {
-  var context = getContext();
-  console.log(context);
-
-  if (context) {
-    context.connectedListeners.push(cb);
-  }
-}
-
-function component(name, factory) {
-  customElements.define(name,
-  /*#__PURE__*/
-  function (_HTMLElement) {
-    _inherits(_class, _HTMLElement);
-
-    function _class() {
-      var _this;
-
-      _classCallCheck(this, _class);
-
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).call(this));
-      _this.disconnectedListeners = [];
-      _this.context = {
-        connectedListeners: []
-      };
-      window[COMPONENT_CONTEXT] = _this.context;
-
-      var shadowRoot = _this.attachShadow({
-        mode: 'open'
-      });
-
-      var $s = (0, _reactivity.$state)({});
-      var generator = factory($s);
-      var renderPromise;
-      var nextQueued = false;
-
-      function performRender() {
-        if (!renderPromise) {
-          var value = generator.next().value;
-          window[COMPONENT_CONTEXT] = undefined;
-
-          if (value) {
-            renderPromise = (0, _render.render)(shadowRoot, value());
-            renderPromise.then(function () {
-              renderPromise = undefined;
-
-              if (nextQueued) {
-                nextQueued = false;
-                performRender();
-              }
-            });
-          }
-        } else {
-          nextQueued = true;
-        }
-      }
-
-      performRender();
-      $s.on(function () {
-        performRender();
-      });
-      return _this;
+function applyDefaultFallback() {
+  (0, _render.defineFallback)(function (data) {
+    if (data.type === _html.DirectiveType.TEXT && (typeof data.staticValue === 'string' || typeof data.staticValue === 'number')) {
+      data.directive = (0, _text.text)(data.staticValue + '');
     }
 
-    _createClass(_class, [{
-      key: "connectedCallback",
-      value: function connectedCallback() {
-        console.log(this.context);
-        this.disconnectedListeners = this.context.connectedListeners.map(function (cb) {
-          return cb();
-        }).filter(function (l) {
-          return l;
-        });
-      }
-    }, {
-      key: "disconnectedCallback",
-      value: function disconnectedCallback() {
-        this.disconnectedListeners.forEach(function (cb) {
-          return cb();
-        });
-        this.disconnectedListeners = [];
-      }
-    }]);
+    if (data.type === _html.DirectiveType.ATTRIBUTE_VALUE && (typeof data.staticValue === 'string' || typeof data.staticValue === 'number')) {
+      data.directive = (0, _attr.attr)(data.attribute, data.staticValue + '');
+    }
 
-    return _class;
-  }(_wrapNativeSuper(HTMLElement)));
+    if (data.type === _html.DirectiveType.TEXT && _typeof(data.staticValue) === 'object' && data.staticValue.dynamicData) {
+      data.directive = (0, _sub.sub)(data.staticValue);
+    }
+
+    return data;
+  });
 }
-},{"../reactivity/reactivity":"../src/reactivity/reactivity.ts","./render":"../src/dom/render.ts"}],"index.ts":[function(require,module,exports) {
+},{"./render":"../src/dom/render.ts","./html":"../src/dom/html.ts","./directives/attr":"../src/dom/directives/attr.ts","./directives/text":"../src/dom/directives/text.ts","./directives/sub":"../src/dom/directives/sub.ts"}],"init.ts":[function(require,module,exports) {
 "use strict";
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var default_fallback_1 = require("../src/dom/default_fallback");
+
+default_fallback_1.applyDefaultFallback();
+},{"../src/dom/default_fallback":"../src/dom/default_fallback.ts"}],"index.ts":[function(require,module,exports) {
+"use strict";
+
+function _templateObject5() {
+  var data = _taggedTemplateLiteral(["\n        <p>\n          ", "\n        </p>\n        <p>", "</p>\n      "]);
+
+  _templateObject5 = function _templateObject5() {
+    return data;
+  };
+
+  return data;
+}
+
 function _templateObject4() {
-  var data = _taggedTemplateLiteral(["\n            <div>\n              <div ", ">", "</div>\n              <div ", ">", "</div>\n            </div>\n          "]);
+  var data = _taggedTemplateLiteral(["\n          <div>\n            <div>input value: ", "</div>\n            <div>\n              <input\n                type=\"text\"\n                value=\"", "\"\n                ", "\n              />\n            </div>\n          </div>\n        "]);
 
   _templateObject4 = function _templateObject4() {
     return data;
@@ -1937,7 +2303,7 @@ function _templateObject4() {
 }
 
 function _templateObject3() {
-  var data = _taggedTemplateLiteral(["\n                  <span>foo</span>\n                "]);
+  var data = _taggedTemplateLiteral(["\n                    <span>foo</span>\n                  "]);
 
   _templateObject3 = function _templateObject3() {
     return data;
@@ -1947,7 +2313,7 @@ function _templateObject3() {
 }
 
 function _templateObject2() {
-  var data = _taggedTemplateLiteral(["\n            <div>\n              <div>", "</div>\n              <div>\n                ", "\n              </div>\n              <div ", " ", ">\n                ", "\n              </div>\n            </div>\n          "]);
+  var data = _taggedTemplateLiteral(["\n              <div>\n                <div>", "</div>\n                <div>\n                  ", "\n                </div>\n                <div ", " ", ">\n                  ", "\n                </div>\n              </div>\n            "]);
 
   _templateObject2 = function _templateObject2() {
     return data;
@@ -1957,7 +2323,7 @@ function _templateObject2() {
 }
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n        <div>\n          ", "\n        </div>\n        <div>\n          ", "\n        </div>\n        <div>\n          <div>input value: ", "</div>\n          <div>\n            <input\n              type=\"text\"\n              value=\"", "\"\n              ", "\n            />\n          </div>\n        </div>\n      "]);
+  var data = _taggedTemplateLiteral(["\n          <div>\n            ", "\n          </div>\n        "]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -1968,8 +2334,6 @@ function _templateObject() {
 
 function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -1977,12 +2341,6 @@ Object.defineProperty(exports, "__esModule", {
 require("regenerator-runtime/runtime");
 
 var html_1 = require("../src/dom/html");
-
-var render_1 = require("../src/dom/render");
-
-var text_1 = require("../src/dom/directives/text");
-
-var sub_1 = require("../src/dom/directives/sub");
 
 var attr_1 = require("../src/dom/directives/attr");
 
@@ -1992,33 +2350,23 @@ var component_1 = require("../src/dom/component");
 
 var reactivity_1 = require("../src/reactivity/reactivity");
 
-render_1.defineFallback(function (data) {
-  if (data.type === html_1.DirectiveType.TEXT && (typeof data.staticValue === 'string' || typeof data.staticValue === 'number')) {
-    data.directive = text_1.text(data.staticValue + '');
-  }
-
-  if (data.type === html_1.DirectiveType.ATTRIBUTE_VALUE && (typeof data.staticValue === 'string' || typeof data.staticValue === 'number')) {
-    data.directive = attr_1.attr(data.attribute, data.staticValue + '');
-  }
-
-  if (data.type === html_1.DirectiveType.TEXT && _typeof(data.staticValue) === 'object' && data.staticValue.dynamicData) {
-    data.directive = sub_1.sub(data.staticValue);
-  }
-
-  return data;
-});
+require("./init");
 
 function countUp() {
   var $count = reactivity_1.$state({
     count: 0
   });
-  component_1.connected(function () {
+  component_1.sideEffect(function () {
     var id = setInterval(function () {
-      $count.count++;
+      var _a;
+
+      $count.count = (_a = $count.count, _a !== null && _a !== void 0 ? _a : 0) + 1;
     }, 1000);
     return function () {
       return clearInterval(id);
     };
+  }, function () {
+    return [];
   });
   return $count;
 }
@@ -2031,33 +2379,42 @@ regeneratorRuntime.mark(function _callee(state) {
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
-          state.value = '';
-          state.count = 0;
           $count = countUp();
           state.merge($count);
 
-        case 4:
-          _context.next = 6;
+        case 2:
+          _context.next = 4;
           return function () {
-            var value = state.value,
-                count = state.count;
-            return html_1.html(_templateObject(), html_1.html(_templateObject2(), 'hello', html_1.html(_templateObject3()), 'loool', attr_1.attr('data-test', "".concat(count)), "".concat(count)), html_1.html(_templateObject4(), count, 'world', 'loool', count), value, value, input_1.input(function (v) {
-              state.value = v;
-            }));
+            var _state$value = state.value,
+                value = _state$value === void 0 ? '' : _state$value,
+                _state$count = state.count,
+                count = _state$count === void 0 ? 0 : _state$count;
+
+            function renderCounter() {
+              return html_1.html(_templateObject(), html_1.html(_templateObject2(), 'hello world', html_1.html(_templateObject3()), 'loool', attr_1.attr('data-test', "".concat(count)), "".concat(count)));
+            }
+
+            function renderInput() {
+              return html_1.html(_templateObject4(), value, value, input_1.input(function (v) {
+                state.value = v;
+              }));
+            }
+
+            return html_1.html(_templateObject5(), renderCounter(), renderInput());
           };
 
-        case 6:
-          _context.next = 4;
+        case 4:
+          _context.next = 2;
           break;
 
-        case 8:
+        case 6:
         case "end":
           return _context.stop();
       }
     }
   }, _callee);
 }));
-},{"regenerator-runtime/runtime":"node_modules/regenerator-runtime/runtime.js","../src/dom/html":"../src/dom/html.ts","../src/dom/render":"../src/dom/render.ts","../src/dom/directives/text":"../src/dom/directives/text.ts","../src/dom/directives/sub":"../src/dom/directives/sub.ts","../src/dom/directives/attr":"../src/dom/directives/attr.ts","../src/dom/directives/input":"../src/dom/directives/input.ts","../src/dom/component":"../src/dom/component.ts","../src/reactivity/reactivity":"../src/reactivity/reactivity.ts"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"regenerator-runtime/runtime":"node_modules/regenerator-runtime/runtime.js","../src/dom/html":"../src/dom/html.ts","../src/dom/directives/attr":"../src/dom/directives/attr.ts","../src/dom/directives/input":"../src/dom/directives/input.ts","../src/dom/component":"../src/dom/component.ts","../src/reactivity/reactivity":"../src/reactivity/reactivity.ts","./init":"init.ts"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -2085,7 +2442,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "34717" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "36913" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

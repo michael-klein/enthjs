@@ -15,6 +15,7 @@
     "@webcomponents/webcomponentsjs": "^2.4.0",
     "codemirror": "^5.50.2",
     "goober": "^1.6.1",
+    "init": "^0.1.2",
     "lottie-web": "^5.5.10",
     "monaco-editor": "^0.19.0",
     "monaco-element": "^0.1.6",

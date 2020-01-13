@@ -1,6 +1,7 @@
 import { HTMLResult } from './html';
 import { State, $state } from '../reactivity/reactivity';
 import { render } from './render';
+import { schedule, PriorityLevel } from '../scheduler/scheduler';
 
 export type ComponentGenerator = Generator<() => HTMLResult>;
 export type ComponentGeneratorFactory<StateType extends {}> = (
@@ -10,9 +11,16 @@ export type ComponentGeneratorFactory<StateType extends {}> = (
 export type ConnectedListener = () => void | (() => void);
 
 const COMPONENT_CONTEXT = Symbol.for('component_context');
-
+interface SideEffect {
+  cb: ConnectedListener;
+  cleanUp?: () => void;
+  deps: () => any[];
+  prevDeps?: any[];
+  canRun?: boolean;
+}
 interface ComponentContext {
   connectedListeners: ConnectedListener[];
+  sideEffects: SideEffect[];
 }
 function getContext(): ComponentContext {
   if (window[COMPONENT_CONTEXT]) {
@@ -20,9 +28,14 @@ function getContext(): ComponentContext {
   }
   return undefined;
 }
+export function sideEffect(cb: ConnectedListener, deps?: () => any[]): void {
+  const context = getContext();
+  if (context) {
+    context.sideEffects.push({ cb, deps });
+  }
+}
 export function connected(cb: ConnectedListener): void {
   const context = getContext();
-  console.log(context);
   if (context) {
     context.connectedListeners.push(cb);
   }
@@ -40,54 +53,135 @@ export function component<
     name,
     class extends HTMLElement {
       private disconnectedListeners: (() => void)[] = [];
+      private generator: ComponentGenerator;
       private context: ComponentContext = {
         connectedListeners: [],
+        sideEffects: [],
       };
+      private $s: S;
+      private stopRenderLoop: () => void;
+      private connected: boolean = false;
+      private renderPromise: Promise<void>;
 
       constructor() {
         super();
         window[COMPONENT_CONTEXT] = this.context;
-        const shadowRoot = this.attachShadow({ mode: 'open' });
-        const $s: S = $state<S>({});
-        const generator: ComponentGenerator = factory($s);
+        this.attachShadow({ mode: 'open' });
+        this.$s = $state<S>({});
+        this.generator = factory(this.$s);
+      }
 
-        let renderPromise: Promise<void>;
-        let nextQueued = false;
-
-        function performRender(): void {
-          if (!renderPromise) {
-            const value = generator.next().value;
-            window[COMPONENT_CONTEXT] = undefined;
-            if (value) {
-              renderPromise = render(shadowRoot, value());
-              renderPromise.then(() => {
-                renderPromise = undefined;
-                if (nextQueued) {
-                  nextQueued = false;
-                  performRender();
-                }
-              });
+      private canRunSideEffect(sideEffect: SideEffect): boolean {
+        sideEffect.canRun =
+          sideEffect.canRun || !sideEffect.deps || !sideEffect.prevDeps;
+        if (!sideEffect.canRun) {
+          const deps = sideEffect.deps();
+          if (sideEffect.prevDeps) {
+            if (
+              deps.findIndex((dep, key) => sideEffect.prevDeps[key] !== dep) >
+              -1
+            ) {
+              sideEffect.canRun = true;
             }
           } else {
-            nextQueued = true;
+            sideEffect.canRun = true;
+          }
+          sideEffect.prevDeps = deps;
+        } else {
+          if (sideEffect.deps) {
+            sideEffect.prevDeps = sideEffect.deps();
           }
         }
-        performRender();
-        $s.on(() => {
-          performRender();
-        });
+        return sideEffect.canRun;
+      }
+
+      private async runSideEffects(): Promise<void> {
+        const promises: Promise<void>[] = [];
+        for (const sideEffect of this.context.sideEffects) {
+          if (this.canRunSideEffect(sideEffect)) {
+            sideEffect.canRun = undefined;
+            promises.push(
+              new Promise(async resolve => {
+                await schedule(() => {
+                  sideEffect.cleanUp = sideEffect.cb() as () => void;
+                }, PriorityLevel.LOW);
+                resolve();
+              })
+            );
+          }
+        }
+        await Promise.all(promises);
+      }
+
+      private async runCleanUps(force: boolean = false): Promise<void> {
+        const promises: Promise<void>[] = [];
+        for (const sideEffect of this.context.sideEffects) {
+          if (this.canRunSideEffect(sideEffect) || force) {
+            if (sideEffect.cleanUp) {
+              promises.push(
+                new Promise(async resolve => {
+                  await schedule(() => {
+                    sideEffect.cleanUp();
+                    sideEffect.cleanUp = undefined;
+                  }, PriorityLevel.LOW);
+                  resolve();
+                })
+              );
+            }
+          }
+        }
+        await Promise.all(promises);
       }
 
       public connectedCallback(): void {
-        console.log(this.context);
+        if (!this.connected) {
+          this.connected = true;
+          let nextQueued = false;
+          const performRender = () => {
+            if (!this.renderPromise) {
+              const value = this.generator.next().value;
+              window[COMPONENT_CONTEXT] = undefined;
+              if (value) {
+                this.renderPromise = new Promise(async resolve => {
+                  await this.runCleanUps();
+                  await render(this.shadowRoot, value());
+                  await this.runSideEffects();
+                  this.renderPromise = undefined;
+                  if (nextQueued) {
+                    nextQueued = false;
+                    performRender();
+                  }
+                  resolve();
+                });
+              }
+            } else {
+              nextQueued = true;
+            }
+          };
+          performRender();
+          this.stopRenderLoop = this.$s.on(() => {
+            performRender();
+          });
+        }
         this.disconnectedListeners = this.context.connectedListeners
           .map(cb => cb())
           .filter(l => l) as (() => void)[];
       }
 
-      public disconnectedCallback(): void {
-        this.disconnectedListeners.forEach(cb => cb());
-        this.disconnectedListeners = [];
+      public async disconnectedCallback(): Promise<void> {
+        if (this.connected) {
+          if (this.stopRenderLoop) {
+            this.stopRenderLoop();
+          }
+          this.connected = false;
+          this.disconnectedListeners.forEach(cb => cb());
+          this.disconnectedListeners = [];
+          await this.renderPromise;
+          this.runCleanUps(true);
+          this.context.sideEffects.forEach(sideEffect => {
+            sideEffect.prevDeps = undefined;
+          });
+        }
       }
     }
   );

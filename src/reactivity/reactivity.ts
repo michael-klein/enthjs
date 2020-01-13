@@ -52,8 +52,11 @@ export const $state = <S extends {} = {}>(
   initialState: Partial<S> = {}
 ): State<S> => {
   let listeners: ((value: S) => void)[] = [];
+  let canEmit = true;
   const proxy = proxify(initialState, () => {
-    listeners.forEach(l => l(proxy));
+    if (canEmit) {
+      listeners.forEach(l => l(proxy));
+    }
   });
   proxy.on = (listener: (value: S) => void): (() => void) => {
     listeners.push(listener);
@@ -65,11 +68,19 @@ export const $state = <S extends {} = {}>(
     };
   };
   proxy.merge = (otherState: State<Partial<S>>) => {
-    otherState.on((value: Partial<S>) => {
+    const performMerge = (value: Partial<S>) => {
       Object.keys(value).forEach(key => {
-        proxy[key] = (value as any)[key];
+        if (!['on', 'merge'].includes(key)) {
+          proxy[key] = (value as any)[key];
+        }
       });
+    };
+    otherState.on(value => {
+      performMerge(value);
     });
+    canEmit = false;
+    performMerge(otherState);
+    canEmit = true;
   };
   return proxy;
 };
