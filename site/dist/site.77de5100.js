@@ -1700,6 +1700,57 @@ function connected(cb) {
   }
 }
 
+var attributeCallbackMap = new Map();
+var observerMap = new WeakMap();
+
+var addObserver = function addObserver(element, onChange) {
+  if (!observerMap.has(element)) {
+    var observer = new MutationObserver(function (mutationsList) {
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = mutationsList[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var mutation = _step.value;
+
+          if (mutation.type === 'attributes') {
+            onChange(mutation.attributeName, element.getAttribute(mutation.attributeName));
+          }
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return != null) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+    });
+    observerMap.set(element, observer);
+  }
+};
+
+var startObserving = function startObserving(element) {
+  if (observerMap.has(element)) {
+    observerMap.get(element).observe(element, {
+      attributes: true
+    });
+  }
+};
+
+var stopObserving = function stopObserving(element) {
+  if (observerMap.has(element)) {
+    observerMap.get(element).disconnect();
+  }
+};
+
 function component(name, factory) {
   customElements.define(name,
   /*#__PURE__*/
@@ -1725,6 +1776,7 @@ function component(name, factory) {
         mode: 'open'
       });
 
+      var accessedAttributes = [];
       var $attributes = (0, _reactivity.proxify)({}, function () {
         console.log('attr changed', $attributes);
       }, {
@@ -1743,6 +1795,15 @@ function component(name, factory) {
           if (!obj[prop]) {
             obj[prop] = _this.getAttribute(prop);
           }
+
+          if (!accessedAttributes.includes(prop)) {
+            accessedAttributes.push(prop);
+          }
+        }
+      });
+      addObserver(_assertThisInitialized(_this), function (name, value) {
+        if (accessedAttributes.includes(name)) {
+          $attributes[name] = value;
         }
       });
       _this.$s = (0, _reactivity.$state)({
@@ -1784,20 +1845,20 @@ function component(name, factory) {
       value: function runSideEffects() {
         var _this2 = this;
 
-        var promises, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _loop, _iterator, _step;
+        var promises, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _loop, _iterator2, _step2;
 
         return regeneratorRuntime.async(function runSideEffects$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
                 promises = [];
-                _iteratorNormalCompletion = true;
-                _didIteratorError = false;
-                _iteratorError = undefined;
+                _iteratorNormalCompletion2 = true;
+                _didIteratorError2 = false;
+                _iteratorError2 = undefined;
                 _context2.prev = 4;
 
                 _loop = function _loop() {
-                  var sideEffect = _step.value;
+                  var sideEffect = _step2.value;
 
                   if (_this2.canRunSideEffect(sideEffect)) {
                     sideEffect.canRun = undefined;
@@ -1824,7 +1885,7 @@ function component(name, factory) {
                   }
                 };
 
-                for (_iterator = this.context.sideEffects[Symbol.iterator](); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                for (_iterator2 = this.context.sideEffects[Symbol.iterator](); !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
                   _loop();
                 }
 
@@ -1834,26 +1895,26 @@ function component(name, factory) {
               case 9:
                 _context2.prev = 9;
                 _context2.t0 = _context2["catch"](4);
-                _didIteratorError = true;
-                _iteratorError = _context2.t0;
+                _didIteratorError2 = true;
+                _iteratorError2 = _context2.t0;
 
               case 13:
                 _context2.prev = 13;
                 _context2.prev = 14;
 
-                if (!_iteratorNormalCompletion && _iterator.return != null) {
-                  _iterator.return();
+                if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+                  _iterator2.return();
                 }
 
               case 16:
                 _context2.prev = 16;
 
-                if (!_didIteratorError) {
+                if (!_didIteratorError2) {
                   _context2.next = 19;
                   break;
                 }
 
-                throw _iteratorError;
+                throw _iteratorError2;
 
               case 19:
                 return _context2.finish(16);
@@ -1879,12 +1940,12 @@ function component(name, factory) {
 
         var force,
             promises,
-            _iteratorNormalCompletion2,
-            _didIteratorError2,
-            _iteratorError2,
+            _iteratorNormalCompletion3,
+            _didIteratorError3,
+            _iteratorError3,
             _loop2,
-            _iterator2,
-            _step2,
+            _iterator3,
+            _step3,
             _args4 = arguments;
 
         return regeneratorRuntime.async(function runCleanUps$(_context4) {
@@ -1893,13 +1954,13 @@ function component(name, factory) {
               case 0:
                 force = _args4.length > 0 && _args4[0] !== undefined ? _args4[0] : false;
                 promises = [];
-                _iteratorNormalCompletion2 = true;
-                _didIteratorError2 = false;
-                _iteratorError2 = undefined;
+                _iteratorNormalCompletion3 = true;
+                _didIteratorError3 = false;
+                _iteratorError3 = undefined;
                 _context4.prev = 5;
 
                 _loop2 = function _loop2() {
-                  var sideEffect = _step2.value;
+                  var sideEffect = _step3.value;
 
                   if (_this3.canRunSideEffect(sideEffect) || force) {
                     if (sideEffect.cleanUp) {
@@ -1928,7 +1989,7 @@ function component(name, factory) {
                   }
                 };
 
-                for (_iterator2 = this.context.sideEffects[Symbol.iterator](); !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                for (_iterator3 = this.context.sideEffects[Symbol.iterator](); !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
                   _loop2();
                 }
 
@@ -1938,26 +1999,26 @@ function component(name, factory) {
               case 10:
                 _context4.prev = 10;
                 _context4.t0 = _context4["catch"](5);
-                _didIteratorError2 = true;
-                _iteratorError2 = _context4.t0;
+                _didIteratorError3 = true;
+                _iteratorError3 = _context4.t0;
 
               case 14:
                 _context4.prev = 14;
                 _context4.prev = 15;
 
-                if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-                  _iterator2.return();
+                if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+                  _iterator3.return();
                 }
 
               case 17:
                 _context4.prev = 17;
 
-                if (!_didIteratorError2) {
+                if (!_didIteratorError3) {
                   _context4.next = 20;
                   break;
                 }
 
-                throw _iteratorError2;
+                throw _iteratorError3;
 
               case 20:
                 return _context4.finish(17);
@@ -2047,6 +2108,7 @@ function component(name, factory) {
           this.stopRenderLoop = this.$s.on(function () {
             _this5.qeueRender();
           });
+          startObserving(this);
         }
 
         this.disconnectedListeners = this.context.connectedListeners.map(function (cb) {
@@ -2063,9 +2125,11 @@ function component(name, factory) {
             switch (_context7.prev = _context7.next) {
               case 0:
                 if (!this.connected) {
-                  _context7.next = 9;
+                  _context7.next = 10;
                   break;
                 }
+
+                stopObserving(this);
 
                 if (this.stopRenderLoop) {
                   this.stopRenderLoop();
@@ -2076,16 +2140,16 @@ function component(name, factory) {
                   return cb();
                 });
                 this.disconnectedListeners = [];
-                _context7.next = 7;
+                _context7.next = 8;
                 return regeneratorRuntime.awrap(this.renderPromise);
 
-              case 7:
+              case 8:
                 this.runCleanUps(true);
                 this.context.sideEffects.forEach(function (sideEffect) {
                   sideEffect.prevDeps = undefined;
                 });
 
-              case 9:
+              case 10:
               case "end":
                 return _context7.stop();
             }
@@ -2338,7 +2402,7 @@ function _templateObject5() {
 }
 
 function _templateObject4() {
-  var data = _taggedTemplateLiteral(["\n          <div>\n            <div>input value: ", "</div>\n            <div>\n              <input\n                type=\"text\"\n                value=\"", "\"\n                ", "\n              />\n            </div>\n          </div>\n        "]);
+  var data = _taggedTemplateLiteral(["\n          <div>\n            <div>input value: ", "</div>\n            <div>test attribute value: ", "</div>\n            <div>\n              <input\n                type=\"text\"\n                value=\"", "\"\n                ", "\n              />\n            </div>\n          </div>\n        "]);
 
   _templateObject4 = function _templateObject4() {
     return data;
@@ -2440,7 +2504,9 @@ regeneratorRuntime.mark(function _callee(state) {
             }
 
             function renderInput() {
-              return html_1.html(_templateObject4(), value, value, input_1.input(function (v) {
+              var _a;
+
+              return html_1.html(_templateObject4(), value, (_a = state.attributes.foo, _a !== null && _a !== void 0 ? _a : ''), value, input_1.input(function (v) {
                 state.attributes.foo = v;
                 state.value = v;
               }));
@@ -2488,7 +2554,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "36913" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "39979" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

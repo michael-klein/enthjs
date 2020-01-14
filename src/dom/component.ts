@@ -45,6 +45,44 @@ declare global {
     [COMPONENT_CONTEXT]: ComponentContext;
   }
 }
+
+const attributeCallbackMap: WeakMap<
+  HTMLElement,
+  { [key: string]: (() => void)[] }
+> = new Map();
+const observerMap: WeakMap<HTMLElement, MutationObserver> = new WeakMap();
+
+const addObserver = (
+  element: HTMLElement,
+  onChange: (name: string, value: string) => void
+): void => {
+  if (!observerMap.has(element)) {
+    const observer = new MutationObserver((mutationsList: MutationRecord[]) => {
+      for (const mutation of mutationsList) {
+        if (mutation.type === 'attributes') {
+          onChange(
+            mutation.attributeName,
+            element.getAttribute(mutation.attributeName)
+          );
+        }
+      }
+    });
+    observerMap.set(element, observer);
+  }
+};
+
+const startObserving = (element: HTMLElement) => {
+  if (observerMap.has(element)) {
+    observerMap.get(element).observe(element, { attributes: true });
+  }
+};
+
+const stopObserving = (element: HTMLElement) => {
+  if (observerMap.has(element)) {
+    observerMap.get(element).disconnect();
+  }
+};
+
 export function component<
   StateValueType extends {},
   StateType extends StateValueType & { attributes: any } = StateValueType & {
@@ -70,6 +108,7 @@ export function component<
         super();
         window[COMPONENT_CONTEXT] = this.context;
         this.attachShadow({ mode: 'open' });
+        const accessedAttributes: string[] = [];
         const $attributes = proxify(
           {},
           () => {
@@ -89,9 +128,17 @@ export function component<
               if (!obj[prop]) {
                 obj[prop] = this.getAttribute(prop);
               }
+              if (!accessedAttributes.includes(prop)) {
+                accessedAttributes.push(prop);
+              }
             },
           }
         );
+        addObserver(this, (name, value) => {
+          if (accessedAttributes.includes(name)) {
+            $attributes[name] = value;
+          }
+        });
         this.$s = $state<S>({
           attributes: $attributes,
         } as Partial<S>);
@@ -189,6 +236,7 @@ export function component<
           this.stopRenderLoop = this.$s.on(() => {
             this.qeueRender();
           });
+          startObserving(this);
         }
         this.disconnectedListeners = this.context.connectedListeners
           .map(cb => cb())
@@ -197,6 +245,7 @@ export function component<
 
       public async disconnectedCallback(): Promise<void> {
         if (this.connected) {
+          stopObserving(this);
           if (this.stopRenderLoop) {
             this.stopRenderLoop();
           }

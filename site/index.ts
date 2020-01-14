@@ -68,6 +68,7 @@ component<{ count: number; value: string }>('test-component', function*(
         return html`
           <div>
             <div>input value: ${value}</div>
+            <div>test attribute value: ${state.attributes.foo ?? ''}</div>
             <div>
               <input
                 type="text"
