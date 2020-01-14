@@ -5,7 +5,7 @@ import {
   getElement,
   sideEffect,
   text,
-} from '../../../src';
+} from '../../../src/export';
 import { getCss } from '../utils.ts';
 import { parse, prettyPrint } from 'recast';
 import { schedule } from '../../../src/old/scheduler';

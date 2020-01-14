@@ -8,7 +8,7 @@ import {
   clss,
   frag,
   $prop,
-} from '../../../src';
+} from '../../../src/export';
 import * as Prism from 'prismjs';
 import SimpleBar from 'simplebar';
 

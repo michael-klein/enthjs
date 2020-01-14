@@ -7,7 +7,7 @@ import {
   attr,
   prop,
   getElement,
-} from '../../../../src';
+} from '../../../../src/export';
 import { getCss } from '../../utils.ts';
 import './intro_code';
 import './intro_info';

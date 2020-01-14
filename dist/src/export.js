@@ -12,4 +12,4 @@ export { html } from "./dom/html.js";
 export { render, defineFallback } from "./dom/render.js";
 export { applyDefaultFallback } from "./dom/default_fallback.js";
 export { $state } from "./reactivity/reactivity.js";
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=export.js.map

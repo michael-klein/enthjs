@@ -11,3 +11,4 @@ export { list } from './dom/directives/list';
 export { html } from './dom/html';
 export { render, defineFallback } from './dom/render';
 export { applyDefaultFallback } from './dom/default_fallback';
+export { $state } from './reactivity/reactivity';

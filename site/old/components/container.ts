@@ -1,4 +1,4 @@
-import { html, component } from '../../../src';
+import { html, component } from '../../../src/export';
 import { getCss } from '../utils.ts';
 
 component('nth-container', () => {

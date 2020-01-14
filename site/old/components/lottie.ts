@@ -5,7 +5,7 @@ import {
   getElement,
   $attr,
   $prop,
-} from '../../../src';
+} from '../../../src/export';
 import lottie from 'lottie-web';
 
 component('nth-lottie', () => {

@@ -11,7 +11,7 @@ import {
   key,
   sub,
   prop,
-} from '../../../src';
+} from '../../../src/export';
 
 component('nth-todo-item', () => {
   const $label = $attr('label');

@@ -1,4 +1,4 @@
-import { html, component, $state, attr, input, text, $attr } from '../../../src';
+import { html, component, $state, attr, input, text, $attr } from '../../../src/export';
 
 component('nth-hello-world', () => {
   const $input = $state({ value: 'Hello World!' });

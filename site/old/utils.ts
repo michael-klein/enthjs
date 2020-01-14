@@ -1,5 +1,5 @@
 import * as goober from 'goober';
-import { getElement, clss, $state, sideEffect } from '../../src';
+import { getElement, clss, $state, sideEffect } from '../../src/export';
 import { State } from '../../src/old/reactivity';
 
 export function getIsInView(): State<{
