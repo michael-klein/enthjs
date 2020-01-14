@@ -1,5 +1,5 @@
 import { HTMLResult } from './html';
-import { State, $state } from '../reactivity/reactivity';
+import { State, $state, proxify } from '../reactivity/reactivity';
 import { render } from './render';
 import { schedule, PriorityLevel } from '../scheduler/scheduler';
 
@@ -46,7 +46,10 @@ declare global {
   }
 }
 export function component<
-  StateType extends {},
+  StateValueType extends {},
+  StateType extends StateValueType & { attributes: any } = StateValueType & {
+    attributes: any;
+  },
   S extends State<StateType> = State<StateType>
 >(name: string, factory: ComponentGeneratorFactory<StateType>): void {
   customElements.define(
@@ -67,7 +70,31 @@ export function component<
         super();
         window[COMPONENT_CONTEXT] = this.context;
         this.attachShadow({ mode: 'open' });
-        this.$s = $state<S>({});
+        const $attributes = proxify(
+          {},
+          () => {
+            console.log('attr changed', $attributes);
+          },
+          {
+            set: (obj, prop, value) => {
+              if (obj[prop] !== value) {
+                schedule(() => {
+                  this.setAttribute(prop as string, value);
+                });
+                this.qeueRender();
+              }
+              return value;
+            },
+            get: (obj, prop: any) => {
+              if (!obj[prop]) {
+                obj[prop] = this.getAttribute(prop);
+              }
+            },
+          }
+        );
+        this.$s = $state<S>({
+          attributes: $attributes,
+        } as Partial<S>);
         this.generator = factory(this.$s);
       }
 
@@ -133,34 +160,34 @@ export function component<
         await Promise.all(promises);
       }
 
+      private nextQueued = false;
+      private async qeueRender(): Promise<void> {
+        if (!this.renderPromise) {
+          const value = this.generator.next().value;
+          window[COMPONENT_CONTEXT] = undefined;
+          if (value) {
+            this.renderPromise = new Promise(async resolve => {
+              await this.runCleanUps();
+              await render(this.shadowRoot, value());
+              await this.runSideEffects();
+              this.renderPromise = undefined;
+              if (this.nextQueued) {
+                this.nextQueued = false;
+                this.qeueRender();
+              }
+              resolve();
+            });
+          }
+        } else {
+          this.nextQueued = true;
+        }
+      }
+
       public connectedCallback(): void {
         if (!this.connected) {
-          this.connected = true;
-          let nextQueued = false;
-          const performRender = () => {
-            if (!this.renderPromise) {
-              const value = this.generator.next().value;
-              window[COMPONENT_CONTEXT] = undefined;
-              if (value) {
-                this.renderPromise = new Promise(async resolve => {
-                  await this.runCleanUps();
-                  await render(this.shadowRoot, value());
-                  await this.runSideEffects();
-                  this.renderPromise = undefined;
-                  if (nextQueued) {
-                    nextQueued = false;
-                    performRender();
-                  }
-                  resolve();
-                });
-              }
-            } else {
-              nextQueued = true;
-            }
-          };
-          performRender();
+          this.qeueRender();
           this.stopRenderLoop = this.$s.on(() => {
-            performRender();
+            this.qeueRender();
           });
         }
         this.disconnectedListeners = this.context.connectedListeners

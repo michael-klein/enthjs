@@ -28,10 +28,10 @@ function countUp(): State<{ count: number }> {
   return $count;
 }
 
-component('test-component', function*(
+component<{ count: number; value: string }>('test-component', function*(
   // whenever state changes, the component will re-render
   // state will eventually also container values/props on the host element
-  state: State<{ count: number; value: string }>
+  state
 ) {
   const $count = countUp();
   state.merge($count);
@@ -73,6 +73,7 @@ component('test-component', function*(
                 type="text"
                 value="${value}"
                 ${input(v => {
+                  state.attributes.foo = v;
                   state.value = v;
                 })}
               />

@@ -1242,6 +1242,7 @@ exports.input = input;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.proxify = proxify;
 exports.$state = void 0;
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -1249,6 +1250,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
 var isProxyMap = new WeakSet();
 
 function proxify(obj, onChange) {
+  var hooks = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
   var initialized = false;
 
   var onChangeWrapped = function onChangeWrapped() {
@@ -1259,6 +1261,10 @@ function proxify(obj, onChange) {
 
   var proxy = new Proxy(obj, {
     get: function get(obj, prop) {
+      if (hooks.get) {
+        hooks.get(obj, prop);
+      }
+
       if (obj[prop] && _typeof(obj[prop]) === 'object' && !isProxyMap.has(obj[prop]) && prop !== 'on' && initialized) {
         obj[prop] = proxify(obj[prop], onChange);
       }
@@ -1266,6 +1272,10 @@ function proxify(obj, onChange) {
       return obj[prop];
     },
     set: function set(obj, prop, value) {
+      if (hooks.set) {
+        value = hooks.set(obj, prop, value);
+      }
+
       if ((obj[prop] !== value || !initialized) && prop !== '__$p' && prop !== 'on') {
         if (_typeof(value) === 'object' && !isProxyMap.has(obj[prop])) {
           value = proxify(value, onChangeWrapped);
@@ -1708,13 +1718,36 @@ function component(name, factory) {
         sideEffects: []
       };
       _this.connected = false;
+      _this.nextQueued = false;
       window[COMPONENT_CONTEXT] = _this.context;
 
       _this.attachShadow({
         mode: 'open'
       });
 
-      _this.$s = (0, _reactivity.$state)({});
+      var $attributes = (0, _reactivity.proxify)({}, function () {
+        console.log('attr changed', $attributes);
+      }, {
+        set: function set(obj, prop, value) {
+          if (obj[prop] !== value) {
+            (0, _scheduler.schedule)(function () {
+              _this.setAttribute(prop, value);
+            });
+
+            _this.qeueRender();
+          }
+
+          return value;
+        },
+        get: function get(obj, prop) {
+          if (!obj[prop]) {
+            obj[prop] = _this.getAttribute(prop);
+          }
+        }
+      });
+      _this.$s = (0, _reactivity.$state)({
+        attributes: $attributes
+      });
       _this.generator = factory(_this.$s);
       return _this;
     }
@@ -1944,63 +1977,75 @@ function component(name, factory) {
         }, null, this, [[5, 10, 14, 22], [15,, 17, 21]]);
       }
     }, {
-      key: "connectedCallback",
-      value: function connectedCallback() {
+      key: "qeueRender",
+      value: function qeueRender() {
         var _this4 = this;
 
-        if (!this.connected) {
-          this.connected = true;
-          var nextQueued = false;
+        var value;
+        return regeneratorRuntime.async(function qeueRender$(_context6) {
+          while (1) {
+            switch (_context6.prev = _context6.next) {
+              case 0:
+                if (!this.renderPromise) {
+                  value = this.generator.next().value;
+                  window[COMPONENT_CONTEXT] = undefined;
 
-          var performRender = function performRender() {
-            if (!_this4.renderPromise) {
-              var value = _this4.generator.next().value;
+                  if (value) {
+                    this.renderPromise = new Promise(function _callee3(resolve) {
+                      return regeneratorRuntime.async(function _callee3$(_context5) {
+                        while (1) {
+                          switch (_context5.prev = _context5.next) {
+                            case 0:
+                              _context5.next = 2;
+                              return regeneratorRuntime.awrap(_this4.runCleanUps());
 
-              window[COMPONENT_CONTEXT] = undefined;
+                            case 2:
+                              _context5.next = 4;
+                              return regeneratorRuntime.awrap((0, _render.render)(_this4.shadowRoot, value()));
 
-              if (value) {
-                _this4.renderPromise = new Promise(function _callee3(resolve) {
-                  return regeneratorRuntime.async(function _callee3$(_context5) {
-                    while (1) {
-                      switch (_context5.prev = _context5.next) {
-                        case 0:
-                          _context5.next = 2;
-                          return regeneratorRuntime.awrap(_this4.runCleanUps());
+                            case 4:
+                              _context5.next = 6;
+                              return regeneratorRuntime.awrap(_this4.runSideEffects());
 
-                        case 2:
-                          _context5.next = 4;
-                          return regeneratorRuntime.awrap((0, _render.render)(_this4.shadowRoot, value()));
+                            case 6:
+                              _this4.renderPromise = undefined;
 
-                        case 4:
-                          _context5.next = 6;
-                          return regeneratorRuntime.awrap(_this4.runSideEffects());
+                              if (_this4.nextQueued) {
+                                _this4.nextQueued = false;
 
-                        case 6:
-                          _this4.renderPromise = undefined;
+                                _this4.qeueRender();
+                              }
 
-                          if (nextQueued) {
-                            nextQueued = false;
-                            performRender();
+                              resolve();
+
+                            case 9:
+                            case "end":
+                              return _context5.stop();
                           }
+                        }
+                      });
+                    });
+                  }
+                } else {
+                  this.nextQueued = true;
+                }
 
-                          resolve();
-
-                        case 9:
-                        case "end":
-                          return _context5.stop();
-                      }
-                    }
-                  });
-                });
-              }
-            } else {
-              nextQueued = true;
+              case 1:
+              case "end":
+                return _context6.stop();
             }
-          };
+          }
+        }, null, this);
+      }
+    }, {
+      key: "connectedCallback",
+      value: function connectedCallback() {
+        var _this5 = this;
 
-          performRender();
+        if (!this.connected) {
+          this.qeueRender();
           this.stopRenderLoop = this.$s.on(function () {
-            performRender();
+            _this5.qeueRender();
           });
         }
 
@@ -2013,12 +2058,12 @@ function component(name, factory) {
     }, {
       key: "disconnectedCallback",
       value: function disconnectedCallback() {
-        return regeneratorRuntime.async(function disconnectedCallback$(_context6) {
+        return regeneratorRuntime.async(function disconnectedCallback$(_context7) {
           while (1) {
-            switch (_context6.prev = _context6.next) {
+            switch (_context7.prev = _context7.next) {
               case 0:
                 if (!this.connected) {
-                  _context6.next = 9;
+                  _context7.next = 9;
                   break;
                 }
 
@@ -2031,7 +2076,7 @@ function component(name, factory) {
                   return cb();
                 });
                 this.disconnectedListeners = [];
-                _context6.next = 7;
+                _context7.next = 7;
                 return regeneratorRuntime.awrap(this.renderPromise);
 
               case 7:
@@ -2042,7 +2087,7 @@ function component(name, factory) {
 
               case 9:
               case "end":
-                return _context6.stop();
+                return _context7.stop();
             }
           }
         }, null, this);
@@ -2396,6 +2441,7 @@ regeneratorRuntime.mark(function _callee(state) {
 
             function renderInput() {
               return html_1.html(_templateObject4(), value, value, input_1.input(function (v) {
+                state.attributes.foo = v;
                 state.value = v;
               }));
             }
