@@ -9,5 +9,6 @@ export { sub } from "./dom/directives/sub.js";
 export { frag } from "./dom/directives/frag.js";
 export { list } from "./dom/directives/list.js";
 export { html } from "./dom/html.js";
-export { render } from "./dom/render.js";
+export { render, defineFallback } from "./dom/render.js";
+export { applyDefaultFallback } from "./dom/default_fallback.js";
 //# sourceMappingURL=index.js.map

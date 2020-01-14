@@ -9,4 +9,5 @@ export { sub } from './dom/directives/sub';
 export { frag } from './dom/directives/frag';
 export { list } from './dom/directives/list';
 export { html } from './dom/html';
-export { render } from './dom/render';
+export { render, defineFallback } from './dom/render';
+export { applyDefaultFallback } from './dom/default_fallback';
