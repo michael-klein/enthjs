@@ -20,7 +20,6 @@ export function connected(cb) {
         context.connectedListeners.push(cb);
     }
 }
-const attributeCallbackMap = new Map();
 const observerMap = new WeakMap();
 const addObserver = (element, onChange) => {
     if (!observerMap.has(element)) {
@@ -44,6 +43,64 @@ const stopObserving = (element) => {
         observerMap.get(element).disconnect();
     }
 };
+function createPropertyProxy(element, queueRender) {
+    const accessedProps = [];
+    const $properties = proxify({}, () => { }, {
+        set: (obj, prop, value) => {
+            if (obj[prop] !== value && accessedProps.includes(prop)) {
+                queueRender();
+            }
+            return value;
+        },
+        get: (obj, prop) => {
+            if (!obj[prop]) {
+                obj[prop] = element[prop] || undefined;
+            }
+            if (!accessedProps.includes(prop)) {
+                accessedProps.push(prop);
+                Object.defineProperty(element, prop, {
+                    get: () => obj[prop],
+                    set: (value) => {
+                        if (obj[prop] !== value) {
+                            obj[prop] = value;
+                            queueRender();
+                        }
+                    },
+                });
+            }
+        },
+    });
+    return $properties;
+}
+function createAttributeProxy(element, queueRender) {
+    const accessedAttributes = [];
+    const $attributes = proxify({}, () => { }, {
+        set: (obj, prop, value) => {
+            if (obj[prop] !== value) {
+                schedule(() => {
+                    element.setAttribute(prop, value);
+                });
+                queueRender();
+            }
+            return value;
+        },
+        get: (obj, prop) => {
+            if (!obj[prop]) {
+                obj[prop] = element.getAttribute(prop) || undefined;
+            }
+            if (!accessedAttributes.includes(prop)) {
+                accessedAttributes.push(prop);
+            }
+            return obj[prop];
+        },
+    });
+    addObserver(element, (name, value) => {
+        if (accessedAttributes.includes(name)) {
+            $attributes[name] = value;
+        }
+    });
+    return $attributes;
+}
 export function component(name, factory) {
     customElements.define(name, class extends HTMLElement {
         constructor() {
@@ -57,35 +114,9 @@ export function component(name, factory) {
             this.nextQueued = false;
             window[COMPONENT_CONTEXT] = this.context;
             this.attachShadow({ mode: 'open' });
-            const accessedAttributes = [];
-            const $attributes = proxify({}, () => {
-                console.log('attr changed', $attributes);
-            }, {
-                set: (obj, prop, value) => {
-                    if (obj[prop] !== value) {
-                        schedule(() => {
-                            this.setAttribute(prop, value);
-                        });
-                        this.qeueRender();
-                    }
-                    return value;
-                },
-                get: (obj, prop) => {
-                    if (!obj[prop]) {
-                        obj[prop] = this.getAttribute(prop);
-                    }
-                    if (!accessedAttributes.includes(prop)) {
-                        accessedAttributes.push(prop);
-                    }
-                },
-            });
-            addObserver(this, (name, value) => {
-                if (accessedAttributes.includes(name)) {
-                    $attributes[name] = value;
-                }
-            });
             this.$s = $state({
-                attributes: $attributes,
+                attributes: createAttributeProxy(this, () => this.queueRender()),
+                properties: createPropertyProxy(this, () => this.queueRender()),
             });
             this.generator = factory(this.$s);
         }
@@ -144,7 +175,7 @@ export function component(name, factory) {
             }
             await Promise.all(promises);
         }
-        async qeueRender() {
+        async queueRender() {
             if (!this.renderPromise) {
                 const value = this.generator.next().value;
                 window[COMPONENT_CONTEXT] = undefined;
@@ -156,7 +187,7 @@ export function component(name, factory) {
                         this.renderPromise = undefined;
                         if (this.nextQueued) {
                             this.nextQueued = false;
-                            this.qeueRender();
+                            this.queueRender();
                         }
                         resolve();
                     });
@@ -168,9 +199,9 @@ export function component(name, factory) {
         }
         connectedCallback() {
             if (!this.connected) {
-                this.qeueRender();
+                this.queueRender();
                 this.stopRenderLoop = this.$s.on(() => {
-                    this.qeueRender();
+                    this.queueRender();
                 });
                 startObserving(this);
             }

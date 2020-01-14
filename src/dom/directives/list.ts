@@ -1,19 +1,25 @@
 import { createDirective, DOMUpdateType, DOMUpdate } from '../directive';
-import { HTMLResult, getAttributeMarker } from '../html';
+import { HTMLResult, getAttributeMarker, isDirective } from '../html';
 import { render } from '../render';
 
-export function getKey(htmlResult: HTMLResult): string {
+export function getKey(
+  htmlResult: HTMLResult,
+  template: HTMLTemplateElement
+): string {
   let id: number = 0;
-  for (const directive of htmlResult.directives) {
-    if ((directive.d.directive as any) === key) {
-      const listNode = htmlResult.template.content.querySelector(
-        `[${getAttributeMarker(id)}]`
-      );
-      if (listNode && !listNode.parentElement) return directive.d.args[0];
+  for (const dynamicData of htmlResult.dynamicData) {
+    if (isDirective(dynamicData)) {
+      if ((dynamicData.directive.directive as any) === key) {
+        const listNode = template.content.querySelector(
+          `[${getAttributeMarker(id)}]`
+        );
+        if (listNode && !listNode.parentElement)
+          return dynamicData.directive.args[0];
+      }
     }
     id++;
   }
-  return htmlResult.template.innerHTML;
+  return htmlResult.staticParts.join();
 }
 
 export const list = createDirective(function*(
@@ -21,6 +27,7 @@ export const list = createDirective(function*(
   htmlResults: HTMLResult[]
 ) {
   if (node.nodeType === 3) {
+    const { template } = this;
     const root = document.createDocumentFragment();
     const start = document.createComment('');
     root.appendChild(start);
@@ -38,7 +45,7 @@ export const list = createDirective(function*(
     let oldKeyOrder: string[] = [];
     for (;;) {
       const keyOrder: string[] = htmlResults.map(result => {
-        const key = getKey(result);
+        const key = getKey(result, template);
         if (!keyToFragmentsMap.has(key)) {
           const frag = document.createDocumentFragment();
           render(frag as any, result);

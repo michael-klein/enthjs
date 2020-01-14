@@ -23,8 +23,18 @@ declare global {
     }
 }
 export declare function component<StateValueType extends {}, StateType extends StateValueType & {
-    attributes: any;
+    attributes: {
+        [key: string]: string;
+    };
+    properties: {
+        [key: string]: any;
+    };
 } = StateValueType & {
-    attributes: any;
+    attributes: {
+        [key: string]: string;
+    };
+    properties: {
+        [key: string]: any;
+    };
 }, S extends State<StateType> = State<StateType>>(name: string, factory: ComponentGeneratorFactory<StateType>): void;
 export {};

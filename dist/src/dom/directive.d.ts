@@ -19,6 +19,8 @@ export declare enum DOMUpdateType {
 export declare type DirectiveGenerator<Args extends any[] = any[]> = Generator<DOMUpdate[] | Promise<DOMUpdate[]> | void, void, Args> | AsyncGenerator<DOMUpdate[] | Promise<DOMUpdate[]> | void, void, Args>;
 export interface DirectiveGeneratorFactoryThis {
     type: DirectiveType;
+    container: Node;
+    template: HTMLTemplateElement;
 }
 export declare type DirectiveGeneratorFactory<N extends Node = Node, Args extends any[] = any[]> = (this: DirectiveGeneratorFactoryThis, node: N, ...initialArgs: Args) => DirectiveGenerator<Args>;
 export declare const IS_DIRECTIVE: unique symbol;

@@ -23,6 +23,8 @@ export type DirectiveGenerator<Args extends any[] = any[]> =
   | AsyncGenerator<DOMUpdate[] | Promise<DOMUpdate[]> | void, void, Args>;
 export interface DirectiveGeneratorFactoryThis {
   type: DirectiveType;
+  container: Node;
+  template: HTMLTemplateElement;
 }
 export type DirectiveGeneratorFactory<
   N extends Node = Node,

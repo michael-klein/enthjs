@@ -46,10 +46,6 @@ declare global {
   }
 }
 
-const attributeCallbackMap: WeakMap<
-  HTMLElement,
-  { [key: string]: (() => void)[] }
-> = new Map();
 const observerMap: WeakMap<HTMLElement, MutationObserver> = new WeakMap();
 
 const addObserver = (

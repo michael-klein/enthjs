@@ -81,7 +81,11 @@ function processTemplate(template, container, htmlResult) {
                             }
                         }
                     }
-                    generators[id] = data.directive.factory.call({ type: data.type }, textNode, ...data.directive.args);
+                    generators[id] = data.directive.factory.call({
+                        type: data.type,
+                        container,
+                        template,
+                    }, textNode, ...data.directive.args);
                     if (!isTextArea) {
                         placeholder.parentNode.replaceChild(textNode, placeholder);
                     }
@@ -90,7 +94,11 @@ function processTemplate(template, container, htmlResult) {
                 case DirectiveType.ATTRIBUTE_VALUE:
                     const marker = getAttributeMarker(id);
                     const node = fragment.querySelector(`[${marker}]`);
-                    generators[id] = data.directive.factory.call({ type: data.type }, node, ...data.directive.args);
+                    generators[id] = data.directive.factory.call({
+                        type: data.type,
+                        container,
+                        template,
+                    }, node, ...data.directive.args);
                     node.removeAttribute(marker);
             }
         }
@@ -110,7 +118,11 @@ const containerDataCache = new WeakMap();
 export const render = (container, htmlResult) => {
     let fragment;
     let init = false;
-    const dataCache = containerDataCache.get(container) || {};
+    const dataCache = containerDataCache.get(container) || {
+        dynamicData: [],
+    };
+    dataCache.dynamicData.length = 0;
+    dataCache.dynamicData = htmlResult.dynamicData;
     containerDataCache.set(container, dataCache);
     if (!renderedNodesMap.has(container)) {
         init = true;

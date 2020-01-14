@@ -86,6 +86,7 @@ function processTemplate(
   generatorMap.set(container, generators);
   const fragment = template.content;
   const { dynamicData } = htmlResult;
+
   dynamicData.forEach((data, id) => {
     if (data.directive) {
       switch (data.type) {
@@ -109,7 +110,11 @@ function processTemplate(
           }
 
           generators[id] = data.directive.factory.call(
-            { type: data.type },
+            {
+              type: data.type,
+              container,
+              template,
+            },
             textNode,
             ...data.directive.args
           );
@@ -122,7 +127,11 @@ function processTemplate(
           const marker = getAttributeMarker(id);
           const node = fragment.querySelector(`[${marker}]`);
           generators[id] = data.directive.factory.call(
-            { type: data.type },
+            {
+              type: data.type,
+              container,
+              template,
+            },
             node,
             ...data.directive.args
           );
@@ -147,6 +156,7 @@ interface CachedData {
   staticParts?: TemplateStringsArray;
   states?: any[];
   prevValues?: any[][];
+  dynamicData: DynamicData[];
 }
 const containerDataCache: WeakMap<Node, CachedData> = new WeakMap();
 export const render = (
@@ -155,7 +165,11 @@ export const render = (
 ): Promise<void> => {
   let fragment: DocumentFragment;
   let init = false;
-  const dataCache: CachedData = containerDataCache.get(container) || {};
+  const dataCache: CachedData = containerDataCache.get(container) || {
+    dynamicData: [],
+  };
+  dataCache.dynamicData.length = 0;
+  dataCache.dynamicData = htmlResult.dynamicData;
   containerDataCache.set(container, dataCache);
   if (!renderedNodesMap.has(container)) {
     init = true;

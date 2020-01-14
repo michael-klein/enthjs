@@ -1,20 +1,23 @@
 import { createDirective, DOMUpdateType } from "../directive.js";
-import { getAttributeMarker } from "../html.js";
+import { getAttributeMarker, isDirective } from "../html.js";
 import { render } from "../render.js";
-export function getKey(htmlResult) {
+export function getKey(htmlResult, template) {
     let id = 0;
-    for (const directive of htmlResult.directives) {
-        if (directive.d.directive === key) {
-            const listNode = htmlResult.template.content.querySelector(`[${getAttributeMarker(id)}]`);
-            if (listNode && !listNode.parentElement)
-                return directive.d.args[0];
+    for (const dynamicData of htmlResult.dynamicData) {
+        if (isDirective(dynamicData)) {
+            if (dynamicData.directive.directive === key) {
+                const listNode = template.content.querySelector(`[${getAttributeMarker(id)}]`);
+                if (listNode && !listNode.parentElement)
+                    return dynamicData.directive.args[0];
+            }
         }
         id++;
     }
-    return htmlResult.template.innerHTML;
+    return htmlResult.staticParts.join();
 }
 export const list = createDirective(function* (node, htmlResults) {
     if (node.nodeType === 3) {
+        const { template } = this;
         const root = document.createDocumentFragment();
         const start = document.createComment('');
         root.appendChild(start);
@@ -29,7 +32,7 @@ export const list = createDirective(function* (node, htmlResults) {
         let oldKeyOrder = [];
         for (;;) {
             const keyOrder = htmlResults.map(result => {
-                const key = getKey(result);
+                const key = getKey(result, template);
                 if (!keyToFragmentsMap.has(key)) {
                     const frag = document.createDocumentFragment();
                     render(frag, result);

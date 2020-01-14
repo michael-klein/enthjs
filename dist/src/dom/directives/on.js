@@ -1,5 +1,5 @@
 import { createDirective } from "../directive.js";
-import { PriorityLevel, schedule } from "../scheduler.js";
+import { schedule, PriorityLevel } from "../../scheduler/scheduler.js";
 export const on = createDirective(function* (node, name, cb) {
     const cbRef = {
         cb,
