@@ -83,10 +83,74 @@ const stopObserving = (element: HTMLElement) => {
   }
 };
 
+function createPropertyProxy(element: any, queueRender: () => void) {
+  const accessedProps: string[] = [];
+  const $properties = proxify({}, () => {}, {
+    set: (obj, prop: any, value) => {
+      if (obj[prop] !== value && accessedProps.includes(prop)) {
+        queueRender();
+      }
+      return value;
+    },
+    get: (obj, prop: any) => {
+      if (!obj[prop]) {
+        obj[prop] = element[prop] || undefined;
+      }
+      if (!accessedProps.includes(prop)) {
+        accessedProps.push(prop);
+        Object.defineProperty(element, prop, {
+          get: () => obj[prop],
+          set: (value: any) => {
+            if (obj[prop] !== value) {
+              obj[prop] = value;
+              queueRender();
+            }
+          },
+        });
+      }
+    },
+  });
+  return $properties;
+}
+
+function createAttributeProxy(element: HTMLElement, queueRender: () => void) {
+  const accessedAttributes: string[] = [];
+  const $attributes = proxify({}, () => {}, {
+    set: (obj, prop, value) => {
+      if (obj[prop] !== value) {
+        schedule(() => {
+          element.setAttribute(prop as string, value);
+        });
+        queueRender();
+      }
+      return value;
+    },
+    get: (obj, prop: any) => {
+      if (!obj[prop]) {
+        obj[prop] = element.getAttribute(prop) || undefined;
+      }
+      if (!accessedAttributes.includes(prop)) {
+        accessedAttributes.push(prop);
+      }
+      return obj[prop];
+    },
+  });
+  addObserver(element, (name, value) => {
+    if (accessedAttributes.includes(name)) {
+      $attributes[name] = value;
+    }
+  });
+  return $attributes;
+}
+
 export function component<
   StateValueType extends {},
-  StateType extends StateValueType & { attributes: any } = StateValueType & {
-    attributes: any;
+  StateType extends StateValueType & {
+    attributes: { [key: string]: string };
+    properties: { [key: string]: any };
+  } = StateValueType & {
+    attributes: { [key: string]: string };
+    properties: { [key: string]: any };
   },
   S extends State<StateType> = State<StateType>
 >(name: string, factory: ComponentGeneratorFactory<StateType>): void {
@@ -108,39 +172,9 @@ export function component<
         super();
         window[COMPONENT_CONTEXT] = this.context;
         this.attachShadow({ mode: 'open' });
-        const accessedAttributes: string[] = [];
-        const $attributes = proxify(
-          {},
-          () => {
-            console.log('attr changed', $attributes);
-          },
-          {
-            set: (obj, prop, value) => {
-              if (obj[prop] !== value) {
-                schedule(() => {
-                  this.setAttribute(prop as string, value);
-                });
-                this.qeueRender();
-              }
-              return value;
-            },
-            get: (obj, prop: any) => {
-              if (!obj[prop]) {
-                obj[prop] = this.getAttribute(prop) || undefined;
-              }
-              if (!accessedAttributes.includes(prop)) {
-                accessedAttributes.push(prop);
-              }
-            }, 
-          }
-        );
-        addObserver(this, (name, value) => {
-          if (accessedAttributes.includes(name)) {
-            $attributes[name] = value;
-          }
-        });
         this.$s = $state<S>({
-          attributes: $attributes,
+          attributes: createAttributeProxy(this, () => this.queueRender()),
+          properties: createPropertyProxy(this, () => this.queueRender()),
         } as Partial<S>);
         this.generator = factory(this.$s);
       }
@@ -208,7 +242,7 @@ export function component<
       }
 
       private nextQueued = false;
-      private async qeueRender(): Promise<void> {
+      private async queueRender(): Promise<void> {
         if (!this.renderPromise) {
           const value = this.generator.next().value;
           window[COMPONENT_CONTEXT] = undefined;
@@ -220,7 +254,7 @@ export function component<
               this.renderPromise = undefined;
               if (this.nextQueued) {
                 this.nextQueued = false;
-                this.qeueRender();
+                this.queueRender();
               }
               resolve();
             });
@@ -232,9 +266,9 @@ export function component<
 
       public connectedCallback(): void {
         if (!this.connected) {
-          this.qeueRender();
+          this.queueRender();
           this.stopRenderLoop = this.$s.on(() => {
-            this.qeueRender();
+            this.queueRender();
           });
           startObserving(this);
         }

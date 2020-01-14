@@ -45,6 +45,7 @@ component<{ count: number; value: string }>('test-component', function*(
       // state.attributes allows us to get and set attributes on the host element
       // changes may trigger re-renders!
       const { foo = '' } = state.attributes;
+      const { foo: foo2 = '' } = state.properties;
 
       function renderCounter() {
         return html`
@@ -71,6 +72,7 @@ component<{ count: number; value: string }>('test-component', function*(
           <div>
             <div>input value: ${value}</div>
             <div>foo attribute value: ${foo}</div>
+            <div>foo property value: ${foo2}</div>
             <div>
               <input
                 type="text"
@@ -78,6 +80,7 @@ component<{ count: number; value: string }>('test-component', function*(
                 ${input(v => {
                   state.attributes.foo = v; //we are setting the foo attribute to the value of the input
                   state.value = v;
+                  state.properties.foo = v;
                 })}
               />
             </div>

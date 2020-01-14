@@ -1751,6 +1751,73 @@ var stopObserving = function stopObserving(element) {
   }
 };
 
+function createPropertyProxy(element, queueRender) {
+  var accessedProps = [];
+  var $properties = (0, _reactivity.proxify)({}, function () {}, {
+    set: function set(obj, prop, value) {
+      if (obj[prop] !== value && accessedProps.includes(prop)) {
+        queueRender();
+      }
+
+      return value;
+    },
+    get: function get(obj, prop) {
+      if (!obj[prop]) {
+        obj[prop] = element[prop] || undefined;
+      }
+
+      if (!accessedProps.includes(prop)) {
+        accessedProps.push(prop);
+        Object.defineProperty(element, prop, {
+          get: function get() {
+            return obj[prop];
+          },
+          set: function set(value) {
+            if (obj[prop] !== value) {
+              obj[prop] = value;
+              queueRender();
+            }
+          }
+        });
+      }
+    }
+  });
+  return $properties;
+}
+
+function createAttributeProxy(element, queueRender) {
+  var accessedAttributes = [];
+  var $attributes = (0, _reactivity.proxify)({}, function () {}, {
+    set: function set(obj, prop, value) {
+      if (obj[prop] !== value) {
+        (0, _scheduler.schedule)(function () {
+          element.setAttribute(prop, value);
+        });
+        queueRender();
+      }
+
+      return value;
+    },
+    get: function get(obj, prop) {
+      if (!obj[prop]) {
+        obj[prop] = element.getAttribute(prop) || undefined;
+      }
+
+      if (!accessedAttributes.includes(prop)) {
+        accessedAttributes.push(prop);
+      }
+
+      return obj[prop];
+    }
+  });
+  addObserver(element, function (name, value) {
+    if (accessedAttributes.includes(name)) {
+      $attributes[name] = value;
+    }
+  });
+  return $attributes;
+}
+
 function component(name, factory) {
   customElements.define(name,
   /*#__PURE__*/
@@ -1776,38 +1843,13 @@ function component(name, factory) {
         mode: 'open'
       });
 
-      var accessedAttributes = [];
-      var $attributes = (0, _reactivity.proxify)({}, function () {
-        console.log('attr changed', $attributes);
-      }, {
-        set: function set(obj, prop, value) {
-          if (obj[prop] !== value) {
-            (0, _scheduler.schedule)(function () {
-              _this.setAttribute(prop, value);
-            });
-
-            _this.qeueRender();
-          }
-
-          return value;
-        },
-        get: function get(obj, prop) {
-          if (!obj[prop]) {
-            obj[prop] = _this.getAttribute(prop) || undefined;
-          }
-
-          if (!accessedAttributes.includes(prop)) {
-            accessedAttributes.push(prop);
-          }
-        }
-      });
-      addObserver(_assertThisInitialized(_this), function (name, value) {
-        if (accessedAttributes.includes(name)) {
-          $attributes[name] = value;
-        }
-      });
       _this.$s = (0, _reactivity.$state)({
-        attributes: $attributes
+        attributes: createAttributeProxy(_assertThisInitialized(_this), function () {
+          return _this.queueRender();
+        }),
+        properties: createPropertyProxy(_assertThisInitialized(_this), function () {
+          return _this.queueRender();
+        })
       });
       _this.generator = factory(_this.$s);
       return _this;
@@ -2038,12 +2080,12 @@ function component(name, factory) {
         }, null, this, [[5, 10, 14, 22], [15,, 17, 21]]);
       }
     }, {
-      key: "qeueRender",
-      value: function qeueRender() {
+      key: "queueRender",
+      value: function queueRender() {
         var _this4 = this;
 
         var value;
-        return regeneratorRuntime.async(function qeueRender$(_context6) {
+        return regeneratorRuntime.async(function queueRender$(_context6) {
           while (1) {
             switch (_context6.prev = _context6.next) {
               case 0:
@@ -2074,7 +2116,7 @@ function component(name, factory) {
                               if (_this4.nextQueued) {
                                 _this4.nextQueued = false;
 
-                                _this4.qeueRender();
+                                _this4.queueRender();
                               }
 
                               resolve();
@@ -2104,9 +2146,9 @@ function component(name, factory) {
         var _this5 = this;
 
         if (!this.connected) {
-          this.qeueRender();
+          this.queueRender();
           this.stopRenderLoop = this.$s.on(function () {
-            _this5.qeueRender();
+            _this5.queueRender();
           });
           startObserving(this);
         }
@@ -2402,7 +2444,7 @@ function _templateObject5() {
 }
 
 function _templateObject4() {
-  var data = _taggedTemplateLiteral(["\n          <div>\n            <div>input value: ", "</div>\n            <div>foo attribute value: ", "</div>\n            <div>\n              <input\n                type=\"text\"\n                value=\"", "\"\n                ", "\n              />\n            </div>\n          </div>\n        "]);
+  var data = _taggedTemplateLiteral(["\n          <div>\n            <div>input value: ", "</div>\n            <div>foo attribute value: ", "</div>\n            <div>foo property value: ", "</div>\n            <div>\n              <input\n                type=\"text\"\n                value=\"", "\"\n                ", "\n              />\n            </div>\n          </div>\n        "]);
 
   _templateObject4 = function _templateObject4() {
     return data;
@@ -2500,15 +2542,18 @@ regeneratorRuntime.mark(function _callee(state) {
                 count = _state$count === void 0 ? 0 : _state$count;
             var _state$attributes$foo = state.attributes.foo,
                 foo = _state$attributes$foo === void 0 ? '' : _state$attributes$foo;
+            var _state$properties$foo = state.properties.foo,
+                foo2 = _state$properties$foo === void 0 ? '' : _state$properties$foo;
 
             function renderCounter() {
               return html_1.html(_templateObject(), html_1.html(_templateObject2(), 'hello world', html_1.html(_templateObject3()), 'loool', attr_1.attr('data-test', "".concat(count)), "".concat(count)));
             }
 
             function renderInput() {
-              return html_1.html(_templateObject4(), value, foo, value, input_1.input(function (v) {
+              return html_1.html(_templateObject4(), value, foo, foo2, value, input_1.input(function (v) {
                 state.attributes.foo = v;
                 state.value = v;
+                state.properties.foo = v;
               }));
             }
 
@@ -2554,7 +2599,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "45343" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "39681" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
