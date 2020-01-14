@@ -30,7 +30,6 @@ function countUp(): State<{ count: number }> {
 
 component<{ count: number; value: string }>('test-component', function*(
   // whenever state changes, the component will re-render
-  // state will eventually also container values/props on the host element
   state
 ) {
   const $count = countUp();
@@ -43,6 +42,9 @@ component<{ count: number; value: string }>('test-component', function*(
     // render function from this generator and running it
     yield () => {
       const { value = '', count = 0 } = state;
+      // state.attributes allows us to get and set attributes on the host element
+      // changes may trigger re-renders!
+      const { foo = '' } = state.attributes;
 
       function renderCounter() {
         return html`
@@ -68,13 +70,13 @@ component<{ count: number; value: string }>('test-component', function*(
         return html`
           <div>
             <div>input value: ${value}</div>
-            <div>test attribute value: ${state.attributes.foo ?? ''}</div>
+            <div>foo attribute value: ${foo}</div>
             <div>
               <input
                 type="text"
                 value="${value}"
                 ${input(v => {
-                  state.attributes.foo = v;
+                  state.attributes.foo = v; //we are setting the foo attribute to the value of the input
                   state.value = v;
                 })}
               />

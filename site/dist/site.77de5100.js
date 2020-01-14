@@ -1793,7 +1793,7 @@ function component(name, factory) {
         },
         get: function get(obj, prop) {
           if (!obj[prop]) {
-            obj[prop] = _this.getAttribute(prop);
+            obj[prop] = _this.getAttribute(prop) || undefined;
           }
 
           if (!accessedAttributes.includes(prop)) {
@@ -2402,7 +2402,7 @@ function _templateObject5() {
 }
 
 function _templateObject4() {
-  var data = _taggedTemplateLiteral(["\n          <div>\n            <div>input value: ", "</div>\n            <div>test attribute value: ", "</div>\n            <div>\n              <input\n                type=\"text\"\n                value=\"", "\"\n                ", "\n              />\n            </div>\n          </div>\n        "]);
+  var data = _taggedTemplateLiteral(["\n          <div>\n            <div>input value: ", "</div>\n            <div>foo attribute value: ", "</div>\n            <div>\n              <input\n                type=\"text\"\n                value=\"", "\"\n                ", "\n              />\n            </div>\n          </div>\n        "]);
 
   _templateObject4 = function _templateObject4() {
     return data;
@@ -2498,15 +2498,15 @@ regeneratorRuntime.mark(function _callee(state) {
                 value = _state$value === void 0 ? '' : _state$value,
                 _state$count = state.count,
                 count = _state$count === void 0 ? 0 : _state$count;
+            var _state$attributes$foo = state.attributes.foo,
+                foo = _state$attributes$foo === void 0 ? '' : _state$attributes$foo;
 
             function renderCounter() {
               return html_1.html(_templateObject(), html_1.html(_templateObject2(), 'hello world', html_1.html(_templateObject3()), 'loool', attr_1.attr('data-test', "".concat(count)), "".concat(count)));
             }
 
             function renderInput() {
-              var _a;
-
-              return html_1.html(_templateObject4(), value, (_a = state.attributes.foo, _a !== null && _a !== void 0 ? _a : ''), value, input_1.input(function (v) {
+              return html_1.html(_templateObject4(), value, foo, value, input_1.input(function (v) {
                 state.attributes.foo = v;
                 state.value = v;
               }));
@@ -2554,7 +2554,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "39979" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "45343" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

@@ -126,12 +126,12 @@ export function component<
             },
             get: (obj, prop: any) => {
               if (!obj[prop]) {
-                obj[prop] = this.getAttribute(prop);
+                obj[prop] = this.getAttribute(prop) || undefined;
               }
               if (!accessedAttributes.includes(prop)) {
                 accessedAttributes.push(prop);
               }
-            },
+            }, 
           }
         );
         addObserver(this, (name, value) => {
