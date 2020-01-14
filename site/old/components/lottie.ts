@@ -5,7 +5,7 @@ import {
   getElement,
   $attr,
   $prop,
-} from '../../../src/export';
+} from '../../../src/enthjs';
 import lottie from 'lottie-web';
 
 component('nth-lottie', () => {

@@ -156,7 +156,6 @@ interface CachedData {
   staticParts?: TemplateStringsArray;
   states?: any[];
   prevValues?: any[][];
-  dynamicData: DynamicData[];
 }
 const containerDataCache: WeakMap<Node, CachedData> = new WeakMap();
 export const render = (
@@ -165,11 +164,7 @@ export const render = (
 ): Promise<void> => {
   let fragment: DocumentFragment;
   let init = false;
-  const dataCache: CachedData = containerDataCache.get(container) || {
-    dynamicData: [],
-  };
-  dataCache.dynamicData.length = 0;
-  dataCache.dynamicData = htmlResult.dynamicData;
+  const dataCache: CachedData = containerDataCache.get(container) || {};
   containerDataCache.set(container, dataCache);
   if (!renderedNodesMap.has(container)) {
     init = true;

@@ -11,7 +11,7 @@ import {
   sideEffect,
   getElement,
   frag,
-} from '../../../src/export';
+} from '../../../src/enthjs';
 import { getCss } from '../utils';
 
 export interface Route {

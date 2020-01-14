@@ -7,7 +7,7 @@ import {
   attr,
   prop,
   getElement,
-} from '../../../../src/export';
+} from '../../../../src/enthjs';
 import { getCss } from '../../utils.ts';
 import { computerAnimation } from '../animations/computer_animation';
 import { getIsInView } from '../../utils';

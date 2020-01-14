@@ -1,6 +1,6 @@
 import { html, component } from '../../src/index.ts';
 import { getCss } from '../utils.ts';
-import { prop } from '../../../src/export';
+import { prop } from '../../../src/enthjs';
 import { GitHub } from 'simple-icons';
 component('nth-navbar', () => {
   const css = getCss();

@@ -1469,7 +1469,9 @@ function processTemplate(template, container, htmlResult) {
           }
 
           generators[id] = (_data$directive$facto = data.directive.factory).call.apply(_data$directive$facto, [{
-            type: data.type
+            type: data.type,
+            container: container,
+            template: template
           }, textNode].concat(_toConsumableArray(data.directive.args)));
 
           if (!isTextArea) {
@@ -1483,7 +1485,9 @@ function processTemplate(template, container, htmlResult) {
           var marker = (0, _html.getAttributeMarker)(id);
           var node = fragment.querySelector("[".concat(marker, "]"));
           generators[id] = (_data$directive$facto2 = data.directive.factory).call.apply(_data$directive$facto2, [{
-            type: data.type
+            type: data.type,
+            container: container,
+            template: template
           }, node].concat(_toConsumableArray(data.directive.args)));
           node.removeAttribute(marker);
       }
@@ -1700,7 +1704,6 @@ function connected(cb) {
   }
 }
 
-var attributeCallbackMap = new Map();
 var observerMap = new WeakMap();
 
 var addObserver = function addObserver(element, onChange) {
@@ -2599,7 +2602,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "39681" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "33543" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

@@ -1,4 +1,4 @@
-import { html, component } from '../../../src/export';
+import { html, component } from '../../../src/enthjs';
 import { getCss } from '../utils.ts';
 
 component('nth-getting-started', () => {

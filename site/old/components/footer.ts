@@ -1,4 +1,4 @@
-import { component, html, $prop, sub } from '../../../src/export';
+import { component, html, $prop, sub } from '../../../src/enthjs';
 import { getCss } from '../utils';
 
 component('nth-footer', () => {

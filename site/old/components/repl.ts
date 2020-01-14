@@ -5,7 +5,7 @@ import {
   getElement,
   sideEffect,
   text,
-} from '../../../src/export';
+} from '../../../src/enthjs';
 import { getCss } from '../utils.ts';
 import { parse, prettyPrint } from 'recast';
 import { schedule } from '../../../src/old/scheduler';

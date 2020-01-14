@@ -118,11 +118,7 @@ const containerDataCache = new WeakMap();
 export const render = (container, htmlResult) => {
     let fragment;
     let init = false;
-    const dataCache = containerDataCache.get(container) || {
-        dynamicData: [],
-    };
-    dataCache.dynamicData.length = 0;
-    dataCache.dynamicData = htmlResult.dynamicData;
+    const dataCache = containerDataCache.get(container) || {};
     containerDataCache.set(container, dataCache);
     if (!renderedNodesMap.has(container)) {
         init = true;
