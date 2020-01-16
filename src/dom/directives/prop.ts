@@ -6,7 +6,11 @@ export const prop = createDirective(function*(
   value: any
 ) {
   if (node instanceof HTMLElement) {
+    node.removeAttribute(name);
     for (;;) {
+      if (name.startsWith('.')) {
+        name = name.replace('.', '');
+      }
       (node as any)[name] = value;
       const newArgs = yield;
       name = newArgs[0];

@@ -140,7 +140,7 @@ function createAttributeProxy(element: HTMLElement, queueRender: () => void) {
 }
 
 export function component<
-  StateValueType extends {},
+  StateValueType extends {} = { [key: string]: any },
   StateType extends StateValueType & {
     attributes: { [key: string]: string };
     properties: { [key: string]: any };

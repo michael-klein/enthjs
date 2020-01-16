@@ -27,11 +27,13 @@ export const getTextMarker = (id: number): string => {
 export const getAttributeMarker = (id: number): string => {
   return `data-am-${id}`;
 };
-
+export const IS_HTML_RESULT = Symbol.for('html_result');
 export interface HTMLResult {
   dynamicData: DynamicData[];
   staticParts: TemplateStringsArray;
   key?: string;
+  [IS_HTML_RESULT]: true;
+  template?: HTMLTemplateElement;
 }
 export type HTML = typeof html;
 export function isDirective(thing: any): boolean {
@@ -118,6 +120,7 @@ export const html = (
     result = {
       dynamicData,
       staticParts,
+      [IS_HTML_RESULT]: true,
     };
     resultCache.set(staticParts, result);
   } else {

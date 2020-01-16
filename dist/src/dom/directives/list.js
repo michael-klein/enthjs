@@ -1,23 +1,21 @@
 import { createDirective, DOMUpdateType } from "../directive.js";
-import { getAttributeMarker, isDirective } from "../html.js";
 import { render } from "../render.js";
-export function getKey(htmlResult, template) {
-    let id = 0;
+export function getKey(htmlResult) {
     for (const dynamicData of htmlResult.dynamicData) {
-        if (isDirective(dynamicData)) {
+        if (dynamicData.attribute === 'key') {
+            dynamicData.directive = key(dynamicData.staticValue);
+            delete dynamicData.staticValue;
+        }
+        if (dynamicData.directive) {
             if (dynamicData.directive.directive === key) {
-                const listNode = template.content.querySelector(`[${getAttributeMarker(id)}]`);
-                if (listNode && !listNode.parentElement)
-                    return dynamicData.directive.args[0];
+                return dynamicData.directive.args[0];
             }
         }
-        id++;
     }
     return htmlResult.staticParts.join();
 }
 export const list = createDirective(function* (node, htmlResults) {
     if (node.nodeType === 3) {
-        const { template } = this;
         const root = document.createDocumentFragment();
         const start = document.createComment('');
         root.appendChild(start);
@@ -32,7 +30,7 @@ export const list = createDirective(function* (node, htmlResults) {
         let oldKeyOrder = [];
         for (;;) {
             const keyOrder = htmlResults.map(result => {
-                const key = getKey(result, template);
+                const key = getKey(result);
                 if (!keyToFragmentsMap.has(key)) {
                     const frag = document.createDocumentFragment();
                     render(frag, result);
@@ -76,5 +74,7 @@ export const list = createDirective(function* (node, htmlResults) {
         }
     }
 });
-export const key = createDirective(function* (_node, _keyName) { });
+export const key = createDirective(function* (node, _keyName) {
+    node.removeAttribute('key');
+});
 //# sourceMappingURL=list.js.map

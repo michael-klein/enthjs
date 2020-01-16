@@ -16,6 +16,7 @@ export enum DOMUpdateType {
   ADD_CLASS,
   REMOVE_CLASS,
   SET_ATTRIBUTE,
+  CUSTOM,
 }
 
 export type DirectiveGenerator<Args extends any[] = any[]> =
@@ -24,7 +25,6 @@ export type DirectiveGenerator<Args extends any[] = any[]> =
 export interface DirectiveGeneratorFactoryThis {
   type: DirectiveType;
   container: Node;
-  template: HTMLTemplateElement;
 }
 export type DirectiveGeneratorFactory<
   N extends Node = Node,

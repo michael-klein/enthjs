@@ -6,17 +6,15 @@ export function proxify(obj, onChange, hooks = {}) {
             onChange();
         }
     };
+    Object.keys(obj).forEach(key => {
+        if (typeof obj[key] === 'object' && !isProxyMap.has(obj[key])) {
+            obj[key] = proxify(obj[key], onChange);
+        }
+    });
     const proxy = new Proxy(obj, {
         get: (obj, prop) => {
             if (hooks.get) {
                 hooks.get(obj, prop);
-            }
-            if (obj[prop] &&
-                typeof obj[prop] === 'object' &&
-                !isProxyMap.has(obj[prop]) &&
-                prop !== 'on' &&
-                initialized) {
-                obj[prop] = proxify(obj[prop], onChange);
             }
             return obj[prop];
         },
@@ -38,9 +36,6 @@ export function proxify(obj, onChange, hooks = {}) {
             }
             return true;
         },
-    });
-    Object.keys(obj).forEach(key => {
-        proxy[key] = obj[key];
     });
     isProxyMap.add(proxy);
     initialized = true;

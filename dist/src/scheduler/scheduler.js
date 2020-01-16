@@ -25,6 +25,7 @@ const processJobQueue = (queue, now) => {
 };
 const processScheduledJobs = () => {
     const now = Date.now();
+    console.log(scheduledJobs.length);
     scheduledJobs = processJobQueue(scheduledJobs.sort((a, b) => (a[1] < b[1] ? -1 : 1)), now);
     if (scheduledJobs.length > 0) {
         requestAnimationFrame(processScheduledJobs);

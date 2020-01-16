@@ -85,6 +85,7 @@ function processTemplate(
   const generators: DirectiveGenerator[] = [];
   generatorMap.set(container, generators);
   const fragment = template.content;
+  htmlResult.template = template.cloneNode(true) as HTMLTemplateElement;
   const { dynamicData } = htmlResult;
 
   dynamicData.forEach((data, id) => {
@@ -113,7 +114,6 @@ function processTemplate(
             {
               type: data.type,
               container,
-              template,
             },
             textNode,
             ...data.directive.args
@@ -130,7 +130,6 @@ function processTemplate(
             {
               type: data.type,
               container,
-              template,
             },
             node,
             ...data.directive.args
@@ -201,7 +200,7 @@ export const render = (
           const domUpdates = await result.value;
           dataCache.prevValues[id].length = 0;
           dataCache.prevValues[id].push(...data.directive.args);
-          if (domUpdates) {
+          if (domUpdates && domUpdates.length > 0) {
             return schedule(
               () => {
                 domUpdates.forEach(d => {

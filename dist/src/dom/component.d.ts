@@ -22,7 +22,9 @@ declare global {
         [COMPONENT_CONTEXT]: ComponentContext;
     }
 }
-export declare function component<StateValueType extends {}, StateType extends StateValueType & {
+export declare function component<StateValueType extends {} = {
+    [key: string]: any;
+}, StateType extends StateValueType & {
     attributes: {
         [key: string]: string;
     };

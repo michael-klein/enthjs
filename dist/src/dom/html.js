@@ -14,6 +14,7 @@ export const getTextMarker = (id) => {
 export const getAttributeMarker = (id) => {
     return `data-am-${id}`;
 };
+export const IS_HTML_RESULT = Symbol.for('html_result');
 export function isDirective(thing) {
     return typeof thing === 'object' && thing[IS_DIRECTIVE];
 }
@@ -93,6 +94,7 @@ export const html = (staticParts, ...dynamicParts) => {
         result = {
             dynamicData,
             staticParts,
+            [IS_HTML_RESULT]: true,
         };
         resultCache.set(staticParts, result);
     }

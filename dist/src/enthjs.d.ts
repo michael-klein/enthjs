@@ -4,6 +4,7 @@ export { text } from './dom/directives/text';
 export { clss } from './dom/directives/clss';
 export { attr } from './dom/directives/attr';
 export { on } from './dom/directives/on';
+export { prop } from './dom/directives/prop';
 export { input } from './dom/directives/input';
 export { sub } from './dom/directives/sub';
 export { frag } from './dom/directives/frag';

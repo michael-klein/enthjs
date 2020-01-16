@@ -1,6 +1,10 @@
 import { createDirective } from "../directive.js";
 import { schedule, PriorityLevel } from "../../scheduler/scheduler.js";
 export const on = createDirective(function* (node, name, cb) {
+    node.removeAttribute(name);
+    if (name.startsWith('on')) {
+        name = name.replace('on', '');
+    }
     const cbRef = {
         cb,
     };

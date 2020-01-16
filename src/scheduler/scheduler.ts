@@ -27,6 +27,7 @@ const processJobQueue = (
 };
 const processScheduledJobs = () => {
   const now: number = Date.now();
+  console.log(scheduledJobs.length);
   scheduledJobs = processJobQueue(
     scheduledJobs.sort((a, b) => (a[1] < b[1] ? -1 : 1)),
     now

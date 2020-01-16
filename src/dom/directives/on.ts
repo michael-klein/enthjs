@@ -6,6 +6,10 @@ export const on = createDirective(function*(
   name: string,
   cb: <E extends Event>(e: E) => void
 ) {
+  node.removeAttribute(name);
+  if (name.startsWith('on')) {
+    name = name.replace('on', '');
+  }
   const cbRef = {
     cb,
   };
