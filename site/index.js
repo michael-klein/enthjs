@@ -1,3 +1,4 @@
+import 'regenerator-runtime/runtime';
 import { applyDefaultFallback } from '../dist/src/index.js';
 applyDefaultFallback();
 import './components/todo_app.js';

@@ -1,3 +1,5 @@
+export { createEvent } from "./dom/create_event.js";
+export { getHost } from "./dom/component.js";
 export { component, connected, sideEffect } from "./dom/component.js";
 export { createDirective } from "./dom/directive.js";
 export { text } from "./dom/directives/text.js";

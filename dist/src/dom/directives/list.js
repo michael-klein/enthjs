@@ -29,46 +29,90 @@ export const list = createDirective(function* (node, htmlResults) {
         ];
         let oldKeyOrder = [];
         for (;;) {
+            const inserts = [];
+            const removals = [...oldKeyOrder];
+            const moves = [];
             const keyOrder = htmlResults.map(result => {
                 const key = getKey(result);
                 if (!keyToFragmentsMap.has(key)) {
                     const frag = document.createDocumentFragment();
                     render(frag, result);
-                    keyToFragmentsMap.set(key, [frag, ...Array.from(frag.childNodes)]);
+                    if (frag.childNodes.length > 1) {
+                        throw 'List items should only render a single node!';
+                    }
+                    keyToFragmentsMap.set(key, [frag, frag.childNodes[0]]);
                 }
                 else {
                     const frag = keyToFragmentsMap.get(key)[0];
                     render(frag, result);
                 }
+                if (!oldKeyOrder.includes(key)) {
+                    inserts.push(key);
+                }
+                else {
+                    moves.push(key);
+                    removals.splice(removals.indexOf(key), 1);
+                }
                 return key;
             });
-            if (oldKeyOrder.join('') !== keyOrder.join('')) {
-                results = results.concat(keyOrder.flatMap(newKey => {
-                    const oldIndex = oldKeyOrder.indexOf(newKey);
-                    if (oldIndex > -1) {
-                        oldKeyOrder.splice(oldIndex, 1);
+            for (const key of inserts) {
+                let after = null;
+                for (let i = keyOrder.indexOf(key) + 1; i < keyOrder.length; i++) {
+                    after = oldKeyOrder[oldKeyOrder.indexOf(keyOrder[i])];
+                    if (after) {
+                        break;
                     }
-                    const [, ...children] = keyToFragmentsMap.get(newKey);
-                    return children.map(child => {
-                        return {
+                }
+                if (after) {
+                    results.push({
+                        type: DOMUpdateType.INSERT_BEFORE,
+                        node: keyToFragmentsMap.get(after)[1],
+                        newNode: keyToFragmentsMap.get(key)[1],
+                    });
+                    oldKeyOrder.splice(oldKeyOrder.indexOf(after), 0, key);
+                }
+                else {
+                    results.push({
+                        type: DOMUpdateType.INSERT_BEFORE,
+                        node: start,
+                        newNode: keyToFragmentsMap.get(key)[1],
+                    });
+                    oldKeyOrder.push(key);
+                }
+            }
+            for (const key of removals) {
+                const node = keyToFragmentsMap.get(key)[1];
+                results.push({
+                    type: DOMUpdateType.REMOVE,
+                    node,
+                });
+                oldKeyOrder.splice(oldKeyOrder.indexOf(key), 1);
+            }
+            for (const key of moves) {
+                const newKeyIndex = keyOrder.indexOf(key);
+                const oldKeyIndex = oldKeyOrder.indexOf(key);
+                const node = keyToFragmentsMap.get(key)[1];
+                if (newKeyIndex !== oldKeyIndex) {
+                    if (newKeyIndex < keyOrder.length - 1) {
+                        results.push({
+                            type: DOMUpdateType.INSERT_BEFORE,
+                            node: keyToFragmentsMap.get(keyOrder[newKeyIndex + 1])[1],
+                            newNode: node,
+                        });
+                        oldKeyOrder.splice(oldKeyIndex, 1);
+                        oldKeyOrder.splice(oldKeyOrder.indexOf(keyOrder[newKeyIndex + 1]), 0, key);
+                    }
+                    else {
+                        results.push({
                             type: DOMUpdateType.INSERT_BEFORE,
                             node: start,
-                            newNode: child,
-                        };
-                    });
-                }));
-                results = results.concat(oldKeyOrder.flatMap(oldKey => {
-                    const [, ...children] = keyToFragmentsMap.get(oldKey);
-                    keyToFragmentsMap.delete(oldKey);
-                    return children.map(child => {
-                        return {
-                            type: DOMUpdateType.REMOVE,
-                            node: child,
-                        };
-                    });
-                }));
+                            newNode: node,
+                        });
+                        oldKeyOrder.splice(oldKeyIndex, 1);
+                        oldKeyOrder.push(key);
+                    }
+                }
             }
-            oldKeyOrder = keyOrder;
             htmlResults = (yield results)[0];
             results = [];
         }

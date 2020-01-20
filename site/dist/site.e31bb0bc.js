@@ -868,14 +868,15 @@ function proxify(obj, onChange) {
     }
   };
 
+  Object.keys(obj).forEach(function (key) {
+    if (_typeof(obj[key]) === 'object' && !isProxyMap.has(obj[key])) {
+      obj[key] = proxify(obj[key], onChange);
+    }
+  });
   var proxy = new Proxy(obj, {
     get: function get(obj, prop) {
       if (hooks.get) {
         hooks.get(obj, prop);
-      }
-
-      if (obj[prop] && _typeof(obj[prop]) === 'object' && !isProxyMap.has(obj[prop]) && prop !== 'on' && initialized) {
-        obj[prop] = proxify(obj[prop], onChange);
       }
 
       return obj[prop];
@@ -898,9 +899,6 @@ function proxify(obj, onChange) {
 
       return true;
     }
-  });
-  Object.keys(obj).forEach(function (key) {
-    proxy[key] = obj[key];
   });
   isProxyMap.add(proxy);
   initialized = true;
@@ -974,6 +972,7 @@ exports.DOMUpdateType = DOMUpdateType;
   DOMUpdateType[DOMUpdateType["ADD_CLASS"] = 5] = "ADD_CLASS";
   DOMUpdateType[DOMUpdateType["REMOVE_CLASS"] = 6] = "REMOVE_CLASS";
   DOMUpdateType[DOMUpdateType["SET_ATTRIBUTE"] = 7] = "SET_ATTRIBUTE";
+  DOMUpdateType[DOMUpdateType["CUSTOM"] = 8] = "CUSTOM";
 })(DOMUpdateType || (exports.DOMUpdateType = DOMUpdateType = {}));
 
 var IS_DIRECTIVE = Symbol.for('directive');
@@ -1001,7 +1000,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.isDirective = isDirective;
-exports.html = exports.getAttributeMarker = exports.getTextMarker = exports.DirectiveType = void 0;
+exports.html = exports.IS_HTML_RESULT = exports.getAttributeMarker = exports.getTextMarker = exports.DirectiveType = void 0;
 
 var _directive = require("./directive.js");
 
@@ -1037,6 +1036,8 @@ var getAttributeMarker = function getAttributeMarker(id) {
 };
 
 exports.getAttributeMarker = getAttributeMarker;
+var IS_HTML_RESULT = Symbol.for('html_result');
+exports.IS_HTML_RESULT = IS_HTML_RESULT;
 
 function isDirective(thing) {
   return _typeof(thing) === 'object' && thing[_directive.IS_DIRECTIVE];
@@ -1127,10 +1128,10 @@ var html = function html(staticParts) {
     }
 
     appendedStatic += staticParts[staticParts.length - 1];
-    result = {
+    result = _defineProperty({
       dynamicData: dynamicData,
       staticParts: staticParts
-    };
+    }, IS_HTML_RESULT, true);
     resultCache.set(staticParts, result);
   } else {
     result = _objectSpread({}, result, {
@@ -1207,6 +1208,7 @@ var processJobQueue = function processJobQueue(queue, now) {
 
 var processScheduledJobs = function processScheduledJobs() {
   var now = Date.now();
+  console.log(scheduledJobs.length);
   scheduledJobs = processJobQueue(scheduledJobs.sort(function (a, b) {
     return a[1] < b[1] ? -1 : 1;
   }), now);
@@ -1339,6 +1341,7 @@ function processTemplate(template, container, htmlResult) {
   var generators = [];
   generatorMap.set(container, generators);
   var fragment = template.content;
+  htmlResult.template = template.cloneNode(true);
   var dynamicData = htmlResult.dynamicData;
   dynamicData.forEach(function (data, id) {
     var _data$directive$facto, _data$directive$facto2;
@@ -1369,8 +1372,7 @@ function processTemplate(template, container, htmlResult) {
 
           generators[id] = (_data$directive$facto = data.directive.factory).call.apply(_data$directive$facto, [{
             type: data.type,
-            container: container,
-            template: template
+            container: container
           }, textNode].concat(_toConsumableArray(data.directive.args)));
 
           if (!isTextArea) {
@@ -1385,8 +1387,7 @@ function processTemplate(template, container, htmlResult) {
           var node = fragment.querySelector("[".concat(marker, "]"));
           generators[id] = (_data$directive$facto2 = data.directive.factory).call.apply(_data$directive$facto2, [{
             type: data.type,
-            container: container,
-            template: template
+            container: container
           }, node].concat(_toConsumableArray(data.directive.args)));
           node.removeAttribute(marker);
       }
@@ -1473,7 +1474,7 @@ var render = function render(container, htmlResult) {
 
             (_dataCache$prevValues = dataCache.prevValues[id]).push.apply(_dataCache$prevValues, _toConsumableArray(data.directive.args));
 
-            if (!domUpdates) {
+            if (!(domUpdates && domUpdates.length > 0)) {
               _context.next = 15;
               break;
             }
@@ -1538,6 +1539,7 @@ exports.render = render;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.getHost = getHost;
 exports.sideEffect = sideEffect;
 exports.connected = connected;
 exports.component = component;
@@ -1582,6 +1584,16 @@ function getContext() {
   }
 
   return undefined;
+}
+
+function getHost() {
+  var context = getContext();
+
+  if (context) {
+    return context.host;
+  }
+
+  throw 'getHost can only be called in the setup phase!';
 }
 
 function sideEffect(cb, deps) {
@@ -1735,7 +1747,8 @@ function component(name, factory) {
       _this.disconnectedListeners = [];
       _this.context = {
         connectedListeners: [],
-        sideEffects: []
+        sideEffects: [],
+        host: _assertThisInitialized(_this)
       };
       _this.connected = false;
       _this.nextQueued = false;
@@ -2105,7 +2118,35 @@ function component(name, factory) {
     return _class;
   }(_wrapNativeSuper(HTMLElement)));
 }
-},{"../reactivity/reactivity.js":"../dist/src/reactivity/reactivity.js","./render.js":"../dist/src/dom/render.js","../scheduler/scheduler.js":"../dist/src/scheduler/scheduler.js"}],"../dist/src/dom/directives/text.js":[function(require,module,exports) {
+},{"../reactivity/reactivity.js":"../dist/src/reactivity/reactivity.js","./render.js":"../dist/src/dom/render.js","../scheduler/scheduler.js":"../dist/src/scheduler/scheduler.js"}],"../dist/src/dom/create_event.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createEvent = createEvent;
+
+var _component = require("./component.js");
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function createEvent(name) {
+  var customEventInit = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {
+    bubbles: true,
+    composed: true
+  };
+  var host = (0, _component.getHost)();
+  return function (value) {
+    return host.dispatchEvent(new CustomEvent(name, _objectSpread({}, customEventInit, {
+      detail: value
+    })));
+  };
+}
+},{"./component.js":"../dist/src/dom/component.js"}],"../dist/src/dom/directives/text.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2342,7 +2383,58 @@ regeneratorRuntime.mark(function _callee(node, name, cb) {
   }, _callee);
 }));
 exports.on = on;
-},{"../directive.js":"../dist/src/dom/directive.js","../../scheduler/scheduler.js":"../dist/src/scheduler/scheduler.js"}],"../dist/src/dom/directives/input.js":[function(require,module,exports) {
+},{"../directive.js":"../dist/src/dom/directive.js","../../scheduler/scheduler.js":"../dist/src/scheduler/scheduler.js"}],"../dist/src/dom/directives/prop.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.prop = void 0;
+
+var _directive = require("../directive.js");
+
+var prop = (0, _directive.createDirective)(
+/*#__PURE__*/
+regeneratorRuntime.mark(function _callee(node, name, value) {
+  var newArgs;
+  return regeneratorRuntime.wrap(function _callee$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          if (!(node instanceof HTMLElement)) {
+            _context.next = 11;
+            break;
+          }
+
+          node.removeAttribute(name);
+
+        case 2:
+          if (name.startsWith('.')) {
+            name = name.replace('.', '');
+          }
+
+          node[name] = value;
+          _context.next = 6;
+          return;
+
+        case 6:
+          newArgs = _context.sent;
+          name = newArgs[0];
+          value = newArgs[1];
+
+        case 9:
+          _context.next = 2;
+          break;
+
+        case 11:
+        case "end":
+          return _context.stop();
+      }
+    }
+  }, _callee);
+}));
+exports.prop = prop;
+},{"../directive.js":"../dist/src/dom/directive.js"}],"../dist/src/dom/directives/input.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2620,26 +2712,9 @@ exports.key = exports.list = void 0;
 
 var _directive = require("../directive.js");
 
-var _html = require("../html.js");
-
 var _render = require("../render.js");
 
-function _toArray(arr) { return _arrayWithHoles(arr) || _iterableToArray(arr) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
-
-function getKey(htmlResult, template) {
-  var id = 0;
+function getKey(htmlResult) {
   var _iteratorNormalCompletion = true;
   var _didIteratorError = false;
   var _iteratorError = undefined;
@@ -2648,14 +2723,16 @@ function getKey(htmlResult, template) {
     for (var _iterator = htmlResult.dynamicData[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
       var dynamicData = _step.value;
 
-      if ((0, _html.isDirective)(dynamicData)) {
-        if (dynamicData.directive.directive === key) {
-          var listNode = template.content.querySelector("[".concat((0, _html.getAttributeMarker)(id), "]"));
-          if (listNode && !listNode.parentElement) return dynamicData.directive.args[0];
-        }
+      if (dynamicData.attribute === 'key') {
+        dynamicData.directive = key(dynamicData.staticValue);
+        delete dynamicData.staticValue;
       }
 
-      id++;
+      if (dynamicData.directive) {
+        if (dynamicData.directive.directive === key) {
+          return dynamicData.directive.args[0];
+        }
+      }
     }
   } catch (err) {
     _didIteratorError = true;
@@ -2678,26 +2755,24 @@ function getKey(htmlResult, template) {
 var list = (0, _directive.createDirective)(
 /*#__PURE__*/
 regeneratorRuntime.mark(function _callee2(node, htmlResults) {
-  var _this = this;
-
-  return regeneratorRuntime.wrap(function _callee2$(_context2) {
+  return regeneratorRuntime.wrap(function _callee2$(_context3) {
     while (1) {
-      switch (_context2.prev = _context2.next) {
+      switch (_context3.prev = _context3.next) {
         case 0:
           if (!(node.nodeType === 3)) {
-            _context2.next = 2;
+            _context3.next = 2;
             break;
           }
 
-          return _context2.delegateYield(
+          return _context3.delegateYield(
           /*#__PURE__*/
           regeneratorRuntime.mark(function _callee() {
-            var template, root, start, keyToFragmentsMap, results, oldKeyOrder, keyOrder;
-            return regeneratorRuntime.wrap(function _callee$(_context) {
+            var root, start, keyToFragmentsMap, results, oldKeyOrder, _loop;
+
+            return regeneratorRuntime.wrap(function _callee$(_context2) {
               while (1) {
-                switch (_context.prev = _context.next) {
+                switch (_context2.prev = _context2.next) {
                   case 0:
-                    template = _this.template;
                     root = document.createDocumentFragment();
                     start = document.createComment('');
                     root.appendChild(start);
@@ -2708,73 +2783,200 @@ regeneratorRuntime.mark(function _callee2(node, htmlResults) {
                       newNode: root
                     }];
                     oldKeyOrder = [];
+                    _loop =
+                    /*#__PURE__*/
+                    regeneratorRuntime.mark(function _loop() {
+                      var inserts, removals, moves, keyOrder, _i, _inserts, _key, after, i, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, _key2, _node, _i2, _moves, _key3, newKeyIndex, oldKeyIndex, _node2;
 
-                  case 7:
-                    keyOrder = htmlResults.map(function (result) {
-                      var key = getKey(result, template);
+                      return regeneratorRuntime.wrap(function _loop$(_context) {
+                        while (1) {
+                          switch (_context.prev = _context.next) {
+                            case 0:
+                              inserts = [];
+                              removals = [].concat(oldKeyOrder);
+                              moves = [];
+                              keyOrder = htmlResults.map(function (result) {
+                                var key = getKey(result);
 
-                      if (!keyToFragmentsMap.has(key)) {
-                        var frag = document.createDocumentFragment();
-                        (0, _render.render)(frag, result);
-                        keyToFragmentsMap.set(key, [frag].concat(_toConsumableArray(Array.from(frag.childNodes))));
-                      } else {
-                        var _frag = keyToFragmentsMap.get(key)[0];
-                        (0, _render.render)(_frag, result);
-                      }
+                                if (!keyToFragmentsMap.has(key)) {
+                                  var frag = document.createDocumentFragment();
+                                  (0, _render.render)(frag, result);
 
-                      return key;
+                                  if (frag.childNodes.length > 1) {
+                                    throw 'List items should only render a single node!';
+                                  }
+
+                                  keyToFragmentsMap.set(key, [frag, frag.childNodes[0]]);
+                                } else {
+                                  var _frag = keyToFragmentsMap.get(key)[0];
+                                  (0, _render.render)(_frag, result);
+                                }
+
+                                if (!oldKeyOrder.includes(key)) {
+                                  inserts.push(key);
+                                } else {
+                                  moves.push(key);
+                                  removals.splice(removals.indexOf(key), 1);
+                                }
+
+                                return key;
+                              });
+                              _i = 0, _inserts = inserts;
+
+                            case 5:
+                              if (!(_i < _inserts.length)) {
+                                _context.next = 20;
+                                break;
+                              }
+
+                              _key = _inserts[_i];
+                              after = null;
+                              i = keyOrder.indexOf(_key) + 1;
+
+                            case 9:
+                              if (!(i < keyOrder.length)) {
+                                _context.next = 16;
+                                break;
+                              }
+
+                              after = oldKeyOrder[oldKeyOrder.indexOf(keyOrder[i])];
+
+                              if (!after) {
+                                _context.next = 13;
+                                break;
+                              }
+
+                              return _context.abrupt("break", 16);
+
+                            case 13:
+                              i++;
+                              _context.next = 9;
+                              break;
+
+                            case 16:
+                              if (after) {
+                                results.push({
+                                  type: _directive.DOMUpdateType.INSERT_BEFORE,
+                                  node: keyToFragmentsMap.get(after)[1],
+                                  newNode: keyToFragmentsMap.get(_key)[1]
+                                });
+                                oldKeyOrder.splice(oldKeyOrder.indexOf(after), 0, _key);
+                              } else {
+                                results.push({
+                                  type: _directive.DOMUpdateType.INSERT_BEFORE,
+                                  node: start,
+                                  newNode: keyToFragmentsMap.get(_key)[1]
+                                });
+                                oldKeyOrder.push(_key);
+                              }
+
+                            case 17:
+                              _i++;
+                              _context.next = 5;
+                              break;
+
+                            case 20:
+                              _iteratorNormalCompletion2 = true;
+                              _didIteratorError2 = false;
+                              _iteratorError2 = undefined;
+                              _context.prev = 23;
+
+                              for (_iterator2 = removals[Symbol.iterator](); !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                                _key2 = _step2.value;
+                                _node = keyToFragmentsMap.get(_key2)[1];
+                                results.push({
+                                  type: _directive.DOMUpdateType.REMOVE,
+                                  node: _node
+                                });
+                                oldKeyOrder.splice(oldKeyOrder.indexOf(_key2), 1);
+                              }
+
+                              _context.next = 31;
+                              break;
+
+                            case 27:
+                              _context.prev = 27;
+                              _context.t0 = _context["catch"](23);
+                              _didIteratorError2 = true;
+                              _iteratorError2 = _context.t0;
+
+                            case 31:
+                              _context.prev = 31;
+                              _context.prev = 32;
+
+                              if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+                                _iterator2.return();
+                              }
+
+                            case 34:
+                              _context.prev = 34;
+
+                              if (!_didIteratorError2) {
+                                _context.next = 37;
+                                break;
+                              }
+
+                              throw _iteratorError2;
+
+                            case 37:
+                              return _context.finish(34);
+
+                            case 38:
+                              return _context.finish(31);
+
+                            case 39:
+                              for (_i2 = 0, _moves = moves; _i2 < _moves.length; _i2++) {
+                                _key3 = _moves[_i2];
+                                newKeyIndex = keyOrder.indexOf(_key3);
+                                oldKeyIndex = oldKeyOrder.indexOf(_key3);
+                                _node2 = keyToFragmentsMap.get(_key3)[1];
+
+                                if (newKeyIndex !== oldKeyIndex) {
+                                  if (newKeyIndex < keyOrder.length - 1) {
+                                    results.push({
+                                      type: _directive.DOMUpdateType.INSERT_BEFORE,
+                                      node: keyToFragmentsMap.get(keyOrder[newKeyIndex + 1])[1],
+                                      newNode: _node2
+                                    });
+                                    oldKeyOrder.splice(oldKeyIndex, 1);
+                                    oldKeyOrder.splice(oldKeyOrder.indexOf(keyOrder[newKeyIndex + 1]), 0, _key3);
+                                  } else {
+                                    results.push({
+                                      type: _directive.DOMUpdateType.INSERT_BEFORE,
+                                      node: start,
+                                      newNode: _node2
+                                    });
+                                    oldKeyOrder.splice(oldKeyIndex, 1);
+                                    oldKeyOrder.push(_key3);
+                                  }
+                                }
+                              }
+
+                              _context.next = 42;
+                              return results;
+
+                            case 42:
+                              htmlResults = _context.sent[0];
+                              results = [];
+
+                            case 44:
+                            case "end":
+                              return _context.stop();
+                          }
+                        }
+                      }, _loop, null, [[23, 27, 31, 39], [32,, 34, 38]]);
                     });
 
-                    if (oldKeyOrder.join('') !== keyOrder.join('')) {
-                      results = results.concat(keyOrder.flatMap(function (newKey) {
-                        var oldIndex = oldKeyOrder.indexOf(newKey);
+                  case 7:
+                    return _context2.delegateYield(_loop(), "t0", 8);
 
-                        if (oldIndex > -1) {
-                          oldKeyOrder.splice(oldIndex, 1);
-                        }
-
-                        var _keyToFragmentsMap$ge = keyToFragmentsMap.get(newKey),
-                            _keyToFragmentsMap$ge2 = _toArray(_keyToFragmentsMap$ge),
-                            children = _keyToFragmentsMap$ge2.slice(1);
-
-                        return children.map(function (child) {
-                          return {
-                            type: _directive.DOMUpdateType.INSERT_BEFORE,
-                            node: start,
-                            newNode: child
-                          };
-                        });
-                      }));
-                      results = results.concat(oldKeyOrder.flatMap(function (oldKey) {
-                        var _keyToFragmentsMap$ge3 = keyToFragmentsMap.get(oldKey),
-                            _keyToFragmentsMap$ge4 = _toArray(_keyToFragmentsMap$ge3),
-                            children = _keyToFragmentsMap$ge4.slice(1);
-
-                        keyToFragmentsMap.delete(oldKey);
-                        return children.map(function (child) {
-                          return {
-                            type: _directive.DOMUpdateType.REMOVE,
-                            node: child
-                          };
-                        });
-                      }));
-                    }
-
-                    oldKeyOrder = keyOrder;
-                    _context.next = 12;
-                    return results;
-
-                  case 12:
-                    htmlResults = _context.sent[0];
-                    results = [];
-
-                  case 14:
-                    _context.next = 7;
+                  case 8:
+                    _context2.next = 7;
                     break;
 
-                  case 16:
+                  case 10:
                   case "end":
-                    return _context.stop();
+                    return _context2.stop();
                 }
               }
             }, _callee);
@@ -2782,7 +2984,7 @@ regeneratorRuntime.mark(function _callee2(node, htmlResults) {
 
         case 2:
         case "end":
-          return _context2.stop();
+          return _context3.stop();
       }
     }
   }, _callee2);
@@ -2790,70 +2992,22 @@ regeneratorRuntime.mark(function _callee2(node, htmlResults) {
 exports.list = list;
 var key = (0, _directive.createDirective)(
 /*#__PURE__*/
-regeneratorRuntime.mark(function _callee3(_node, _keyName) {
-  return regeneratorRuntime.wrap(function _callee3$(_context3) {
+regeneratorRuntime.mark(function _callee3(node, _keyName) {
+  return regeneratorRuntime.wrap(function _callee3$(_context4) {
     while (1) {
-      switch (_context3.prev = _context3.next) {
+      switch (_context4.prev = _context4.next) {
         case 0:
+          node.removeAttribute('key');
+
+        case 1:
         case "end":
-          return _context3.stop();
+          return _context4.stop();
       }
     }
   }, _callee3);
 }));
 exports.key = key;
-},{"../directive.js":"../dist/src/dom/directive.js","../html.js":"../dist/src/dom/html.js","../render.js":"../dist/src/dom/render.js"}],"../dist/src/dom/directives/prop.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.prop = void 0;
-
-var _directive = require("../directive.js");
-
-var prop = (0, _directive.createDirective)(
-/*#__PURE__*/
-regeneratorRuntime.mark(function _callee(node, name, value) {
-  var newArgs;
-  return regeneratorRuntime.wrap(function _callee$(_context) {
-    while (1) {
-      switch (_context.prev = _context.next) {
-        case 0:
-          if (!(node instanceof HTMLElement)) {
-            _context.next = 11;
-            break;
-          }
-
-          node.removeAttribute(name);
-
-        case 2:
-          if (name.startsWith('.')) {
-            name = name.replace('.', '');
-          }
-
-          node[name] = value;
-          _context.next = 6;
-          return;
-
-        case 6:
-          newArgs = _context.sent;
-          name = newArgs[0];
-          value = newArgs[1];
-
-        case 9:
-          _context.next = 2;
-          break;
-
-        case 11:
-        case "end":
-          return _context.stop();
-      }
-    }
-  }, _callee);
-}));
-exports.prop = prop;
-},{"../directive.js":"../dist/src/dom/directive.js"}],"../dist/src/dom/default_fallback.js":[function(require,module,exports) {
+},{"../directive.js":"../dist/src/dom/directive.js","../render.js":"../dist/src/dom/render.js"}],"../dist/src/dom/default_fallback.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2875,23 +3029,31 @@ var _on = require("./directives/on.js");
 
 var _prop = require("./directives/prop.js");
 
+var _list = require("./directives/list.js");
+
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function applyDefaultFallback() {
   (0, _render.defineFallback)(function (data) {
-    if (data.type === _html.DirectiveType.TEXT && (typeof data.staticValue === 'string' || typeof data.staticValue === 'number')) {
-      data.directive = (0, _text.text)(data.staticValue + '');
+    if (data.type === _html.DirectiveType.TEXT) {
+      if (typeof data.staticValue === 'string' || typeof data.staticValue === 'number') {
+        data.directive = (0, _text.text)(data.staticValue + '');
+      } else if (data.staticValue instanceof Array && data.staticValue.findIndex(function (item) {
+        return !(_typeof(item) === 'object' && item[_html.IS_HTML_RESULT]);
+      }) === -1) {
+        data.directive = (0, _list.list)(data.staticValue);
+      }
     }
 
     if (data.type === _html.DirectiveType.ATTRIBUTE_VALUE) {
       if (data.attribute.startsWith('on')) {
         data.directive = (0, _on.on)(data.attribute, data.staticValue);
+      } else if (data.attribute.startsWith('.')) {
+        data.directive = (0, _prop.prop)(data.attribute, data.staticValue);
+      } else if (data.attribute === 'key') {
+        data.directive = (0, _list.key)(data.staticValue);
       } else {
-        if (data.attribute.startsWith('.')) {
-          data.directive = (0, _prop.prop)(data.attribute, data.staticValue);
-        } else {
-          data.directive = (0, _attr.attr)(data.attribute, data.staticValue + '');
-        }
+        data.directive = (0, _attr.attr)(data.attribute, data.staticValue + '');
       }
     }
 
@@ -2902,11 +3064,23 @@ function applyDefaultFallback() {
     return data;
   });
 }
-},{"./render.js":"../dist/src/dom/render.js","./html.js":"../dist/src/dom/html.js","./directives/attr.js":"../dist/src/dom/directives/attr.js","./directives/text.js":"../dist/src/dom/directives/text.js","./directives/sub.js":"../dist/src/dom/directives/sub.js","./directives/on.js":"../dist/src/dom/directives/on.js","./directives/prop.js":"../dist/src/dom/directives/prop.js"}],"../dist/src/index.js":[function(require,module,exports) {
+},{"./render.js":"../dist/src/dom/render.js","./html.js":"../dist/src/dom/html.js","./directives/attr.js":"../dist/src/dom/directives/attr.js","./directives/text.js":"../dist/src/dom/directives/text.js","./directives/sub.js":"../dist/src/dom/directives/sub.js","./directives/on.js":"../dist/src/dom/directives/on.js","./directives/prop.js":"../dist/src/dom/directives/prop.js","./directives/list.js":"../dist/src/dom/directives/list.js"}],"../dist/src/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
+});
+Object.defineProperty(exports, "createEvent", {
+  enumerable: true,
+  get: function () {
+    return _create_event.createEvent;
+  }
+});
+Object.defineProperty(exports, "getHost", {
+  enumerable: true,
+  get: function () {
+    return _component.getHost;
+  }
 });
 Object.defineProperty(exports, "component", {
   enumerable: true,
@@ -2956,6 +3130,12 @@ Object.defineProperty(exports, "on", {
     return _on.on;
   }
 });
+Object.defineProperty(exports, "prop", {
+  enumerable: true,
+  get: function () {
+    return _prop.prop;
+  }
+});
 Object.defineProperty(exports, "input", {
   enumerable: true,
   get: function () {
@@ -2978,6 +3158,12 @@ Object.defineProperty(exports, "list", {
   enumerable: true,
   get: function () {
     return _list.list;
+  }
+});
+Object.defineProperty(exports, "key", {
+  enumerable: true,
+  get: function () {
+    return _list.key;
   }
 });
 Object.defineProperty(exports, "html", {
@@ -3011,6 +3197,8 @@ Object.defineProperty(exports, "$state", {
   }
 });
 
+var _create_event = require("./dom/create_event.js");
+
 var _component = require("./dom/component.js");
 
 var _directive = require("./dom/directive.js");
@@ -3022,6 +3210,8 @@ var _clss = require("./dom/directives/clss.js");
 var _attr = require("./dom/directives/attr.js");
 
 var _on = require("./dom/directives/on.js");
+
+var _prop = require("./dom/directives/prop.js");
 
 var _input = require("./dom/directives/input.js");
 
@@ -3038,15 +3228,13 @@ var _render = require("./dom/render.js");
 var _default_fallback = require("./dom/default_fallback.js");
 
 var _reactivity = require("./reactivity/reactivity.js");
-},{"./dom/component.js":"../dist/src/dom/component.js","./dom/directive.js":"../dist/src/dom/directive.js","./dom/directives/text.js":"../dist/src/dom/directives/text.js","./dom/directives/clss.js":"../dist/src/dom/directives/clss.js","./dom/directives/attr.js":"../dist/src/dom/directives/attr.js","./dom/directives/on.js":"../dist/src/dom/directives/on.js","./dom/directives/input.js":"../dist/src/dom/directives/input.js","./dom/directives/sub.js":"../dist/src/dom/directives/sub.js","./dom/directives/frag.js":"../dist/src/dom/directives/frag.js","./dom/directives/list.js":"../dist/src/dom/directives/list.js","./dom/html.js":"../dist/src/dom/html.js","./dom/render.js":"../dist/src/dom/render.js","./dom/default_fallback.js":"../dist/src/dom/default_fallback.js","./reactivity/reactivity.js":"../dist/src/reactivity/reactivity.js"}],"components/todo_app.js":[function(require,module,exports) {
+},{"./dom/create_event.js":"../dist/src/dom/create_event.js","./dom/component.js":"../dist/src/dom/component.js","./dom/directive.js":"../dist/src/dom/directive.js","./dom/directives/text.js":"../dist/src/dom/directives/text.js","./dom/directives/clss.js":"../dist/src/dom/directives/clss.js","./dom/directives/attr.js":"../dist/src/dom/directives/attr.js","./dom/directives/on.js":"../dist/src/dom/directives/on.js","./dom/directives/prop.js":"../dist/src/dom/directives/prop.js","./dom/directives/input.js":"../dist/src/dom/directives/input.js","./dom/directives/sub.js":"../dist/src/dom/directives/sub.js","./dom/directives/frag.js":"../dist/src/dom/directives/frag.js","./dom/directives/list.js":"../dist/src/dom/directives/list.js","./dom/html.js":"../dist/src/dom/html.js","./dom/render.js":"../dist/src/dom/render.js","./dom/default_fallback.js":"../dist/src/dom/default_fallback.js","./reactivity/reactivity.js":"../dist/src/reactivity/reactivity.js"}],"components/todo_app.js":[function(require,module,exports) {
 "use strict";
 
-var _src = require("../../dist/src");
-
-var _list = require("../../dist/src/dom/directives/list");
+var _index = require("../../dist/src/index.js");
 
 function _templateObject2() {
-  var data = _taggedTemplateLiteral(["\n                  <todo-item\n                    ", "\n                    label=\"", "\"\n                    .done=\"", "\"\n                  ></todo-item>\n                "]);
+  var data = _taggedTemplateLiteral(["\n              <todo-item\n                key=\"", "\"\n                label=\"", "\"\n                .done=\"", "\"\n                ondoneclicked=\"", "\"\n              ></todo-item>\n            "]);
 
   _templateObject2 = function _templateObject2() {
     return data;
@@ -3056,7 +3244,7 @@ function _templateObject2() {
 }
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n        <ul>\n          ", "\n        </ul>\n      "]);
+  var data = _taggedTemplateLiteral(["\n        <div>\n          <input\n            type=\"text\"\n            placeholder=\"add todo item\"\n            .value=\"", "\"\n            oninput=\"", "\"\n            onkeyup=\"", "\"\n          />\n        </div>\n        <ul>\n          ", "\n        </ul>\n      "]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -3067,62 +3255,69 @@ function _templateObject() {
 
 function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
 
-function createItem() {
+function createItem(label) {
   return {
-    label: 'todo item',
+    label: label,
     done: false,
-    id: "item-".concat(Date.now())
+    id: "item-".concat(Date.now(), "-").concat(label.replace(/ /g, '-'))
   };
 }
 
-(0, _src.component)('todo-app',
+(0, _index.component)('todo-app',
 /*#__PURE__*/
 regeneratorRuntime.mark(function _callee(state) {
+  var inputKeyUpHandler, toggleDone;
   return regeneratorRuntime.wrap(function _callee$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
-          state.items = [createItem()];
-
-        case 1:
-          _context.next = 3;
-          return function () {
-            var _state$items = state.items,
-                items = _state$items === void 0 ? [] : _state$items;
-            return (0, _src.html)(_templateObject(), (0, _src.list)(state.items.filter(function (item) {
-              return !item.done;
-            }).map(function (item) {
-              return (0, _src.html)(_templateObject2(), (0, _list.key)(item.id), item.label, item.done);
-            })));
+          toggleDone = function _ref2(item) {
+            item.done = !item.done;
+            state.items.sort(function (a) {
+              return a.done ? -1 : 1;
+            });
           };
 
+          inputKeyUpHandler = function _ref(e) {
+            if (e.key === 'Enter') {
+              state.items.unshift(createItem(state.inputValue));
+              state.inputValue = '';
+            }
+          };
+
+          state.items = [createItem('todo item')];
+
         case 3:
-          _context.next = 1;
-          break;
+          _context.next = 5;
+          return function () {
+            var _state$items = state.items,
+                items = _state$items === void 0 ? [] : _state$items,
+                _state$inputValue = state.inputValue,
+                inputValue = _state$inputValue === void 0 ? '' : _state$inputValue;
+            return (0, _index.html)(_templateObject(), inputValue, function (e) {
+              return state.inputValue = e.target.value;
+            }, inputKeyUpHandler, items.map(function (item) {
+              return (0, _index.html)(_templateObject2(), item.id, item.label, item.done, function () {
+                return toggleDone(item);
+              });
+            }));
+          };
 
         case 5:
+          _context.next = 3;
+          break;
+
+        case 7:
         case "end":
           return _context.stop();
       }
     }
   }, _callee);
 }));
-},{"../../dist/src":"../dist/src/index.js","../../dist/src/dom/directives/list":"../dist/src/dom/directives/list.js"}],"components/todo_item.js":[function(require,module,exports) {
+},{"../../dist/src/index.js":"../dist/src/index.js"}],"components/todo_item.js":[function(require,module,exports) {
 "use strict";
 
-var _src = require("../../dist/src");
-
-var _list = require("../../dist/src/dom/directives/list");
-
-function _templateObject4() {
-  var data = _taggedTemplateLiteral(["\n            <button onclick=\"", "\">\n              ", "\n            </button>\n          "]);
-
-  _templateObject4 = function _templateObject4() {
-    return data;
-  };
-
-  return data;
-}
+var _index = require("../../dist/src/index.js");
 
 function _templateObject3() {
   var data = _taggedTemplateLiteral(["\n                  ", "\n                "]);
@@ -3145,7 +3340,7 @@ function _templateObject2() {
 }
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n        <li>\n          <span\n            >", "\n          </span>\n          ", "\n        </li>\n      "]);
+  var data = _taggedTemplateLiteral(["\n        <li>\n          <span\n            >", "\n          </span>\n          <button onclick=\"", "\">\n            ", "\n          </button>\n        </li>\n      "]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -3156,14 +3351,18 @@ function _templateObject() {
 
 function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
 
-(0, _src.component)('todo-item',
+(0, _index.component)('todo-item',
 /*#__PURE__*/
 regeneratorRuntime.mark(function _callee(state) {
+  var doneClicked;
   return regeneratorRuntime.wrap(function _callee$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
-          _context.next = 2;
+          doneClicked = (0, _index.createEvent)('doneclicked');
+
+        case 1:
+          _context.next = 3;
           return function () {
             var _state$items = state.items,
                 items = _state$items === void 0 ? [] : _state$items,
@@ -3172,23 +3371,23 @@ regeneratorRuntime.mark(function _callee(state) {
             var done = properties.done;
             var _attributes$label = attributes.label,
                 label = _attributes$label === void 0 ? '' : _attributes$label;
-            return (0, _src.html)(_templateObject(), done ? (0, _src.html)(_templateObject2(), label) : (0, _src.html)(_templateObject3(), label), (0, _src.html)(_templateObject4(), function (e) {
-              return console.log(e);
-            }, !done ? 'done' : 'not done'));
+            return (0, _index.html)(_templateObject(), done ? (0, _index.html)(_templateObject2(), label) : (0, _index.html)(_templateObject3(), label), function (e) {
+              return doneClicked();
+            }, !done ? 'done' : 'not done');
           };
 
-        case 2:
-          _context.next = 0;
+        case 3:
+          _context.next = 1;
           break;
 
-        case 4:
+        case 5:
         case "end":
           return _context.stop();
       }
     }
   }, _callee);
 }));
-},{"../../dist/src":"../dist/src/index.js","../../dist/src/dom/directives/list":"../dist/src/dom/directives/list.js"}],"index.js":[function(require,module,exports) {
+},{"../../dist/src/index.js":"../dist/src/index.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
 require("regenerator-runtime/runtime");
@@ -3228,7 +3427,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "40041" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "40927" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

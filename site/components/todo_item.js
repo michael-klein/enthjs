@@ -1,6 +1,7 @@
-import { component, html } from '../../dist/src/index.js';
+import { component, html, createEvent } from '../../dist/src/index.js';
 
 component('todo-item', function*(state) {
+  const doneClicked = createEvent('doneclicked');
   for (;;) {
     yield () => {
       const { items = [], properties, attributes } = state;
@@ -17,11 +18,9 @@ component('todo-item', function*(state) {
                   ${label}
                 `}
           </span>
-          ${html`
-            <button onclick="${e => console.log(e)}">
-              ${!done ? 'done' : 'not done'}
-            </button>
-          `}
+          <button onclick="${e => doneClicked()}">
+            ${!done ? 'done' : 'not done'}
+          </button>
         </li>
       `;
     };

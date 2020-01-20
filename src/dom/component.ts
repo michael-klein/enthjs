@@ -21,12 +21,20 @@ interface SideEffect {
 interface ComponentContext {
   connectedListeners: ConnectedListener[];
   sideEffects: SideEffect[];
+  host: HTMLElement;
 }
 function getContext(): ComponentContext {
   if (window[COMPONENT_CONTEXT]) {
     return window[COMPONENT_CONTEXT];
   }
   return undefined;
+}
+export function getHost<E extends HTMLElement>(): E {
+  const context = getContext();
+  if (context) {
+    return context.host as E;
+  }
+  throw 'getHost can only be called in the setup phase!';
 }
 export function sideEffect(cb: ConnectedListener, deps?: () => any[]): void {
   const context = getContext();
@@ -158,6 +166,7 @@ export function component<
       private context: ComponentContext = {
         connectedListeners: [],
         sideEffects: [],
+        host: this,
       };
       private $s: S;
       private stopRenderLoop: () => void;

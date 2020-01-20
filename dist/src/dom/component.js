@@ -8,6 +8,13 @@ function getContext() {
     }
     return undefined;
 }
+export function getHost() {
+    const context = getContext();
+    if (context) {
+        return context.host;
+    }
+    throw 'getHost can only be called in the setup phase!';
+}
 export function sideEffect(cb, deps) {
     const context = getContext();
     if (context) {
@@ -109,6 +116,7 @@ export function component(name, factory) {
             this.context = {
                 connectedListeners: [],
                 sideEffects: [],
+                host: this,
             };
             this.connected = false;
             this.nextQueued = false;

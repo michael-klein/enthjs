@@ -18,6 +18,13 @@ component('todo-app', function*(state) {
     }
   }
 
+  function toggleDone(item) {
+    item.done = !item.done;
+    state.items.sort(a => {
+      return a.done ? -1 : 1;
+    });
+  }
+
   for (;;) {
     yield () => {
       const { items = [], inputValue = '' } = state;
@@ -32,17 +39,16 @@ component('todo-app', function*(state) {
           />
         </div>
         <ul>
-          ${items
-            .filter(item => !item.done)
-            .map(
-              item => html`
-                <todo-item
-                  key="${item.id}"
-                  label="${item.label}"
-                  .done="${item.done}"
-                ></todo-item>
-              `
-            )}
+          ${items.map(
+            item => html`
+              <todo-item
+                key="${item.id}"
+                label="${item.label}"
+                .done="${item.done}"
+                ondoneclicked="${() => toggleDone(item)}"
+              ></todo-item>
+            `
+          )}
         </ul>
       `;
     };

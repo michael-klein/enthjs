@@ -14,7 +14,9 @@ interface SideEffect {
 interface ComponentContext {
     connectedListeners: ConnectedListener[];
     sideEffects: SideEffect[];
+    host: HTMLElement;
 }
+export declare function getHost<E extends HTMLElement>(): E;
 export declare function sideEffect(cb: ConnectedListener, deps?: () => any[]): void;
 export declare function connected(cb: ConnectedListener): void;
 declare global {
