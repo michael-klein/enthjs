@@ -211,11 +211,28 @@ export const render = (
                     case DOMUpdateType.ADD_NODE:
                       d.node.appendChild(d.newNode);
                       break;
+                    case DOMUpdateType.PREPEND_NODE:
+                      if (d.node.firstChild) {
+                        d.node.insertBefore(d.newNode, d.node.firstChild);
+                      } else {
+                        d.node.appendChild(d.newNode);
+                      }
+                      break;
                     case DOMUpdateType.REPLACE_NODE:
                       d.node.parentNode.replaceChild(d.newNode, d.node);
                       break;
                     case DOMUpdateType.INSERT_BEFORE:
                       d.node.parentNode.insertBefore(d.newNode, d.node);
+                      break;
+                    case DOMUpdateType.INSERT_AFTER:
+                      if (d.node.nextSibling) {
+                        d.node.parentNode.insertBefore(
+                          d.newNode,
+                          d.node.nextSibling
+                        );
+                      } else {
+                        d.node.parentNode.appendChild(d.newNode);
+                      }
                       break;
                     case DOMUpdateType.REMOVE:
                       d.node.parentNode.removeChild(d.node);

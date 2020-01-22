@@ -886,17 +886,17 @@ function proxify(obj, onChange) {
         value = hooks.set(obj, prop, value);
       }
 
-      if ((obj[prop] !== value || !initialized) && prop !== '__$p' && prop !== 'on') {
-        if (_typeof(value) === 'object' && !isProxyMap.has(obj[prop])) {
-          value = proxify(value, onChangeWrapped);
-        }
-
-        obj[prop] = value;
-        onChangeWrapped();
-      } else if (prop === 'on') {
-        obj[prop] = value;
+      if (_typeof(value) === 'object' && !isProxyMap.has(value)) {
+        console.log('proxify');
+        value = proxify(value, onChangeWrapped);
       }
 
+      if ((obj[prop] !== value || !initialized) && prop !== '__$p' && prop !== 'on') {
+        obj[prop] = value;
+        onChangeWrapped();
+      }
+
+      obj[prop] = value;
       return true;
     }
   });
@@ -967,12 +967,14 @@ exports.DOMUpdateType = DOMUpdateType;
   DOMUpdateType[DOMUpdateType["TEXT"] = 0] = "TEXT";
   DOMUpdateType[DOMUpdateType["REPLACE_NODE"] = 1] = "REPLACE_NODE";
   DOMUpdateType[DOMUpdateType["ADD_NODE"] = 2] = "ADD_NODE";
-  DOMUpdateType[DOMUpdateType["INSERT_BEFORE"] = 3] = "INSERT_BEFORE";
-  DOMUpdateType[DOMUpdateType["REMOVE"] = 4] = "REMOVE";
-  DOMUpdateType[DOMUpdateType["ADD_CLASS"] = 5] = "ADD_CLASS";
-  DOMUpdateType[DOMUpdateType["REMOVE_CLASS"] = 6] = "REMOVE_CLASS";
-  DOMUpdateType[DOMUpdateType["SET_ATTRIBUTE"] = 7] = "SET_ATTRIBUTE";
-  DOMUpdateType[DOMUpdateType["CUSTOM"] = 8] = "CUSTOM";
+  DOMUpdateType[DOMUpdateType["PREPEND_NODE"] = 3] = "PREPEND_NODE";
+  DOMUpdateType[DOMUpdateType["INSERT_BEFORE"] = 4] = "INSERT_BEFORE";
+  DOMUpdateType[DOMUpdateType["INSERT_AFTER"] = 5] = "INSERT_AFTER";
+  DOMUpdateType[DOMUpdateType["REMOVE"] = 6] = "REMOVE";
+  DOMUpdateType[DOMUpdateType["ADD_CLASS"] = 7] = "ADD_CLASS";
+  DOMUpdateType[DOMUpdateType["REMOVE_CLASS"] = 8] = "REMOVE_CLASS";
+  DOMUpdateType[DOMUpdateType["SET_ATTRIBUTE"] = 9] = "SET_ATTRIBUTE";
+  DOMUpdateType[DOMUpdateType["CUSTOM"] = 10] = "CUSTOM";
 })(DOMUpdateType || (exports.DOMUpdateType = DOMUpdateType = {}));
 
 var IS_DIRECTIVE = Symbol.for('directive');
@@ -1490,12 +1492,30 @@ var render = function render(container, htmlResult) {
                     d.node.appendChild(d.newNode);
                     break;
 
+                  case _directive.DOMUpdateType.PREPEND_NODE:
+                    if (d.node.firstChild) {
+                      d.node.insertBefore(d.newNode, d.node.firstChild);
+                    } else {
+                      d.node.appendChild(d.newNode);
+                    }
+
+                    break;
+
                   case _directive.DOMUpdateType.REPLACE_NODE:
                     d.node.parentNode.replaceChild(d.newNode, d.node);
                     break;
 
                   case _directive.DOMUpdateType.INSERT_BEFORE:
                     d.node.parentNode.insertBefore(d.newNode, d.node);
+                    break;
+
+                  case _directive.DOMUpdateType.INSERT_AFTER:
+                    if (d.node.nextSibling) {
+                      d.node.parentNode.insertBefore(d.newNode, d.node.nextSibling);
+                    } else {
+                      d.node.parentNode.appendChild(d.newNode);
+                    }
+
                     break;
 
                   case _directive.DOMUpdateType.REMOVE:
@@ -2767,15 +2787,17 @@ regeneratorRuntime.mark(function _callee2(node, htmlResults) {
           return _context3.delegateYield(
           /*#__PURE__*/
           regeneratorRuntime.mark(function _callee() {
-            var root, start, keyToFragmentsMap, results, oldKeyOrder, _loop;
+            var root, end, start, keyToFragmentsMap, results, oldKeyOrder, _loop;
 
             return regeneratorRuntime.wrap(function _callee$(_context2) {
               while (1) {
                 switch (_context2.prev = _context2.next) {
                   case 0:
                     root = document.createDocumentFragment();
+                    end = document.createComment('');
                     start = document.createComment('');
                     root.appendChild(start);
+                    root.appendChild(end);
                     keyToFragmentsMap = new Map();
                     results = [{
                       type: _directive.DOMUpdateType.REPLACE_NODE,
@@ -2786,15 +2808,72 @@ regeneratorRuntime.mark(function _callee2(node, htmlResults) {
                     _loop =
                     /*#__PURE__*/
                     regeneratorRuntime.mark(function _loop() {
-                      var inserts, removals, moves, keyOrder, _i, _inserts, _key, after, i, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, _key2, _node, _i2, _moves, _key3, newKeyIndex, oldKeyIndex, _node2;
+                      var keyOrder, tryInsert, i, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, _key, oldIndex, newIndex;
 
                       return regeneratorRuntime.wrap(function _loop$(_context) {
                         while (1) {
                           switch (_context.prev = _context.next) {
                             case 0:
-                              inserts = [];
-                              removals = [].concat(oldKeyOrder);
-                              moves = [];
+                              tryInsert = function _ref(key, oldIndex, newIndex) {
+                                var next = keyOrder[newIndex + 1];
+                                var nextIndex = keyOrder.indexOf(next);
+
+                                if (nextIndex === -1) {
+                                  results.push({
+                                    type: _directive.DOMUpdateType.INSERT_BEFORE,
+                                    node: end,
+                                    newNode: keyToFragmentsMap.get(key)[1]
+                                  });
+
+                                  if (oldIndex > -1) {
+                                    oldKeyOrder.splice(oldIndex, 1);
+                                  }
+
+                                  oldKeyOrder.push(key);
+                                } else if (oldKeyOrder.indexOf(next) === nextIndex) {
+                                  results.push({
+                                    type: _directive.DOMUpdateType.INSERT_BEFORE,
+                                    node: keyToFragmentsMap.get(next)[1],
+                                    newNode: keyToFragmentsMap.get(key)[1]
+                                  });
+
+                                  if (oldIndex > -1) {
+                                    oldKeyOrder.splice(oldIndex, 1);
+                                  }
+
+                                  oldKeyOrder.splice(oldKeyOrder.indexOf(next), 0, key);
+                                } else {
+                                  var previous = keyOrder[newIndex - 1];
+                                  var previousIndex = keyOrder.indexOf(previous);
+
+                                  if (previousIndex === -1) {
+                                    results.push({
+                                      type: _directive.DOMUpdateType.INSERT_AFTER,
+                                      node: start,
+                                      newNode: keyToFragmentsMap.get(key)[1]
+                                    });
+
+                                    if (oldIndex > -1) {
+                                      oldKeyOrder.splice(oldIndex, 1);
+                                    }
+
+                                    oldKeyOrder.unshift(key);
+                                  } else if (oldKeyOrder.indexOf(previous) === previousIndex) {
+                                    results.push({
+                                      type: _directive.DOMUpdateType.INSERT_AFTER,
+                                      node: keyToFragmentsMap.get(previous)[1],
+                                      newNode: keyToFragmentsMap.get(key)[1]
+                                    });
+
+                                    if (oldIndex > -1) {
+                                      oldKeyOrder.splice(oldIndex, 1);
+                                    }
+
+                                    oldKeyOrder.splice(oldKeyOrder.indexOf(next) + 1, 0, key);
+                                  }
+                                }
+                              };
+
                               keyOrder = htmlResults.map(function (result) {
                                 var key = getKey(result);
 
@@ -2812,169 +2891,110 @@ regeneratorRuntime.mark(function _callee2(node, htmlResults) {
                                   (0, _render.render)(_frag, result);
                                 }
 
-                                if (!oldKeyOrder.includes(key)) {
-                                  inserts.push(key);
-                                } else {
-                                  moves.push(key);
-                                  removals.splice(removals.indexOf(key), 1);
-                                }
-
                                 return key;
                               });
-                              _i = 0, _inserts = inserts;
+                              i = 0;
 
-                            case 5:
-                              if (!(_i < _inserts.length)) {
-                                _context.next = 20;
+                            case 3:
+                              if (!(keyOrder.join() !== oldKeyOrder.join())) {
+                                _context.next = 29;
                                 break;
                               }
 
-                              _key = _inserts[_i];
-                              after = null;
-                              i = keyOrder.indexOf(_key) + 1;
-
-                            case 9:
-                              if (!(i < keyOrder.length)) {
-                                _context.next = 16;
-                                break;
-                              }
-
-                              after = oldKeyOrder[oldKeyOrder.indexOf(keyOrder[i])];
-
-                              if (!after) {
-                                _context.next = 13;
-                                break;
-                              }
-
-                              return _context.abrupt("break", 16);
-
-                            case 13:
                               i++;
-                              _context.next = 9;
-                              break;
 
-                            case 16:
-                              if (after) {
-                                results.push({
-                                  type: _directive.DOMUpdateType.INSERT_BEFORE,
-                                  node: keyToFragmentsMap.get(after)[1],
-                                  newNode: keyToFragmentsMap.get(_key)[1]
-                                });
-                                oldKeyOrder.splice(oldKeyOrder.indexOf(after), 0, _key);
-                              } else {
-                                results.push({
-                                  type: _directive.DOMUpdateType.INSERT_BEFORE,
-                                  node: start,
-                                  newNode: keyToFragmentsMap.get(_key)[1]
-                                });
-                                oldKeyOrder.push(_key);
+                              if (!(i > 20)) {
+                                _context.next = 8;
+                                break;
                               }
 
-                            case 17:
-                              _i++;
-                              _context.next = 5;
-                              break;
+                              console.log('break');
+                              return _context.abrupt("break", 29);
 
-                            case 20:
+                            case 8:
                               _iteratorNormalCompletion2 = true;
                               _didIteratorError2 = false;
                               _iteratorError2 = undefined;
-                              _context.prev = 23;
+                              _context.prev = 11;
 
-                              for (_iterator2 = removals[Symbol.iterator](); !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                                _key2 = _step2.value;
-                                _node = keyToFragmentsMap.get(_key2)[1];
-                                results.push({
-                                  type: _directive.DOMUpdateType.REMOVE,
-                                  node: _node
-                                });
-                                oldKeyOrder.splice(oldKeyOrder.indexOf(_key2), 1);
+                              for (_iterator2 = oldKeyOrder.concat(keyOrder)[Symbol.iterator](); !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                                _key = _step2.value;
+                                oldIndex = oldKeyOrder.indexOf(_key);
+                                newIndex = keyOrder.indexOf(_key);
+
+                                if (oldIndex > -1 && newIndex === -1) {
+                                  results.push({
+                                    type: _directive.DOMUpdateType.REMOVE,
+                                    node: keyToFragmentsMap.get(_key)[1]
+                                  });
+                                  oldKeyOrder.splice(oldIndex, 1);
+                                } else {
+                                  tryInsert(_key, oldIndex, newIndex);
+                                }
                               }
 
-                              _context.next = 31;
+                              _context.next = 19;
                               break;
 
-                            case 27:
-                              _context.prev = 27;
-                              _context.t0 = _context["catch"](23);
+                            case 15:
+                              _context.prev = 15;
+                              _context.t0 = _context["catch"](11);
                               _didIteratorError2 = true;
                               _iteratorError2 = _context.t0;
 
-                            case 31:
-                              _context.prev = 31;
-                              _context.prev = 32;
+                            case 19:
+                              _context.prev = 19;
+                              _context.prev = 20;
 
                               if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
                                 _iterator2.return();
                               }
 
-                            case 34:
-                              _context.prev = 34;
+                            case 22:
+                              _context.prev = 22;
 
                               if (!_didIteratorError2) {
-                                _context.next = 37;
+                                _context.next = 25;
                                 break;
                               }
 
                               throw _iteratorError2;
 
-                            case 37:
-                              return _context.finish(34);
+                            case 25:
+                              return _context.finish(22);
 
-                            case 38:
-                              return _context.finish(31);
+                            case 26:
+                              return _context.finish(19);
 
-                            case 39:
-                              for (_i2 = 0, _moves = moves; _i2 < _moves.length; _i2++) {
-                                _key3 = _moves[_i2];
-                                newKeyIndex = keyOrder.indexOf(_key3);
-                                oldKeyIndex = oldKeyOrder.indexOf(_key3);
-                                _node2 = keyToFragmentsMap.get(_key3)[1];
+                            case 27:
+                              _context.next = 3;
+                              break;
 
-                                if (newKeyIndex !== oldKeyIndex) {
-                                  if (newKeyIndex < keyOrder.length - 1) {
-                                    results.push({
-                                      type: _directive.DOMUpdateType.INSERT_BEFORE,
-                                      node: keyToFragmentsMap.get(keyOrder[newKeyIndex + 1])[1],
-                                      newNode: _node2
-                                    });
-                                    oldKeyOrder.splice(oldKeyIndex, 1);
-                                    oldKeyOrder.splice(oldKeyOrder.indexOf(keyOrder[newKeyIndex + 1]), 0, _key3);
-                                  } else {
-                                    results.push({
-                                      type: _directive.DOMUpdateType.INSERT_BEFORE,
-                                      node: start,
-                                      newNode: _node2
-                                    });
-                                    oldKeyOrder.splice(oldKeyIndex, 1);
-                                    oldKeyOrder.push(_key3);
-                                  }
-                                }
-                              }
-
-                              _context.next = 42;
+                            case 29:
+                              console.log(results);
+                              _context.next = 32;
                               return results;
 
-                            case 42:
+                            case 32:
                               htmlResults = _context.sent[0];
                               results = [];
 
-                            case 44:
+                            case 34:
                             case "end":
                               return _context.stop();
                           }
                         }
-                      }, _loop, null, [[23, 27, 31, 39], [32,, 34, 38]]);
+                      }, _loop, null, [[11, 15, 19, 27], [20,, 22, 26]]);
                     });
 
-                  case 7:
-                    return _context2.delegateYield(_loop(), "t0", 8);
-
-                  case 8:
-                    _context2.next = 7;
-                    break;
+                  case 9:
+                    return _context2.delegateYield(_loop(), "t0", 10);
 
                   case 10:
+                    _context2.next = 9;
+                    break;
+
+                  case 12:
                   case "end":
                     return _context2.stop();
                 }
@@ -3255,6 +3275,14 @@ function _templateObject() {
 
 function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
 
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
 function createItem(label) {
   return {
     label: label,
@@ -3273,9 +3301,6 @@ regeneratorRuntime.mark(function _callee(state) {
         case 0:
           toggleDone = function _ref2(item) {
             item.done = !item.done;
-            state.items.sort(function (a) {
-              return a.done ? -1 : 1;
-            });
           };
 
           inputKeyUpHandler = function _ref(e) {
@@ -3294,9 +3319,16 @@ regeneratorRuntime.mark(function _callee(state) {
                 items = _state$items === void 0 ? [] : _state$items,
                 _state$inputValue = state.inputValue,
                 inputValue = _state$inputValue === void 0 ? '' : _state$inputValue;
+            var done = items.filter(function (item) {
+              return item.done;
+            });
+            var notDone = items.filter(function (item) {
+              return !item.done;
+            });
+            var sorted = [].concat(_toConsumableArray(notDone), _toConsumableArray(done));
             return (0, _index.html)(_templateObject(), inputValue, function (e) {
               return state.inputValue = e.target.value;
-            }, inputKeyUpHandler, items.map(function (item) {
+            }, inputKeyUpHandler, sorted.map(function (item) {
               return (0, _index.html)(_templateObject2(), item.id, item.label, item.done, function () {
                 return toggleDone(item);
               });
@@ -3427,7 +3459,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "40927" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "40957" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

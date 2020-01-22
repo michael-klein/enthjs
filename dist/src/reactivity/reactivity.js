@@ -22,18 +22,17 @@ export function proxify(obj, onChange, hooks = {}) {
             if (hooks.set) {
                 value = hooks.set(obj, prop, value);
             }
+            if (typeof value === 'object' && !isProxyMap.has(value)) {
+                console.log('proxify');
+                value = proxify(value, onChangeWrapped);
+            }
             if ((obj[prop] !== value || !initialized) &&
                 prop !== '__$p' &&
                 prop !== 'on') {
-                if (typeof value === 'object' && !isProxyMap.has(obj[prop])) {
-                    value = proxify(value, onChangeWrapped);
-                }
                 obj[prop] = value;
                 onChangeWrapped();
             }
-            else if (prop === 'on') {
-                obj[prop] = value;
-            }
+            obj[prop] = value;
             return true;
         },
     });

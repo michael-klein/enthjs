@@ -7,7 +7,18 @@ function createItem(label) {
     id: `item-${Date.now()}-${label.replace(/ /g, '-')}`,
   };
 }
-
+function shuffle(array) {
+  var currentIndex = array.length;
+  var temporaryValue, randomIndex;
+  while (0 !== currentIndex) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+  return array;
+}
 component('todo-app', function*(state) {
   state.items = [createItem('todo item')];
 
@@ -20,16 +31,17 @@ component('todo-app', function*(state) {
 
   function toggleDone(item) {
     item.done = !item.done;
-    state.items.sort(a => {
-      return a.done ? -1 : 1;
-    });
   }
 
   for (;;) {
     yield () => {
       const { items = [], inputValue = '' } = state;
+      const done = items.filter(item => item.done);
+      const notDone = items.filter(item => !item.done);
+      const sorted = [...notDone, ...done];
       return html`
         <div>
+          <button onclick="${() => shuffle(state.items)}">shuffle</button>
           <input
             type="text"
             placeholder="add todo item"
@@ -39,7 +51,7 @@ component('todo-app', function*(state) {
           />
         </div>
         <ul>
-          ${items.map(
+          ${sorted.map(
             item => html`
               <todo-item
                 key="${item.id}"

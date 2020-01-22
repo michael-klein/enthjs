@@ -23,8 +23,10 @@ export const list = createDirective(function*(
 ) {
   if (node.nodeType === 3) {
     const root = document.createDocumentFragment();
+    const end = document.createComment('');
     const start = document.createComment('');
     root.appendChild(start);
+    root.appendChild(end);
     const keyToFragmentsMap: Map<string, [DocumentFragment, Node]> = new Map();
     let results: DOMUpdate[] = [
       {
@@ -35,9 +37,6 @@ export const list = createDirective(function*(
     ];
     let oldKeyOrder: string[] = [];
     for (;;) {
-      const inserts: string[] = [];
-      const removals: string[] = [...oldKeyOrder];
-      const moves: string[] = [];
       const keyOrder: string[] = htmlResults.map(result => {
         const key = getKey(result);
         if (!keyToFragmentsMap.has(key)) {
@@ -51,71 +50,104 @@ export const list = createDirective(function*(
           const frag = keyToFragmentsMap.get(key)[0] as DocumentFragment;
           render(frag as any, result);
         }
-        if (!oldKeyOrder.includes(key)) {
-          inserts.push(key);
-        } else {
-          moves.push(key);
-          removals.splice(removals.indexOf(key), 1);
-        }
         return key;
       });
-      for (const key of inserts) {
-        let after: string = null;
-        for (let i = keyOrder.indexOf(key) + 1; i < keyOrder.length; i++) {
-          after = oldKeyOrder[oldKeyOrder.indexOf(keyOrder[i])];
-          if (after) {
-            break;
+
+      function tryInsert(
+        key: string,
+        oldIndex: number,
+        newIndex: number
+      ): void {
+        const next = keyOrder[newIndex + 1];
+        const nextIndex = keyOrder.indexOf(next);
+        if (nextIndex === -1) {
+          if (
+            oldIndex < Math.max(0, oldKeyOrder.length - 1) ||
+            newIndex === -1
+          ) {
+            results.push({
+              type: DOMUpdateType.INSERT_BEFORE,
+              node: end,
+              newNode: keyToFragmentsMap.get(key)[1],
+            });
+            if (oldIndex > -1) {
+              oldKeyOrder.splice(oldIndex, 1);
+            }
+            oldKeyOrder.push(key);
+          }
+        } else if (oldKeyOrder.indexOf(next) === nextIndex) {
+          results.push({
+            type: DOMUpdateType.INSERT_BEFORE,
+            node: keyToFragmentsMap.get(next)[1],
+            newNode: keyToFragmentsMap.get(key)[1],
+          });
+          if (oldIndex > -1) {
+            oldKeyOrder.splice(oldIndex, 1);
+          }
+          oldKeyOrder.splice(oldKeyOrder.indexOf(next), 0, key);
+        } else {
+          const previous = keyOrder[newIndex - 1];
+          const previousIndex = keyOrder.indexOf(previous);
+          if (previousIndex === -1) {
+            results.push({
+              type: DOMUpdateType.INSERT_AFTER,
+              node: start,
+              newNode: keyToFragmentsMap.get(key)[1],
+            });
+            if (oldIndex > -1) {
+              oldKeyOrder.splice(oldIndex, 1);
+            }
+            oldKeyOrder.unshift(key);
+          } else if (oldKeyOrder.indexOf(previous) === previousIndex) {
+            results.push({
+              type: DOMUpdateType.INSERT_AFTER,
+              node: keyToFragmentsMap.get(previous)[1],
+              newNode: keyToFragmentsMap.get(key)[1],
+            });
+            if (oldIndex > -1) {
+              oldKeyOrder.splice(oldIndex, 1);
+            }
+            oldKeyOrder.splice(oldKeyOrder.indexOf(next) + 1, 0, key);
           }
         }
-        if (after) {
-          results.push({
-            type: DOMUpdateType.INSERT_BEFORE,
-            node: keyToFragmentsMap.get(after)[1],
-            newNode: keyToFragmentsMap.get(key)[1],
-          } as DOMUpdate);
-          oldKeyOrder.splice(oldKeyOrder.indexOf(after), 0, key);
-        } else {
-          results.push({
-            type: DOMUpdateType.INSERT_BEFORE,
-            node: start,
-            newNode: keyToFragmentsMap.get(key)[1],
-          } as DOMUpdate);
-          oldKeyOrder.push(key);
+      }
+
+      function handleKey(key: string): void {
+        const oldIndex = oldKeyOrder.indexOf(key);
+        const newIndex = keyOrder.indexOf(key);
+        if (oldIndex !== newIndex) {
+          if (oldIndex > -1 && newIndex === -1) {
+            results.push({
+              type: DOMUpdateType.REMOVE,
+              node: keyToFragmentsMap.get(key)[1],
+            });
+            oldKeyOrder.splice(oldIndex, 1);
+          } else {
+            tryInsert(key, oldIndex, newIndex);
+          }
         }
       }
-      for (const key of removals) {
-        const node = keyToFragmentsMap.get(key)[1];
-        results.push({
-          type: DOMUpdateType.REMOVE,
-          node,
-        } as DOMUpdate);
-        oldKeyOrder.splice(oldKeyOrder.indexOf(key), 1);
-      }
-      for (const key of moves) {
-        const newKeyIndex = keyOrder.indexOf(key);
-        const oldKeyIndex = oldKeyOrder.indexOf(key);
-        const node = keyToFragmentsMap.get(key)[1];
-        if (newKeyIndex !== oldKeyIndex) {
-          if (newKeyIndex < keyOrder.length - 1) {
-            results.push({
-              type: DOMUpdateType.INSERT_BEFORE,
-              node: keyToFragmentsMap.get(keyOrder[newKeyIndex + 1])[1],
-              newNode: node,
-            } as DOMUpdate);
-            oldKeyOrder.splice(oldKeyIndex, 1);
-            oldKeyOrder.splice(
-              oldKeyOrder.indexOf(keyOrder[newKeyIndex + 1]),
-              0,
-              key
-            );
-          } else {
-            results.push({
-              type: DOMUpdateType.INSERT_BEFORE,
-              node: start,
-              newNode: node,
-            } as DOMUpdate);
-            oldKeyOrder.splice(oldKeyIndex, 1);
-            oldKeyOrder.push(key);
+      let j = 0;
+      while (keyOrder.join() !== oldKeyOrder.join()) {
+        j++;
+        if (j > keyOrder.length) {
+          console.log('break');
+          break;
+        }
+        const oldKeyOrderCopy = [...oldKeyOrder];
+        const keyOrderCopy = [...keyOrder];
+        for (
+          let i = 0;
+          i < Math.max(oldKeyOrder.length, keyOrder.length);
+          i++
+        ) {
+          let key = oldKeyOrderCopy[i];
+          if (key && keyOrder.indexOf(key) !== i) {
+            handleKey(key);
+          }
+          key = keyOrderCopy[i];
+          if (key && oldKeyOrder.indexOf(key) !== i) {
+            handleKey(key);
           }
         }
       }
