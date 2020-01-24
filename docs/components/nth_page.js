@@ -7,7 +7,7 @@ component('nth-page', function * (state) {
     width: 100%;
     margin: 0px auto;
     display: flex;
-    padding: 20px;
+    padding: 40px;
     padding-top: 70px;
     position: relative;
     * {
@@ -58,6 +58,9 @@ component('nth-page', function * (state) {
               reprehenderit in voluptate velit esse cillum dolore eu fugiat
               nulla pariatur. Excepteur sint occaecat cupidatat non proident,
               sunt in culpa qui officia deserunt mollit anim id est laborum.
+            </div>
+            <div>
+              <nth-highlight></nth-highlight>
             </div>
             <todo-app></todo-app>
           </main>

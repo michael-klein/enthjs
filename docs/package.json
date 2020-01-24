@@ -10,6 +10,13 @@
   "author": "Michael Klein",
   "license": "ISC",
   "dependencies": {
-    "goober": "^1.6.4"
+    "goober": "^1.6.4",
+    "prismjs": "^1.19.0",
+    "simplebar": "^5.1.0"
+  },
+  "snowpack": {
+    "webDependencies": [
+      "prismjs/prism.js"
+    ]
   }
 }
