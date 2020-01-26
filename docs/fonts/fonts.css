@@ -1,0 +1,72 @@
+@font-face {
+    font-family: 'Fira Sans';
+    font-style: normal;
+    font-weight: 400;
+    src: url(Fira+Sans_400_normal.eot); /* http://fonts.gstatic.com/s/firasans/v10/va9E4kDNxMZdWfMOD5Vvl4jP.eot */
+    src: local('☺'),
+        url(Fira+Sans_400_normal.eot?#iefix) format('embedded-opentype'), /* http://fonts.gstatic.com/s/firasans/v10/va9E4kDNxMZdWfMOD5Vvl4jP.eot */
+        url(Fira+Sans_400_normal.woff2) format('woff2'), /* http://fonts.gstatic.com/s/firasans/v10/va9E4kDNxMZdWfMOD5Vvl4jL.woff2 */
+        url(Fira+Sans_400_normal.woff) format('woff'), /* http://fonts.gstatic.com/s/firasans/v10/va9E4kDNxMZdWfMOD5Vvl4jN.woff */
+        url(Fira+Sans_400_normal.ttf) format('truetype'), /* http://fonts.gstatic.com/s/firasans/v10/va9E4kDNxMZdWfMOD5Vvl4jOazX3dA.ttf */
+        url(Fira+Sans_400_normal.svg#Fira+Sans_400_normal) format('svg'); /* http://fonts.gstatic.com/l/font?kit=va9E4kDNxMZdWfMOD5Vvl4jM&skey=6bde03e5f15b0572&v=v10#FiraSans */
+}
+@font-face {
+    font-family: 'Fira Sans';
+    font-style: normal;
+    font-weight: 400;
+    src: url(Fira+Sans_400_normal.eot); /* http://fonts.gstatic.com/s/firasans/v10/va9E4kDNxMZdWfMOD5Vvl4jP.eot */
+    src: local('☺'),
+        url(Fira+Sans_400_normal.eot?#iefix) format('embedded-opentype'), /* http://fonts.gstatic.com/s/firasans/v10/va9E4kDNxMZdWfMOD5Vvl4jP.eot */
+        url(Fira+Sans_400_normal.woff2) format('woff2'), /* http://fonts.gstatic.com/s/firasans/v10/va9E4kDNxMZdWfMOD5Vvl4jL.woff2 */
+        url(Fira+Sans_400_normal.woff) format('woff'), /* http://fonts.gstatic.com/s/firasans/v10/va9E4kDNxMZdWfMOD5Vvl4jN.woff */
+        url(Fira+Sans_400_normal.ttf) format('truetype'), /* http://fonts.gstatic.com/s/firasans/v10/va9E4kDNxMZdWfMOD5Vvl4jOazX3dA.ttf */
+        url(Fira+Sans_400_normal.svg#Fira+Sans_400_normal) format('svg'); /* http://fonts.gstatic.com/l/font?kit=va9E4kDNxMZdWfMOD5Vvl4jM&skey=6bde03e5f15b0572&v=v10#FiraSans */
+}
+@font-face {
+    font-family: 'Playfair Display';
+    font-style: normal;
+    font-weight: 400;
+    src: url(Playfair+Display_400_normal.eot); /* http://fonts.gstatic.com/s/playfairdisplay/v19/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtc.eot */
+    src: local('☺'),
+        url(Playfair+Display_400_normal.eot?#iefix) format('embedded-opentype'), /* http://fonts.gstatic.com/s/playfairdisplay/v19/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtc.eot */
+        url(Playfair+Display_400_normal.woff2) format('woff2'), /* http://fonts.gstatic.com/s/playfairdisplay/v19/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtM.woff2 */
+        url(Playfair+Display_400_normal.woff) format('woff'), /* http://fonts.gstatic.com/s/playfairdisplay/v19/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtU.woff */
+        url(Playfair+Display_400_normal.ttf) format('truetype'), /* http://fonts.gstatic.com/s/playfairdisplay/v19/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtbK_l2q.ttf */
+        url(Playfair+Display_400_normal.svg#Playfair+Display_400_normal) format('svg'); /* http://fonts.gstatic.com/l/font?kit=nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtQ&skey=f3b68f0152604ed9&v=v19#PlayfairDisplay */
+}
+@font-face {
+    font-family: 'Fira Code';
+    font-style: normal;
+    font-weight: 400;
+    src: url(Fira+Code_400_normal.eot); /* http://fonts.gstatic.com/s/firacode/v7/uU9eCBsR6Z2vfE9aq3bL0fxyUs4tcw4W_D1sJVD7Mg.eot */
+    src: local('☺'),
+        url(Fira+Code_400_normal.eot?#iefix) format('embedded-opentype'), /* http://fonts.gstatic.com/s/firacode/v7/uU9eCBsR6Z2vfE9aq3bL0fxyUs4tcw4W_D1sJVD7Mg.eot */
+        url(Fira+Code_400_normal.woff2) format('woff2'), /* http://fonts.gstatic.com/s/firacode/v7/uU9eCBsR6Z2vfE9aq3bL0fxyUs4tcw4W_D1sJVD7Ng.woff2 */
+        url(Fira+Code_400_normal.woff) format('woff'), /* http://fonts.gstatic.com/s/firacode/v7/uU9eCBsR6Z2vfE9aq3bL0fxyUs4tcw4W_D1sJVD7MA.woff */
+        url(Fira+Code_400_normal.ttf) format('truetype'), /* http://fonts.gstatic.com/s/firacode/v7/uU9eCBsR6Z2vfE9aq3bL0fxyUs4tcw4W_D1sJVD7M-zjojw.ttf */
+        url(Fira+Code_400_normal.svg#Fira+Code_400_normal) format('svg'); /* http://fonts.gstatic.com/l/font?kit=uU9eCBsR6Z2vfE9aq3bL0fxyUs4tcw4W_D1sJVD7MQ&skey=33bc0af28fd31bc7&v=v7#FiraCode */
+}
+@font-face {
+    font-family: 'Fira Sans';
+    font-style: normal;
+    font-weight: 400;
+    src: url(Fira+Sans_400_normal.eot); /* http://fonts.gstatic.com/s/firasans/v10/va9E4kDNxMZdWfMOD5Vvl4jP.eot */
+    src: local('☺'),
+        url(Fira+Sans_400_normal.eot?#iefix) format('embedded-opentype'), /* http://fonts.gstatic.com/s/firasans/v10/va9E4kDNxMZdWfMOD5Vvl4jP.eot */
+        url(Fira+Sans_400_normal.woff2) format('woff2'), /* http://fonts.gstatic.com/s/firasans/v10/va9E4kDNxMZdWfMOD5Vvl4jL.woff2 */
+        url(Fira+Sans_400_normal.woff) format('woff'), /* http://fonts.gstatic.com/s/firasans/v10/va9E4kDNxMZdWfMOD5Vvl4jN.woff */
+        url(Fira+Sans_400_normal.ttf) format('truetype'), /* http://fonts.gstatic.com/s/firasans/v10/va9E4kDNxMZdWfMOD5Vvl4jOazX3dA.ttf */
+        url(Fira+Sans_400_normal.svg#Fira+Sans_400_normal) format('svg'); /* http://fonts.gstatic.com/l/font?kit=va9E4kDNxMZdWfMOD5Vvl4jM&skey=6bde03e5f15b0572&v=v10#FiraSans */
+}
+@font-face {
+    font-family: 'Playfair Display';
+    font-style: normal;
+    font-weight: 400;
+    src: url(Playfair+Display_400_normal.eot); /* http://fonts.gstatic.com/s/playfairdisplay/v19/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtc.eot */
+    src: local('☺'),
+        url(Playfair+Display_400_normal.eot?#iefix) format('embedded-opentype'), /* http://fonts.gstatic.com/s/playfairdisplay/v19/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtc.eot */
+        url(Playfair+Display_400_normal.woff2) format('woff2'), /* http://fonts.gstatic.com/s/playfairdisplay/v19/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtM.woff2 */
+        url(Playfair+Display_400_normal.woff) format('woff'), /* http://fonts.gstatic.com/s/playfairdisplay/v19/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtU.woff */
+        url(Playfair+Display_400_normal.ttf) format('truetype'), /* http://fonts.gstatic.com/s/playfairdisplay/v19/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtbK_l2q.ttf */
+        url(Playfair+Display_400_normal.svg#Playfair+Display_400_normal) format('svg'); /* http://fonts.gstatic.com/l/font?kit=nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtQ&skey=f3b68f0152604ed9&v=v19#PlayfairDisplay */
+}

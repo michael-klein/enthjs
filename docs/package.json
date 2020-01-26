@@ -1,0 +1,23 @@
+{
+  "name": "docs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Michael Klein",
+  "license": "ISC",
+  "dependencies": {
+    "goober": "^1.6.4",
+    "prettier": "^1.19.1",
+    "prismjs": "^1.19.0",
+    "simplebar": "^5.1.0"
+  },
+  "snowpack": {
+    "webDependencies": [
+      "prismjs/prism.js"
+    ]
+  }
+}
