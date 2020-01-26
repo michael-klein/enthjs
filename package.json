@@ -8,7 +8,7 @@
   "typings": "dist/index.d.ts",
   "files": ["dist"],
   "scripts": {
-    "prepublish": "tsdx build",
+    "prepublish": "npm run start",
     "start": "npx ttsc --watch --project tsconfig.json",
     "build": "npx ttsc --project tsconfig.json"
   },
