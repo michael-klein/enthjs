@@ -6,7 +6,7 @@ component('nth-sidebar', function * (state) {
     .logo {
       font-size: 2em;
       font-weight: bold;
-      border: 3px solid #2f99c1;
+      border: 3px solid #297491;
       padding-right: 50px;
       padding-top: 50px;
       padding-left: 15px;
@@ -22,12 +22,14 @@ component('nth-sidebar', function * (state) {
       line-height: 1.2em;
       padding: 10px;
       padding-top: 8px;
-      background: #2f99c1;
+      background: #297491;
       color: white;
       font-weight: normal;
       font-style: normal;
     }
     nav {
+      padding-right: 15px;
+      font-size: 0.9em;
       ul {
         margin: 0;
         padding: 0;

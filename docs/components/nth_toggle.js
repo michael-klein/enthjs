@@ -41,11 +41,11 @@ component('nth-toggle', function * (state) {
     }
 
     input:checked + .slider {
-      background-color: #2f99c1;
+      background-color: #297491;
     }
 
     input:focus + .slider {
-      box-shadow: 0 0 1px #2f99c1;
+      box-shadow: 0 0 1px #297491;
     }
 
     input:checked + .slider:before {

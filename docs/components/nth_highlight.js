@@ -6,11 +6,31 @@ component('nth-highlight', function * (state) {
   worker.onmessage = event => {
     state.highlighted = event.data;
   };
-  worker.postMessage("console.log('hi');");
-  const className = css`
-    background: #1f81a6;
+  const className = highlightCSS();
+  let prevCode = '';
+  for (;;) {
+    const { highlighted = '', properties } = state;
+    const { code } = properties;
+    if (code && code !== prevCode) {
+      worker.postMessage(code);
+      prevCode = code;
+    }
+    yield () => {
+      return html`
+        <pre class="${className}">
+          <code class="hljs">${html.call(html, [highlighted])}</code>
+        </div>
+      `;
+    };
+  }
+});
+function highlightCSS () {
+  return css`
+    background: #194d61;
+    text-shadow: 0px 0px 0px #0b2731;
     margin-left: -20px;
     margin-right: -20px;
+    padding: 0;
     padding-left: 20px;
     padding-right: 20px;
     margin-bottom: 10px;
@@ -18,8 +38,10 @@ component('nth-highlight', function * (state) {
     .hljs {
       display: block;
       overflow-x: auto;
-      padding-top: 0.5em;
-      padding-bottom: 0.5em;
+      line-height: 1.4em;
+      font-size: 0.9em;
+      margin-top: -0.5em;
+      margin-bottom: -2em;
     }
 
     .hljs-keyword,
@@ -27,16 +49,16 @@ component('nth-highlight', function * (state) {
     .hljs-literal,
     .hljs-section,
     .hljs-link {
-      color: #8be9fd;
+      color: #6bc3e3;
     }
 
     .hljs-function .hljs-keyword {
-      color: #ff79c6;
+      color: #ffc043;
     }
 
     .hljs,
     .hljs-subst {
-      color: #f8f8f2;
+      color: #d1f1fb;
     }
 
     .hljs-string,
@@ -50,7 +72,7 @@ component('nth-highlight', function * (state) {
     .hljs-variable,
     .hljs-template-tag,
     .hljs-template-variable {
-      color: #f1fa8c;
+      color: #fa8c8c;
     }
 
     .hljs-comment,
@@ -69,21 +91,11 @@ component('nth-highlight', function * (state) {
     .hljs-type,
     .hljs-name,
     .hljs-strong {
-      font-weight: bold;
+      font-weight: normal;
     }
 
     .hljs-emphasis {
       font-style: italic;
     }
   `;
-  for (;;) {
-    const { highlighted = '' } = state;
-    yield () => {
-      return html`
-        <div class="${className}">
-          <div class="hljs">${html.call(html, [highlighted])}</div>
-        </div>
-      `;
-    };
-  }
-});
+}

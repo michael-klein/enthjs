@@ -77,7 +77,7 @@ function addGlobal (css) {
     h5:before,
     h6:before {
       content: '#';
-      color: #2f99c1;
+      color: #3188aa;
       display: inline-block;
       font-family: 'Fira Sans', sans-serif;
       margin-left: calc(-0.5em - 5px);
@@ -96,11 +96,14 @@ function addGlobal (css) {
     a:link,
     a:active,
     a:hover {
-      color: #084c69;
+      color: #297491;
       text-decoration: none;
     }
     a:hover {
       text-decoration: underline;
+    }
+    code {
+      font-family: 'Fira Code', monospace;
     }
   `;
 }

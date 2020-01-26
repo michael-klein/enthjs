@@ -21,7 +21,7 @@ component('nth-page', function * (state) {
     .toggle-fallbacks {
       position: absolute;
       margin-top: 2px;
-      right: 20px;
+      right: 40px;
       display: flex;
       color: #084c69;
       font-size: 0.8em;
@@ -60,7 +60,17 @@ component('nth-page', function * (state) {
               sunt in culpa qui officia deserunt mollit anim id est laborum.
             </div>
             <div>
-              <nth-highlight></nth-highlight>
+              <nth-highlight
+                .code="${`
+                  import {component, html} from 'enthjs';
+
+                  component('a-component', function * () {
+                    yield () => {
+                      return html\`<div>hello world!</div>\`;
+                    };
+                  });              
+              `}"
+              ></nth-highlight>
             </div>
             <todo-app></todo-app>
           </main>
