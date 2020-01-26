@@ -3,6 +3,8 @@ import { css } from '../css.js';
 
 component('nth-sidebar', function * (state) {
   const className = css`
+    position: sticky;
+    top: 30px;
     .logo {
       font-size: 2em;
       font-weight: bold;
@@ -28,6 +30,7 @@ component('nth-sidebar', function * (state) {
       font-style: normal;
     }
     nav {
+      display: block;
       padding-right: 15px;
       font-size: 0.9em;
       ul {
@@ -44,6 +47,11 @@ component('nth-sidebar', function * (state) {
       > ul {
         padding-top: 20px;
       }
+    }
+
+    @media only screen and (max-width: 600px) {
+      width: 100%;
+      position: initial;
     }
   `;
   for (;;) {

@@ -9,13 +9,11 @@ function addGlobal (css) {
       box-sizing: border-box;
     }
 
-    /* Remove default padding */
     ul[class],
     ol[class] {
       padding: 0;
     }
 
-    /* Remove default margin */
     body,
     h1,
     h2,
@@ -33,29 +31,23 @@ function addGlobal (css) {
       margin: 0;
     }
 
-    /* Remove list styles on ul, ol elements with a class attribute */
     ul[class],
     ol[class] {
       list-style: none;
     }
 
-    /* A elements that don't have a class get default styles */
     a:not([class]) {
       text-decoration-skip-ink: auto;
     }
 
-    /* Make images easier to work with */
     img {
       max-width: 100%;
       display: block;
     }
-
-    /* Natural flow and rhythm in articles by default */
     article > * + * {
       margin-top: 1em;
     }
 
-    /* Inherit fonts for inputs and buttons */
     input,
     button,
     textarea,
