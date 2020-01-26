@@ -1,12 +1,18 @@
 import { component, html } from '../../dist/src/index.js';
 import { css } from '../css.js';
-
 component('nth-intro', function * () {
   const todoClass = css`
-    border: 3px solid #297491;
+    position: relative;
+    border: 3px solid #79b9e8;
     padding: 20px;
     margin-top: 10px;
     margin-bottom: 10px;
+    a > img {
+      height: 30px;
+      position: absolute;
+      right: -2px;
+      bottom: -2px;
+    }
   `;
   for (;;) {
     yield () => {
@@ -43,6 +49,9 @@ component('nth-intro', function * () {
               Before we go into more detail, here is the obligatory, arbitrary todo app, implemented with enthjs:
               <div class="${todoClass}">
                 <todo-app></todo-app>
+                <a target="blank" href="https://codesandbox.io/s/relaxed-resonance-hm2f5?fontsize=14&hidenavigation=1&theme=dark">
+                  <img alt="Edit enthjs todo example" src="https://codesandbox.io/static/img/play-codesandbox.svg">
+                </a>
               </div>
             </p>
       `;

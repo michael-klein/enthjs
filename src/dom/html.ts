@@ -5,9 +5,9 @@ const isLetter = (c: string): boolean => {
 };
 
 export enum DirectiveType {
-  TEXT,
-  ATTRIBUTE,
-  ATTRIBUTE_VALUE,
+  TEXT = 'TEXT',
+  ATTRIBUTE = 'ATTRIBUTE',
+  ATTRIBUTE_VALUE = 'ATTRIBUTE_VALUE',
 }
 
 export interface DynamicData {
@@ -36,7 +36,7 @@ export interface HTMLResult {
   template?: HTMLTemplateElement;
 }
 export type HTML = typeof html;
-export function isDirective(thing: any): boolean {
+export function isDirective (thing: any): boolean {
   return typeof thing === 'object' && thing[IS_DIRECTIVE];
 }
 let resultCache: WeakMap<TemplateStringsArray, HTMLResult> = new WeakMap();

@@ -1,5 +1,4 @@
 import { DirectiveType } from './html';
-
 export interface DOMUpdate {
   node: Node;
   newNode?: Node;
@@ -8,17 +7,17 @@ export interface DOMUpdate {
   name?: string;
 }
 export enum DOMUpdateType {
-  TEXT,
-  REPLACE_NODE,
-  ADD_NODE,
-  PREPEND_NODE,
-  INSERT_BEFORE,
-  INSERT_AFTER,
-  REMOVE,
-  ADD_CLASS,
-  REMOVE_CLASS,
-  SET_ATTRIBUTE,
-  CUSTOM,
+  TEXT = 'TEXT',
+  REPLACE_NODE = 'REPLACE_NODE',
+  ADD_NODE = 'ADD_NODE',
+  PREPEND_NODE = 'PREPEND_NODE',
+  INSERT_BEFORE = 'INSERT_BEFORE',
+  INSERT_AFTER = 'INSERT_AFTER',
+  REMOVE = 'REMOVE',
+  ADD_CLASS = 'ADD_CLASS',
+  REMOVE_CLASS = 'REMOVE_CLASS',
+  SET_ATTRIBUTE = 'SET_ATTRIBUTE',
+  CUSTOM = 'CUSTOM',
 }
 
 export type DirectiveGenerator<Args extends any[] = any[]> =
@@ -56,13 +55,13 @@ export function createDirective<
     N,
     Args
   >
->(
+> (
   factory: F
 ): F extends (node: N, ...initialArgs: infer A) => DirectiveGenerator<any>
   ? Directive<N, A>
   : never {
   return ((factory: F) => {
-    const directive = function(...args: Args) {
+    const directive = function (...args: Args) {
       return {
         [IS_DIRECTIVE]: true,
         factory,

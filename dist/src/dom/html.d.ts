@@ -1,8 +1,8 @@
 import { DirectiveResult } from './directive';
 export declare enum DirectiveType {
-    TEXT = 0,
-    ATTRIBUTE = 1,
-    ATTRIBUTE_VALUE = 2
+    TEXT = "TEXT",
+    ATTRIBUTE = "ATTRIBUTE",
+    ATTRIBUTE_VALUE = "ATTRIBUTE_VALUE"
 }
 export interface DynamicData {
     directive?: DirectiveResult;

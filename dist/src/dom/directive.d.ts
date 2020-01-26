@@ -7,17 +7,17 @@ export interface DOMUpdate {
     name?: string;
 }
 export declare enum DOMUpdateType {
-    TEXT = 0,
-    REPLACE_NODE = 1,
-    ADD_NODE = 2,
-    PREPEND_NODE = 3,
-    INSERT_BEFORE = 4,
-    INSERT_AFTER = 5,
-    REMOVE = 6,
-    ADD_CLASS = 7,
-    REMOVE_CLASS = 8,
-    SET_ATTRIBUTE = 9,
-    CUSTOM = 10
+    TEXT = "TEXT",
+    REPLACE_NODE = "REPLACE_NODE",
+    ADD_NODE = "ADD_NODE",
+    PREPEND_NODE = "PREPEND_NODE",
+    INSERT_BEFORE = "INSERT_BEFORE",
+    INSERT_AFTER = "INSERT_AFTER",
+    REMOVE = "REMOVE",
+    ADD_CLASS = "ADD_CLASS",
+    REMOVE_CLASS = "REMOVE_CLASS",
+    SET_ATTRIBUTE = "SET_ATTRIBUTE",
+    CUSTOM = "CUSTOM"
 }
 export declare type DirectiveGenerator<Args extends any[] = any[]> = Generator<DOMUpdate[] | Promise<DOMUpdate[]> | void, void, Args> | AsyncGenerator<DOMUpdate[] | Promise<DOMUpdate[]> | void, void, Args>;
 export interface DirectiveGeneratorFactoryThis {
