@@ -3,9 +3,9 @@
   "version": "0.2.2",
   "license": "MIT",
   "author": "Michael Klein",
-  "main": "dist/index.js",
-  "module": "dist/store.esm.js",
-  "typings": "dist/index.d.ts",
+  "main": "dist/src/index.js",
+  "module": "dist/src/index.js",
+  "typings": "dist/src/index.d.ts",
   "files": ["dist"],
   "scripts": {
     "prepublish": "npm run build",
