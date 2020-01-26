@@ -131,7 +131,6 @@ export const list = createDirective(function*(
       while (keyOrder.join() !== oldKeyOrder.join()) {
         j++;
         if (j > keyOrder.length) {
-          console.log('break');
           break;
         }
         const oldKeyOrderCopy = [...oldKeyOrder];

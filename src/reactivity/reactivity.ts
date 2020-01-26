@@ -1,5 +1,5 @@
 const isProxyMap: WeakSet<object> = new WeakSet();
-export function proxify(
+export function proxify (
   obj: any,
   onChange: () => void,
   hooks: {
@@ -30,7 +30,6 @@ export function proxify(
         value = hooks.set(obj, prop, value);
       }
       if (typeof value === 'object' && !isProxyMap.has(value)) {
-        console.log('proxify');
         value = proxify(value, onChangeWrapped);
       }
       if (

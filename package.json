@@ -1,6 +1,6 @@
 {
   "name": "enthjs",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "license": "MIT",
   "author": "Michael Klein",
   "main": "dist/src/index.js",

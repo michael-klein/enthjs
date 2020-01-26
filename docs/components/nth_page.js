@@ -67,6 +67,7 @@ component('nth-page', function * (state) {
             </div>
             <nth-intro></nth-intro>
             <p>
+              <br /><br />
               ...to be continued
             </p>
           </main>

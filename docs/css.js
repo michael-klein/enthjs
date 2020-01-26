@@ -60,7 +60,9 @@ function addGlobal (css) {
     h4,
     h5,
     h6 {
+      margin-top: 0.6em;
       font-family: 'Playfair Display', serif;
+      margin-bottom: 0.4em;
     }
     h1:before,
     h2:before,
@@ -96,6 +98,9 @@ function addGlobal (css) {
     }
     code {
       font-family: 'Fira Code', monospace;
+    }
+    p + p {
+      margin-top: 1em;
     }
   `;
 }
