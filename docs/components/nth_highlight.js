@@ -1,8 +1,7 @@
 import { component, html } from '../../dist/src/index.js';
 import { css } from '../css.js';
-
-const worker = new Worker('./docs/components/highlight_worker.js');
 component('nth-highlight', function * (state) {
+  const worker = new Worker('./docs/components/highlight_worker.js');
   worker.onmessage = event => {
     state.highlighted = event.data;
   };

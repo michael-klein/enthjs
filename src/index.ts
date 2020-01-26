@@ -11,7 +11,12 @@ export { input } from './dom/directives/input';
 export { sub } from './dom/directives/sub';
 export { frag } from './dom/directives/frag';
 export { list, key } from './dom/directives/list';
-export { html } from './dom/html';
+export {
+  html,
+  DirectiveType,
+  getAttributeMarker,
+  getTextMarker,
+} from './dom/html';
 export { render, defineFallback } from './dom/render';
 export { applyDefaultFallback } from './dom/default_fallback';
 export { $state } from './reactivity/reactivity';
