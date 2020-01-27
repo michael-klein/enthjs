@@ -3,8 +3,13 @@ import { css } from '../css.js';
 
 component('nth-sidebar', function * (state) {
   const className = css`
-    position: sticky;
+    position: fixed;
     top: 30px;
+    display: flex;
+    flex-direction: column;
+    width: 170px;
+    max-height: 100%;
+    z-index: 1000;
     .logo {
       font-size: 2em;
       font-weight: bold;
@@ -33,6 +38,7 @@ component('nth-sidebar', function * (state) {
       display: block;
       padding-right: 15px;
       font-size: 0.9em;
+      overflow: auto;
       ul {
         margin: 0;
         padding: 0;
@@ -60,7 +66,7 @@ component('nth-sidebar', function * (state) {
         <aside class="${className}">
           <div class="logo sans">e<span class="nth">nth</span>.js</div>
           <div class="slogan">
-            Not just the nth JavaScript framework your found today! 😉
+            Not just the nth JavaScript framework you found today! 😉
           </div>
           <nav>
             <ul>

@@ -14,26 +14,34 @@ component('nth-page', function * (state) {
       line-height: 1.7em;
     }
     main {
-      padding-left: 60px;
+      padding-left: 220px;
       text-align: justify;
       position: relative;
       min-width: 0;
+      &:before {
+        content: '';
+        position: fixed;
+        height: 30px;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        background: white;
+        z-index: 1000;
+      }
     }
     .toggle-fallbacks {
-      z-index: 100;
+      z-index: 2000;
       top: 0px;
       padding-bottom: 3px;
-      padding-top: 3px;
-      margin-top: calc(47px - 0.7em);
+      padding-top: 5px;
       position: sticky;
-      margin-top: 2px;
+      margin-bottom: -45px;
       right: 20px;
       display: flex;
       color: #084c69;
       font-size: 0.8em;
       align-items: center;
       justify-content: flex-end;
-      background: white;
       margin-left: -20px;
       margin-right: -20px;
       padding-right: 20px;
@@ -54,6 +62,7 @@ component('nth-page', function * (state) {
       padding: 30px;
       .toggle-fallback {
         margin-top: 0px;
+        background: white;
       }
       main {
         padding-left: 0px;
