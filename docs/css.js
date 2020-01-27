@@ -60,9 +60,15 @@ function addGlobal (css) {
     h4,
     h5,
     h6 {
-      margin-top: 0.6em;
+      margin-top: 1em;
       font-family: 'Playfair Display', serif;
       margin-bottom: 0.4em;
+    }
+    h1:first-child {
+      margin-top: 0em;
+    }
+    h1:not(:first-child) {
+      margin-top: 1.5em;
     }
     h1:before,
     h2:before,
@@ -116,5 +122,9 @@ export const css = (...args) => {
     global.id = '';
     shadowRoot.appendChild(global);
   }
-  return cssMap.get(shadowRoot).apply(cssMap.get(shadowRoot), args);
+  return (
+    args &&
+    args.length > 0 &&
+    cssMap.get(shadowRoot).apply(cssMap.get(shadowRoot), args)
+  );
 };

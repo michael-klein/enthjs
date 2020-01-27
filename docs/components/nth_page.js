@@ -16,8 +16,11 @@ component('nth-page', function * (state) {
     main {
       padding-left: 60px;
       text-align: justify;
+      position: relative;
+      min-width: 0;
     }
     .toggle-fallbacks {
+      z-index: 100;
       top: 0px;
       padding-bottom: 3px;
       padding-top: 3px;
@@ -31,6 +34,9 @@ component('nth-page', function * (state) {
       align-items: center;
       justify-content: flex-end;
       background: white;
+      margin-left: -20px;
+      margin-right: -20px;
+      padding-right: 20px;
       a {
         transform: translateY(-5px);
         font-size: 0.9em;
@@ -39,7 +45,9 @@ component('nth-page', function * (state) {
         margin-left: 5px;
       }
     }
-
+    .topheading {
+      margin-top: 8px;
+    }
     @media only screen and (max-width: 600px) {
       display: block;
       max-width: 100%;
@@ -65,7 +73,10 @@ component('nth-page', function * (state) {
                 ontoggled="${e => console.log(e.detail)}"
               ></nth-toggle>
             </div>
+            <h1 class="topheading">Intro</h1>
             <nth-intro></nth-intro>
+            <h1>Getting Started</h1>
+            <nth-getting-started></nth-getting-started>
             <p>
               <br /><br />
               ...to be continued

@@ -26,7 +26,6 @@ component('nth-intro', function * () {
   for (;;) {
     yield () => {
       return html`
-            <h1>Intro</h1>
             <p>
               enthjs is a JavaScript view library that the latest(-ish) language
               features such as:
@@ -43,20 +42,6 @@ component('nth-intro', function * () {
             <p> 
               Obviously, the features listed above are only available in the latest browsers (that does not include IE11), so you might need to use babel transforms and/or polyfills to support some of them.
             </p>
-            <p>
-              A basic enthjs component can be as simple as this:
-              <nth-highlight
-                .code="${`
-                  import {component, html} from 'enthjs';
-
-                  component('a-component', function * () {
-                    yield () => {
-                      return html\`<div>hello world!</div>\`;
-                    };
-                  });              
-              `}"
-              ></nth-highlight>
-            </p> 
             <p>  
               Before we go into more detail, here is the obligatory, arbitrary todo app, implemented with enthjs:
               <div class="${todoClass}">

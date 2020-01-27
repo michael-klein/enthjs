@@ -18,7 +18,7 @@ component('nth-highlight', function * (state) {
       return html`
         <pre class="${className}">
           <code class="hljs">${html.call(html, [highlighted])}</code>
-        </div>
+        </pre>
       `;
     };
   }
@@ -27,20 +27,35 @@ function highlightCSS () {
   return css`
     background: #194d61;
     text-shadow: 0px 0px 0px #0b2731;
-    margin-left: -20px;
-    margin-right: -20px;
     padding: 0;
-    padding-left: 20px;
-    padding-right: 20px;
     margin-bottom: 10px;
     margin-top: 10px;
+    max-width: 100%;
+    position: relative;
+    &:before,
+    &:after {
+      content: '';
+      display: block;
+      top: 0px;
+      bottom: 0px;
+      width: 20px;
+      left: -20px;
+      background: #194d61;
+      position: absolute;
+    }
+    &:after {
+      left: initial;
+      right: -20px;
+    }
     .hljs {
       display: block;
       overflow-x: auto;
       line-height: 1.4em;
       font-size: 0.9em;
       margin-top: -0.5em;
-      margin-bottom: -2em;
+      margin-bottom: -2.2em;
+      width: 100%;
+      overflow: auto;
     }
 
     .hljs-keyword,
