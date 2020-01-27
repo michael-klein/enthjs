@@ -1,4 +1,4 @@
-import { component, html } from '../../dist/src/index.js';
+import { component, html, sideEffect, getHost } from '../../dist/src/index.js';
 import { css } from '../css.js';
 
 component('nth-sidebar', function * (state) {
@@ -60,6 +60,7 @@ component('nth-sidebar', function * (state) {
       position: initial;
     }
   `;
+
   for (;;) {
     yield () => {
       return html`

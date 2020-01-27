@@ -35,7 +35,7 @@ component('nth-page', function * (state) {
       padding-bottom: 3px;
       padding-top: 5px;
       position: sticky;
-      margin-bottom: -45px;
+      margin-top: 12px;
       right: 20px;
       display: flex;
       color: #084c69;
@@ -54,7 +54,7 @@ component('nth-page', function * (state) {
       }
     }
     .topheading {
-      margin-top: 8px;
+      margin-top: -44px;
     }
     @media only screen and (max-width: 600px) {
       display: block;
