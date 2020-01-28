@@ -21,7 +21,7 @@ component('nth-getting-started', function * () {
 
           <nth-highlight
             .code="${`
-                  import {component,html} from 'insert';       
+                  import {component,html} from 'https://cdn.jsdelivr.net/npm/enthjs@latest/dist/src/index.js';       
               `}"
           ></nth-highlight>
           Enthjs is distributed as es6 modules.
