@@ -6,6 +6,7 @@ component('nth-getting-started', function * () {
   for (;;) {
     yield () => {
       return html`
+        <h1>Getting Started</h1>
         <h2>Install</h2>
         <p>
           You can of course install enthjs from npm
@@ -36,28 +37,6 @@ component('nth-getting-started', function * () {
               `}"
           ></nth-highlight>
           Note: Render will return a Promise that resolves once it's done.
-        </p>
-        <h2>Components</h2>
-        <p>
-          enthjs components are web components and can thus be used like any
-          other HTML tag in your markup. A basic enthjs component can be as
-          simple as this:
-          <nth-highlight
-            .code="${`
-                  import {component, html} from 'enthjs';
-                  // define a <hello-world> web component that renders hello world.
-                  component('hello-world', function * () {
-                    yield () => {
-                      return html\`<div>hello world!</div>\`;
-                    };
-                  });              
-              `}"
-          ></nth-highlight>
-        </p>
-        <p>
-          Components are defined as generator functions that yield render
-          functions. For a simple, non dynamic component as the one above, it is
-          fine to yield once.
         </p>
       `;
     };

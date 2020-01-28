@@ -39,6 +39,7 @@ component('nth-sidebar', function * (state) {
       padding-right: 15px;
       font-size: 0.9em;
       overflow: auto;
+      z-index: 2000;
       ul {
         margin: 0;
         padding: 0;
@@ -84,8 +85,11 @@ component('nth-sidebar', function * (state) {
               <li>
                 <a href="#">Components</a>
                 <ul>
+                  <li><a href="#">Host element</a></li>
                   <li><a href="#">State</a></li>
                   <li><a href="#">Attributes & Props</a></li>
+                  <li><a href="#">Side effects</a></li>
+                  <li><a href="#">Custom Events</a></li>
                 </ul>
               </li>
               <li>

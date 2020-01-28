@@ -53,8 +53,9 @@ component('nth-page', function * (state) {
         margin-left: 5px;
       }
     }
-    .topheading {
-      margin-top: -44px;
+    nth-intro {
+      margin-top: -79px;
+      display: block;
     }
     @media only screen and (max-width: 600px) {
       display: block;
@@ -82,10 +83,9 @@ component('nth-page', function * (state) {
                 ontoggled="${e => console.log(e.detail)}"
               ></nth-toggle>
             </div>
-            <h1 class="topheading">Intro</h1>
             <nth-intro></nth-intro>
-            <h1>Getting Started</h1>
             <nth-getting-started></nth-getting-started>
+            <nth-components></nth-components>
             <p>
               <br /><br />
               ...to be continued
