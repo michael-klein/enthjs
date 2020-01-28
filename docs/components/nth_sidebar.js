@@ -76,20 +76,21 @@ component('nth-sidebar', function * (state) {
                 <a href="#">Intro</a>
               </li>
               <li>
-                <a href="#">Getting started</a>
+                <a href="#getting-started">Getting started</a>
                 <ul>
-                  <li><a href="#">Install</a></li>
-                  <li><a href="#">Basic usage</a></li>
+                  <li><a href="#basic-usage">Basic usage</a></li>
                 </ul>
               </li>
               <li>
-                <a href="#">Components</a>
+                <a href="#components">Components</a>
                 <ul>
-                  <li><a href="#">Host element</a></li>
-                  <li><a href="#">State</a></li>
-                  <li><a href="#">Attributes & Props</a></li>
-                  <li><a href="#">Side effects</a></li>
-                  <li><a href="#">Custom Events</a></li>
+                  <li><a href="#host-element">Host element</a></li>
+                  <li><a href="#state">State</a></li>
+                  <li>
+                    <a href="#attributes-properties">Attributes & Props</a>
+                  </li>
+                  <li><a href="#side-effects">Side effects</a></li>
+                  <li><a href="#custom-events">Custom Events</a></li>
                 </ul>
               </li>
               <li>

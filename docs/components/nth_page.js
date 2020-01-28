@@ -53,6 +53,7 @@ component('nth-page', function * (state) {
         margin-left: 5px;
       }
     }
+
     nth-intro {
       margin-top: -79px;
       display: block;

@@ -1,17 +1,25 @@
 import { component, html } from '../../dist/src/index.js';
 import { css } from '../css.js';
 component('nth-highlight', function * (state) {
-  const worker = new Worker('./docs/components/highlight_worker.js');
-  worker.onmessage = event => {
-    state.highlighted = event.data;
-  };
   const className = highlightCSS();
   let prevCode = '';
   for (;;) {
-    const { highlighted = '', properties } = state;
+    let { highlighted = '', properties } = state;
     const { code } = properties;
     if (code && code !== prevCode) {
-      worker.postMessage(code);
+      let result = localStorage.getItem(code);
+      if (!result) {
+        const worker = new Worker('./docs/components/highlight_worker.js');
+        worker.onmessage = event => {
+          localStorage.setItem(code, event.data);
+          state.highlighted = event.data;
+          worker.terminate();
+        };
+        worker.postMessage(code);
+      } else {
+        state.highlighted = result;
+        highlighted = result;
+      }
       prevCode = code;
     }
     yield () => {

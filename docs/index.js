@@ -9,3 +9,4 @@ import './components/nth_highlight.js';
 import './components/nth_intro.js';
 import './components/nth_getting_started.js';
 import './components/nth_components.js';
+import './components/nth_anchor.js';

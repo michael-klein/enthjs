@@ -70,6 +70,11 @@ function addGlobal (css) {
     h1:not(:first-child) {
       margin-top: 1.5em;
     }
+    nth-anchor {
+      display: block;
+      margin-top: -20px;
+      padding-top: 20px;
+    }
     h1:before,
     h2:before,
     h3:before,

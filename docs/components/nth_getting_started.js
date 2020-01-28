@@ -6,8 +6,7 @@ component('nth-getting-started', function * () {
   for (;;) {
     yield () => {
       return html`
-        <h1>Getting Started</h1>
-        <h2>Install</h2>
+        <nth-anchor id="getting-started"><h1>Getting Started</h1></nth-anchor>
         <p>
           You can of course install enthjs from npm
           <nth-highlight
@@ -26,7 +25,7 @@ component('nth-getting-started', function * () {
           ></nth-highlight>
           Enthjs is distributed as es6 modules.
         </p>
-        <h2>Basic usage</h2>
+        <nth-anchor id="basic-usage"><h2>Basic usage</h2></nth-anchor>
         <p>
           If you just want to render some template to a container, this will do
           the trick:

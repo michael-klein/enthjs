@@ -1,9 +1,16 @@
-import { component, html, getHost } from '../../dist/src/index.js';
+import {
+  component,
+  html,
+  getHost,
+  sideEffect,
+  createEvent,
+} from '../../dist/src/index.js';
 import { css } from '../css.js';
 
 component('nth-components', function * (state) {
   const className = css`
-    attributes-properties {
+    attributes-properties,
+    attributes-properties-sideffects {
       position: relative;
       border: 3px solid #297491;
       padding: 20px;
@@ -16,7 +23,7 @@ component('nth-components', function * (state) {
     yield () => {
       return html`
         <span class="${className}">
-          <h1>Components</h1>
+          <nth-anchor id="components"><h1>Components</h1></nth-anchor>
           <p>
             enthjs components are web components and can thus be used like any
             other HTML tag in your markup. A basic enthjs component can be as
@@ -59,7 +66,7 @@ component('nth-components', function * (state) {
               `}"
             ></nth-highlight>
           </p>
-          <h2>Host Element</h2>
+          <nth-anchor id="host-element"><h2>Host Element</h2></nth-anchor>
           <p>
             Sometimes you might need to get access to the host element, that is,
             the DOM element the web components is mounted on. You may use the
@@ -81,7 +88,7 @@ component('nth-components', function * (state) {
               `}"
             ></nth-highlight>
           </p>
-          <h2>State</h2>
+          <nth-anchor id="state"><h2>State</h2></nth-anchor>
           <p>
             Enthjs components will be passed a state object as first argument.
             This object is heavily proxified and writing to it or subtrees of it
@@ -91,23 +98,23 @@ component('nth-components', function * (state) {
                   import {component, html} from 'enthjs';
 
                   component('count-up', function * (state) {
-                  // we define and initialize count on state 
-                  state.count = 0;
+                    // we define and initialize count on state 
+                    state.count = 0;
 
-                  // it's possible to directly subscribe to state updates:
-                  state.on(value => console.log("hi"));
+                    // it's possible to directly subscribe to state updates:
+                    state.on(value => console.log("hi"));
 
-                  setInterval(() => {
-                    //state is proxified, so this will trigger a re-render
-                    state.count++;
-                  },1000);
-                  // Note: How to handle clearing intervals etc. will be explained a bit later
+                    setInterval(() => {
+                      //state is proxified, so this will trigger a re-render
+                      state.count++;
+                    },1000);
+                    // Note: How to handle clearing intervals etc. will be explained a bit later
 
-                  for (;;) {
-                    yield () => {
-                      return html\`<div>Count value: state.count</div>\`;
-                    };
-                  }
+                    for (;;) {
+                      yield () => {
+                        return html\`<div>Count value: state.count</div>\`;
+                      };
+                    }
                   });              
               `}"
             ></nth-highlight>
@@ -148,7 +155,9 @@ component('nth-components', function * (state) {
               `}"
             ></nth-highlight>
           </p>
-          <h2>Attributes & Properties</h2>
+          <nth-anchor id="attributes-properties"
+            ><h2>Attributes & Properties</h2></nth-anchor
+          >
           <p>
             Enthjs will put two default entries on the state object: properties
             and attributes. Properties represents actual properties on the host
@@ -204,13 +213,134 @@ component('nth-components', function * (state) {
               `}"
             ></nth-highlight>
           </p>
-        </span>
+          <nth-anchor id="side-effects"><h2>Side effects</h2></nth-anchor>
+          <p>
+            Enthjs offers a mechanism to run side effects after render calls
+            which is similiar to the useEffect hook in react but doesn't suffer
+            from the problem of stale closures. Below is the above
+            attributes-properties component with added side effects:
+            <attributes-properties-sideffects></attributes-properties-sideffects>
+          </p>
+          <p>
+            As you can tell, the values of foo and bar are now synchronized.
+            This is achieved with two side effects, like so:
+
+            <nth-highlight
+              .code="${`
+                component('attributes-properties-sideffects', function * (state) {
+                  // side effects run after every render...
+                  // the 'sideEffect' helper can only be used in the setup phase
+                  sideEffect(
+                    () => {
+                      state.properties.bar = state.attributes.foo;
+                    },
+                    // ... if the values in the array returned here change
+                    // this works just like it would in react!
+                    () => [state.attributes.foo]
+                  );
+                  sideEffect(
+                    () => {
+                      state.attributes.foo = state.properties.bar;
+                    },
+                    () => [state.properties.bar]
+                  );
+                  // ... same render loop as above
+                });      
+              `}"
+            ></nth-highlight>
+          </p>
+          <p>
+            Also similiar to react, you may return a cleanup function from your
+            side effect which runs before the side effect is next executed (and
+            on component dismount). The counter example from further up can be
+            improved using this to actually remove the listener:
+
+            <nth-highlight
+              .code="${`
+                  // this will make the count up functionality available to any component
+                  function getCounter() {
+                    const countState = $state({count:0});
+                    sideEffect(() => {
+                      const handler = () => {
+                        countState.count++;
+                      }
+                      setInterval(handler,1000);
+                      return () => clearInterval(handler)
+                    }, () => []);
+                    return countState;
+                  }          
+              `}"
+            ></nth-highlight>
+            Together with $state, this will equip you with everything you need
+            to build nicely decoupled pieces of composable functionalities akin
+            to react hooks!
+          </p>
+          <nth-anchor id="custom-events"><h2>Custom Events</h2></nth-anchor>
+          <p>
+            Sometimes you might want to emit custom events from your web
+            component host element. Enthjs provides the createEvent helper for
+            that purpose:
+            <nth-highlight
+              .code="${`
+                  // define your custom event in the setup phase
+                  const fire = createEvent(
+                    'yourEvent',
+                    // the second argument is an optional CustomEventInit and defaults to this:
+                    {
+                      bubbles: true,
+                      composed: true,
+                    }
+                  );
+                  // fire it from the host element anytime you want like this:
+                  fire('hello'); // event.detail = 'hello'          
+              `}"
+            ></nth-highlight></p
+        ></span>
       `;
     };
   }
 });
 component('attributes-properties', function * (state) {
-  console.log("I'm here!", getHost());
+  for (;;) {
+    yield () => {
+      const { attributes, properties } = state;
+      const { foo = '' } = attributes;
+      const { bar = '' } = properties;
+      return html`
+        <div>
+          'foo' attribute value:
+          <input
+            type="text"
+            .value="${foo}"
+            oninput="${e => (state.attributes.foo = e.target.value)}"
+          />
+          <div>
+            'bar' property value:
+            <input
+              type="text"
+              .value="${bar}"
+              oninput="${e => (state.properties.bar = e.target.value)}"
+            />
+          </div>
+        </div>
+      `;
+    };
+  }
+});
+
+component('attributes-properties-sideffects', function * (state) {
+  sideEffect(
+    () => {
+      state.properties.bar = state.attributes.foo;
+    },
+    () => [state.attributes.foo]
+  );
+  sideEffect(
+    () => {
+      state.attributes.foo = state.properties.bar;
+    },
+    () => [state.properties.bar]
+  );
   for (;;) {
     yield () => {
       const { attributes, properties } = state;
