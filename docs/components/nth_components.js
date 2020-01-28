@@ -1,18 +1,28 @@
-import { component, html } from '../../dist/src/index.js';
+import { component, html, getHost } from '../../dist/src/index.js';
 import { css } from '../css.js';
 
 component('nth-components', function * (state) {
-  css();
+  const className = css`
+    attributes-properties {
+      position: relative;
+      border: 3px solid #297491;
+      padding: 20px;
+      margin-top: 10px;
+      padding-bottom: 20px;
+      display: block;
+    }
+  `;
   for (;;) {
     yield () => {
       return html`
-        <h1>Components</h1>
-        <p>
-          enthjs components are web components and can thus be used like any
-          other HTML tag in your markup. A basic enthjs component can be as
-          simple as this:
-          <nth-highlight
-            .code="${`
+        <span class="${className}">
+          <h1>Components</h1>
+          <p>
+            enthjs components are web components and can thus be used like any
+            other HTML tag in your markup. A basic enthjs component can be as
+            simple as this:
+            <nth-highlight
+              .code="${`
                   import {component, html} from 'enthjs';
                   // define a <hello-world> web component that renders hello world.
                   component('hello-world', function * () {
@@ -21,19 +31,19 @@ component('nth-components', function * (state) {
                     };
                   });              
               `}"
-          ></nth-highlight>
-        </p>
-        <p>
-          Components are defined as generator functions that yield render
-          functions. For a simple, non dynamic component as the one above, it is
-          fine to yield once.
-        </p>
-        <p>
-          Dynamic components may need to yield different results on subsequent
-          render calls. This can be achieved e.g. using a non-terminating for
-          loop:
-          <nth-highlight
-            .code="${`
+            ></nth-highlight>
+          </p>
+          <p>
+            Components are defined as generator functions that yield render
+            functions. For a simple, non dynamic component as the one above, it
+            is fine to yield once.
+          </p>
+          <p>
+            Dynamic components may need to yield different results on subsequent
+            render calls. This can be achieved e.g. using a non-terminating for
+            loop:
+            <nth-highlight
+              .code="${`
                   import {component, html} from 'enthjs';
                   // define a <hello-world> web component that renders hello world.
                   component('current-date', function * () {
@@ -47,15 +57,15 @@ component('nth-components', function * (state) {
                     }
                   });              
               `}"
-          ></nth-highlight>
-        </p>
-        <h2>Host Element</h2>
-        <p>
-          Sometimes you might need to get access to the host element, that is,
-          the DOM element the web components is mounted on. You may use the
-          getHost helper functions to do so:
-          <nth-highlight
-            .code="${`
+            ></nth-highlight>
+          </p>
+          <h2>Host Element</h2>
+          <p>
+            Sometimes you might need to get access to the host element, that is,
+            the DOM element the web components is mounted on. You may use the
+            getHost helper functions to do so:
+            <nth-highlight
+              .code="${`
                   import {component, html, getHost} from 'enthjs';
 
                   component('get-host', function * (state) {
@@ -69,15 +79,15 @@ component('nth-components', function * (state) {
                     }
                   });              
               `}"
-          ></nth-highlight>
-        </p>
-        <h2>State</h2>
-        <p>
-          Enthjs components will be passed a state object as first argument.
-          This object is heavily proxified and writing to it or subtrees of it
-          will trigger re-renders.
-          <nth-highlight
-            .code="${`
+            ></nth-highlight>
+          </p>
+          <h2>State</h2>
+          <p>
+            Enthjs components will be passed a state object as first argument.
+            This object is heavily proxified and writing to it or subtrees of it
+            will trigger re-renders.
+            <nth-highlight
+              .code="${`
                   import {component, html} from 'enthjs';
 
                   component('count-up', function * (state) {
@@ -100,16 +110,16 @@ component('nth-components', function * (state) {
                   }
                   });              
               `}"
-          ></nth-highlight>
-        </p>
-        <p>
-          You can also create new proxified state variables with the $state
-          factory function and merge these with the main state. This is useful
-          to create reusable pieces of functionality that are not closely tied
-          to one component:
+            ></nth-highlight>
+          </p>
+          <p>
+            You can also create new proxified state variables with the $state
+            factory function and merge these with the main state. This is useful
+            to create reusable pieces of functionality that are not closely tied
+            to one component:
 
-          <nth-highlight
-            .code="${`
+            <nth-highlight
+              .code="${`
                   import {component, html, $state} from 'enthjs';
 
                   // this will make the count up functionality available to any component
@@ -123,7 +133,7 @@ component('nth-components', function * (state) {
 
                   component('count-up', function * (state) {
 
-                  const countState = getCountet();
+                  const countState = getCounter();
 
                   // we have to merge countState with the main state to have it trigger re-renders
                   // this will make count available on countState and update when countState does
@@ -136,20 +146,93 @@ component('nth-components', function * (state) {
                   }
                   });              
               `}"
-          ></nth-highlight>
-        </p>
-        <h2>Attributes & Properties</h2>
-        <p>
-          Enthjs will put two default entries on the state object: properties
-          and attributes. Properties represents actual properties on the host
-          element object. Attributes in turn represents attributes on the HTML
-          tag.
-        </p>
-        <p>
-          Both attributes and properties will trigger re-renders when changed
-          from the outside AND will update properties and attributes on the host
-          element when modified from within the component!
-        </p>
+            ></nth-highlight>
+          </p>
+          <h2>Attributes & Properties</h2>
+          <p>
+            Enthjs will put two default entries on the state object: properties
+            and attributes. Properties represents actual properties on the host
+            element object. Attributes in turn represents attributes on the HTML
+            tag.
+          </p>
+          <p>
+            Both attributes and properties will trigger re-renders when changed
+            from the outside AND will update properties and attributes on the
+            host element when modified from within the component!
+          </p>
+          <p>
+            Below is a very simple component which renders the values of the foo
+            attribute and bar property on the host element to inputs. You can
+            inspect it in the DOM to see the foo attribute update as you type
+            and updating the value by hand will update the input in turn. In the
+            same vein, you can print or reassign the bar property on the
+            element. I've console.logged the element to make this easier!
+
+            <attributes-properties></attributes-properties>
+          </p>
+          <p>
+            Here's the source code for the above component:
+
+            <nth-highlight
+              .code="${`
+              component('attributes-properties', function * (state) {
+                console.log("I'm here!", getHost());
+                for (;;) {
+                  yield () => {
+                    const { attributes, properties } = state;
+                    const { foo = '' } = attributes;
+                    const { bar = '' } = properties;
+                    return html\`
+                      <div>
+                        'foo' attribute value: <input
+                          type="text"
+                          .value="\${foo}"
+                          oninput="\${e => (state.attributes.foo = e.target.value)}"
+                        />
+                        <div>
+                          'bar' property value: <input
+                            type="text"
+                            .value="\${bar}"
+                            oninput="\${e => (state.properties.bar = e.target.value)}"
+                          />
+                        </div>
+                      </div>
+                    \`;
+                  };
+                }
+              });      
+              `}"
+            ></nth-highlight>
+          </p>
+        </span>
+      `;
+    };
+  }
+});
+component('attributes-properties', function * (state) {
+  console.log("I'm here!", getHost());
+  for (;;) {
+    yield () => {
+      const { attributes, properties } = state;
+      const { foo = '' } = attributes;
+      const { bar = '' } = properties;
+      return html`
+        <div>
+          'foo' attribute value:
+          <input
+            type="text"
+            .value="${foo}"
+            oninput="${e => (state.attributes.foo = e.target.value)}"
+          />
+          <div>
+            'bar' property value:
+            <input
+              type="text"
+              .value="${bar}"
+              oninput="${e => (state.properties.bar = e.target.value)}"
+            />
+          </div>
+        </div>
       `;
     };
   }
