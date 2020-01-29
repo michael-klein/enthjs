@@ -8,9 +8,6 @@ component('nth-intro', function * () {
     padding: 20px;
     margin-top: 10px;
     padding-bottom 20px;
-    h1:first-child {
-      margin-top: 0em;
-    }
     .codepenlink {
       position:absolute;
       right: 0px;

@@ -87,10 +87,7 @@ component('nth-page', function * (state) {
             <nth-intro></nth-intro>
             <nth-getting-started></nth-getting-started>
             <nth-components></nth-components>
-            <p>
-              <br /><br />
-              ...to be continued
-            </p>
+            <nth-directives></nth-directives>
           </main>
         </div>
       `;

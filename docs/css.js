@@ -64,9 +64,6 @@ function addGlobal (css) {
       font-family: 'Playfair Display', serif;
       margin-bottom: 0.4em;
     }
-    h1:first-child {
-      margin-top: 0em;
-    }
     h1:not(:first-child) {
       margin-top: 1.5em;
     }

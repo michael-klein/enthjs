@@ -94,22 +94,12 @@ component('nth-sidebar', function * (state) {
                 </ul>
               </li>
               <li>
-                <a href="#">Directives</a>
+                <a href="#directives">Directives</a>
                 <ul>
-                  <li><a href="#">Implementing directives</a></li>
-                  <li><a href="#">Fallbacks</a></li>
+                  <li><a href="#fallbacks">Implementing directives</a></li>
+                  <li><a href="#implementing-directives">Fallbacks</a></li>
                   <li>
-                    <a href="#">Inbuilts</a>
-                    <ul>
-                      <li><a href="#">attr</a></li>
-                      <li><a href="#">clss</a></li>
-                      <li><a href="#">frag</a></li>
-                      <li><a href="#">input</a></li>
-                      <li><a href="#">list</a></li>
-                      <li><a href="#">prop</a></li>
-                      <li><a href="#">sub</a></li>
-                      <li><a href="#">text</a></li>
-                    </ul>
+                    <a href="#built-in-directives">Built-in directives</a>
                   </li>
                 </ul>
               </li>
