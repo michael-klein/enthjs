@@ -95,7 +95,7 @@ component('nth-directives', function * () {
           fallback:
           <nth-highlight
             .code="${`
-                  import { defineFallback, text} from 'enthjs';
+                  import { defineFallback, text } from 'enthjs';
 
                   // the callback passed to defineFallback will be called whenever
                   // enthjs finds a non-directive value in a template
@@ -108,9 +108,9 @@ component('nth-directives', function * () {
                         typeof data.staticValue === 'number'
                       ) {
                         data.directive = text(data.staticValue);
-                      } 
-                    }           
-                  }                 
+                      }
+                    }
+                  });                                 
               `}"
           ></nth-highlight>
           It's important to note that defineFallback currently applies globally

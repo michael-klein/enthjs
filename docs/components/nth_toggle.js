@@ -1,7 +1,9 @@
-import { component, html, createEvent } from '../../dist/src/index.js';
+import { component, html, createEvent, $state } from '../../dist/src/index.js';
 import { css } from '../css.js';
 
+export const toggleState = $state({ toggled: true });
 component('nth-toggle', function * (state) {
+  state.merge(toggleState);
   const height = 20;
   const padding = 4;
   const width = height * 2 - padding * 2;
@@ -62,15 +64,14 @@ component('nth-toggle', function * (state) {
       border-radius: 50%;
     }
   `;
-  const fireToggled = createEvent('toggled');
   for (;;) {
     yield () => {
       return html`
         <label class="${className}">
           <input
             type="checkbox"
-            ${state.properties.toggled ? 'checked' : ''}
-            oninput="${e => fireToggled(e.target.checked)}"
+            ${state.toggled ? 'checked' : ''}
+            oninput="${e => (toggleState.toggled = e.target.checked)}"
           />
           <span class="slider round"></span>
         </label>

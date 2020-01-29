@@ -120,6 +120,7 @@ export function component(name, factory) {
             };
             this.connected = false;
             this.nextQueued = false;
+            this.running = false;
             window[COMPONENT_CONTEXT] = this.context;
             this.attachShadow({ mode: 'open' });
             this.$s = $state({
@@ -184,22 +185,24 @@ export function component(name, factory) {
             await Promise.all(promises);
         }
         async queueRender() {
-            if (!this.renderPromise) {
-                const value = this.generator.next().value;
-                window[COMPONENT_CONTEXT] = undefined;
-                if (value) {
-                    this.renderPromise = new Promise(async (resolve) => {
+            if (!this.running) {
+                this.running = true;
+                this.renderPromise = new Promise(async (resolve) => {
+                    const value = this.generator.next().value;
+                    window[COMPONENT_CONTEXT] = undefined;
+                    if (value) {
                         await this.runCleanUps();
                         await render(this.shadowRoot, value());
                         await this.runSideEffects();
                         this.renderPromise = undefined;
+                        this.running = false;
                         if (this.nextQueued) {
                             this.nextQueued = false;
                             this.queueRender();
                         }
-                        resolve();
-                    });
-                }
+                    }
+                    resolve();
+                });
             }
             else {
                 this.nextQueued = true;

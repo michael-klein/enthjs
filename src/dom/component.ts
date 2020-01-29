@@ -23,26 +23,26 @@ interface ComponentContext {
   sideEffects: SideEffect[];
   host: HTMLElement;
 }
-function getContext(): ComponentContext {
+function getContext (): ComponentContext {
   if (window[COMPONENT_CONTEXT]) {
     return window[COMPONENT_CONTEXT];
   }
   return undefined;
 }
-export function getHost<E extends HTMLElement>(): E {
+export function getHost<E extends HTMLElement> (): E {
   const context = getContext();
   if (context) {
     return context.host as E;
   }
   throw 'getHost can only be called in the setup phase!';
 }
-export function sideEffect(cb: ConnectedListener, deps?: () => any[]): void {
+export function sideEffect (cb: ConnectedListener, deps?: () => any[]): void {
   const context = getContext();
   if (context) {
     context.sideEffects.push({ cb, deps });
   }
 }
-export function connected(cb: ConnectedListener): void {
+export function connected (cb: ConnectedListener): void {
   const context = getContext();
   if (context) {
     context.connectedListeners.push(cb);
@@ -87,7 +87,7 @@ const stopObserving = (element: HTMLElement) => {
   }
 };
 
-function createPropertyProxy(element: any, queueRender: () => void) {
+function createPropertyProxy (element: any, queueRender: () => void) {
   const accessedProps: string[] = [];
   const $properties = proxify({}, () => {}, {
     set: (obj, prop: any, value) => {
@@ -117,7 +117,7 @@ function createPropertyProxy(element: any, queueRender: () => void) {
   return $properties;
 }
 
-function createAttributeProxy(element: HTMLElement, queueRender: () => void) {
+function createAttributeProxy (element: HTMLElement, queueRender: () => void) {
   const accessedAttributes: string[] = [];
   const $attributes = proxify({}, () => {}, {
     set: (obj, prop, value) => {
@@ -157,7 +157,7 @@ export function component<
     properties: { [key: string]: any };
   },
   S extends State<StateType> = State<StateType>
->(name: string, factory: ComponentGeneratorFactory<StateType>): void {
+> (name: string, factory: ComponentGeneratorFactory<StateType>): void {
   customElements.define(
     name,
     class extends HTMLElement {
@@ -173,7 +173,7 @@ export function component<
       private connected: boolean = false;
       private renderPromise: Promise<void>;
 
-      constructor() {
+      constructor () {
         super();
         window[COMPONENT_CONTEXT] = this.context;
         this.attachShadow({ mode: 'open' });
@@ -184,7 +184,7 @@ export function component<
         this.generator = factory(this.$s);
       }
 
-      private canRunSideEffect(sideEffect: SideEffect): boolean {
+      private canRunSideEffect (sideEffect: SideEffect): boolean {
         sideEffect.canRun =
           sideEffect.canRun || !sideEffect.deps || !sideEffect.prevDeps;
         if (!sideEffect.canRun) {
@@ -208,7 +208,7 @@ export function component<
         return sideEffect.canRun;
       }
 
-      private async runSideEffects(): Promise<void> {
+      private async runSideEffects (): Promise<void> {
         const promises: Promise<void>[] = [];
         for (const sideEffect of this.context.sideEffects) {
           if (this.canRunSideEffect(sideEffect)) {
@@ -226,7 +226,7 @@ export function component<
         await Promise.all(promises);
       }
 
-      private async runCleanUps(force: boolean = false): Promise<void> {
+      private async runCleanUps (force: boolean = false): Promise<void> {
         const promises: Promise<void>[] = [];
         for (const sideEffect of this.context.sideEffects) {
           if (this.canRunSideEffect(sideEffect) || force) {
@@ -247,29 +247,32 @@ export function component<
       }
 
       private nextQueued = false;
-      private async queueRender(): Promise<void> {
-        if (!this.renderPromise) {
-          const value = this.generator.next().value;
-          window[COMPONENT_CONTEXT] = undefined;
-          if (value) {
-            this.renderPromise = new Promise(async resolve => {
+      private running = false;
+      private async queueRender (): Promise<void> {
+        if (!this.running) {
+          this.running = true;
+          this.renderPromise = new Promise(async resolve => {
+            const value = this.generator.next().value;
+            window[COMPONENT_CONTEXT] = undefined;
+            if (value) {
               await this.runCleanUps();
               await render(this.shadowRoot, value());
               await this.runSideEffects();
               this.renderPromise = undefined;
+              this.running = false;
               if (this.nextQueued) {
                 this.nextQueued = false;
                 this.queueRender();
               }
-              resolve();
-            });
-          }
+            }
+            resolve();
+          });
         } else {
           this.nextQueued = true;
         }
       }
 
-      public connectedCallback(): void {
+      public connectedCallback (): void {
         if (!this.connected) {
           this.queueRender();
           this.stopRenderLoop = this.$s.on(() => {
@@ -282,7 +285,7 @@ export function component<
           .filter(l => l) as (() => void)[];
       }
 
-      public async disconnectedCallback(): Promise<void> {
+      public async disconnectedCallback (): Promise<void> {
         if (this.connected) {
           stopObserving(this);
           if (this.stopRenderLoop) {

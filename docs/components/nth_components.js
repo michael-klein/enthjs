@@ -6,6 +6,7 @@ import {
   createEvent,
 } from '../../dist/src/index.js';
 import { css } from '../css.js';
+import { toggled } from './nth_highlight.js';
 
 component('nth-components', function * (state) {
   const className = css`
@@ -50,7 +51,7 @@ component('nth-components', function * (state) {
             render calls. This can be achieved e.g. using a non-terminating for
             loop:
             <nth-highlight
-              .code="${`
+              .code="${toggled`
                   import {component, html} from 'enthjs';
                   // define a <hello-world> web component that renders hello world.
                   component('current-date', function * () {
@@ -59,7 +60,10 @@ component('nth-components', function * (state) {
                     for (;;) {
                       yield () => {
                         // this will print a different date on each render call
-                        return html\`<div>Current date: ${new Date().getDate()}!</div>\`;
+                        return html\`<div>Current date: \${${[
+                          `new Date().getDate()`,
+                          `text(new Date().getDate())`,
+                        ]}\}!</div>\`;
                       };
                     }
                   });              

@@ -1,11 +1,27 @@
 import { component, html } from '../../dist/src/index.js';
 import { css } from '../css.js';
+import { toggleState } from './nth_toggle.js';
+
+export function toggled (parts, ...slots) {
+  return { parts, slots };
+}
+
 component('nth-highlight', function * (state) {
+  state.merge(toggleState);
   const className = highlightCSS();
   let prevCode = '';
   for (;;) {
-    let { highlighted = '', properties } = state;
-    const { code } = properties;
+    let { highlighted = '', properties, toggled } = state;
+    let { code } = properties;
+    if (typeof code === 'object') {
+      console.log(code);
+      code = code.parts
+        .map(
+          (part, index) =>
+            part + (code.slots[index] ? code.slots[index][toggled ? 0 : 1] : '')
+        )
+        .join('');
+    }
     if (code && code !== prevCode) {
       let result = localStorage.getItem(code);
       if (!result) {
