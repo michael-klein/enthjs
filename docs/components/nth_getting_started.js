@@ -31,7 +31,7 @@ component('nth-getting-started', function * () {
           the trick:
           <nth-highlight
             .code="${`
-                  import {render, html} from 'enthjs';
+                  import {render} from 'enthjs';
                   render(document.getElementById('#container'), html\`<div>hello world!</div>\`);             
               `}"
           ></nth-highlight>

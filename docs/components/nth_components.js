@@ -52,7 +52,7 @@ component('nth-components', function * (state) {
             loop:
             <nth-highlight
               .code="${toggled`
-                  import {component, html} from 'enthjs';
+                  import {component, html${['', ', text']}} from 'enthjs';
                   // define a <hello-world> web component that renders hello world.
                   component('current-date', function * () {
                     // anything above the for loop can be though of as the setup phase
@@ -76,8 +76,11 @@ component('nth-components', function * (state) {
             the DOM element the web components is mounted on. You may use the
             getHost helper functions to do so:
             <nth-highlight
-              .code="${`
-                  import {component, html, getHost} from 'enthjs';
+              .code="${toggled`
+                  import {component, getHost, html${[
+                    '',
+                    ', text',
+                  ]}} from 'enthjs';
 
                   component('get-host', function * (state) {
                     // getHost can only be called in the setup phase
@@ -85,7 +88,10 @@ component('nth-components', function * (state) {
                     const host = getHost();
                     for (;;) {
                       yield () => {
-                        return html\`<div>Host tagname: \${host.tagName\}</div>\`;
+                        return html\`<div>Host tagname: \${${[
+                          `host.tagName`,
+                          `text(host.tagName)`,
+                        ]}\}</div>\`;
                       };
                     }
                   });              
@@ -98,8 +104,8 @@ component('nth-components', function * (state) {
             This object is heavily proxified and writing to it or subtrees of it
             will trigger re-renders.
             <nth-highlight
-              .code="${`
-                  import {component, html} from 'enthjs';
+              .code="${toggled`
+                  import {component, html${['', ', text']}} from 'enthjs';
 
                   component('count-up', function * (state) {
                     // we define and initialize count on state 
@@ -116,7 +122,10 @@ component('nth-components', function * (state) {
 
                     for (;;) {
                       yield () => {
-                        return html\`<div>Count value: state.count</div>\`;
+                        return html\`<div>Count value: \${${[
+                          `state.count`,
+                          `text(state.count)`,
+                        ]}\}</div>\`;
                       };
                     }
                   });              
@@ -130,8 +139,11 @@ component('nth-components', function * (state) {
             to one component:
 
             <nth-highlight
-              .code="${`
-                  import {component, html, $state} from 'enthjs';
+              .code="${toggled`
+                  import {component, html, $state${[
+                    '',
+                    ', text',
+                  ]}} from 'enthjs';
 
                   // this will make the count up functionality available to any component
                   function getCounter() {
@@ -152,7 +164,10 @@ component('nth-components', function * (state) {
 
                   for (;;) {
                     yield () => {
-                      return html\`<div>Count value: state.count</div>\`;
+                      return html\`<div>Count value: \${${[
+                        `state.count`,
+                        `text(state.count)`,
+                      ]}\}</div>\`;
                     };
                   }
                   });              
@@ -187,7 +202,12 @@ component('nth-components', function * (state) {
             Here's the source code for the above component:
 
             <nth-highlight
-              .code="${`
+              .code="${toggled`
+              import {component, getHost, html, $state${[
+                '',
+                ', on, prop',
+              ]}} from 'enthjs';
+                  
               component('attributes-properties', function * (state) {
                 console.log("I'm here!", getHost());
                 for (;;) {
@@ -199,14 +219,20 @@ component('nth-components', function * (state) {
                       <div>
                         'foo' attribute value: <input
                           type="text"
-                          .value="\${foo}"
-                          oninput="\${e => (state.attributes.foo = e.target.value)}"
+                          ${[`.value="\${foo}"`, `\${prop("value",foo)\}`]}
+                          ${[
+                            `oninput="\${e => (state.attributes.foo = e.target.value)\}"`,
+                            `\${on("input",e => (state.attributes.foo = e.target.value))\}`,
+                          ]}
                         />
                         <div>
                           'bar' property value: <input
                             type="text"
-                            .value="\${bar}"
-                            oninput="\${e => (state.properties.bar = e.target.value)}"
+                            ${[`.value="\${bar}"`, `\${prop("value",bar)\}`]}
+                            ${[
+                              `oninput="\${e => (state.properties.bar = e.target.value)\}"`,
+                              `\${on("input",e => (state.properties.bar = e.target.value))\}`,
+                            ]}
                           />
                         </div>
                       </div>
@@ -231,6 +257,8 @@ component('nth-components', function * (state) {
 
             <nth-highlight
               .code="${`
+                import { component, getHost, html, $state } from "enthjs";
+
                 component('attributes-properties-sideffects', function * (state) {
                   // side effects run after every render...
                   // the 'sideEffect' helper can only be used in the setup phase

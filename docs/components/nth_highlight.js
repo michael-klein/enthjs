@@ -8,13 +8,13 @@ export function toggled (parts, ...slots) {
 
 component('nth-highlight', function * (state) {
   state.merge(toggleState);
-  const className = highlightCSS();
   let prevCode = '';
+  state.loading = false;
+  const className = highlightCSS();
   for (;;) {
     let { highlighted = '', properties, toggled } = state;
     let { code } = properties;
     if (typeof code === 'object') {
-      console.log(code);
       code = code.parts
         .map(
           (part, index) =>
@@ -29,9 +29,11 @@ component('nth-highlight', function * (state) {
         worker.onmessage = event => {
           localStorage.setItem(code, event.data);
           state.highlighted = event.data;
+          state.loading = false;
           worker.terminate();
         };
         worker.postMessage(code);
+        state.loading = true;
       } else {
         state.highlighted = result;
         highlighted = result;
@@ -40,7 +42,10 @@ component('nth-highlight', function * (state) {
     }
     yield () => {
       return html`
-        <pre class="${className}">
+        <pre
+          class="${className}"
+          style="${state.loading ? 'opacity: 0.6 ' : 'opacity: 1'}"
+        >
           <code class="hljs">${html.call(html, [highlighted])}</code>
         </pre>
       `;
@@ -79,7 +84,7 @@ function highlightCSS () {
       margin-top: -0.5em;
       margin-bottom: -2.2em;
       width: 100%;
-      overflow: auto;
+      color: #d1f1fb;
     }
 
     .hljs-keyword,
@@ -94,25 +99,30 @@ function highlightCSS () {
       color: #ffc043;
     }
 
-    .hljs,
     .hljs-subst {
-      color: #d1f1fb;
+      color: #2cc1ca;
     }
 
     .hljs-string,
     .hljs-title,
-    .hljs-name,
     .hljs-type,
-    .hljs-attribute,
     .hljs-symbol,
     .hljs-bullet,
     .hljs-addition,
+    .hljs-attribute,
     .hljs-variable,
     .hljs-template-tag,
     .hljs-template-variable {
       color: #fa8c8c;
     }
 
+    .hljs-name {
+      color: yellowgreen;
+    }
+
+    .hljs-attr {
+      color: bisque;
+    }
     .hljs-comment,
     .hljs-quote,
     .hljs-deletion,
