@@ -60,7 +60,7 @@ component('nth-intro', function * () {
         Absolutely not!
         </p>
         <p>
-          The framework is neither feature complety, nor have I written a single test, yet. It should be seen as a learning excercise that I'm publishing to check out if there may be some larger interest. I intend, however, to at least use it for personal projects going forward. In other words: Feel free to play with enthjs and build things but don't expect the level of polish you'd get from react, vue & co.
+          The framework is neither feature complete, nor have I written a single test, yet. It should be seen as a learning excercise that I'm publishing to check out if there may be some larger interest. I intend, however, to at least use it for personal projects going forward. In other words: Feel free to play with enthjs and build things but don't expect the level of polish you'd get from react, vue & co.
         </p>
         <p>
           Here's a rough list of what's missing and of net steps I intend to take with the library:
