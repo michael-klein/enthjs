@@ -25,7 +25,7 @@ component('nth-sidebar', function * (state) {
       }
     }
     .slogan {
-      font-size: 0.9em;
+      font-size: 0.76em;
       line-height: 1.2em;
       padding: 10px;
       padding-top: 8px;
@@ -43,16 +43,31 @@ component('nth-sidebar', function * (state) {
       ul {
         margin: 0;
         padding: 0;
-        padding-top: 0.8em;
+        padding-top: 0.65em;
         list-style: none;
         li {
           padding-left: 15px;
           line-height: 1.1em;
-          padding-bottom: 0.8em;
+          padding-bottom: 0.65em;
         }
       }
       > ul {
         padding-top: 20px;
+      }
+    }
+    .git {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: -10px;
+      margin-bottom: 10px;
+      img {
+        width: 20px;
+        height: 20px;
+        margin-right: 5px;
+      }
+      a {
+        color: black;
       }
     }
 
@@ -72,6 +87,15 @@ component('nth-sidebar', function * (state) {
           </div>
           <nav>
             <ul>
+              <li class="git">
+                <img
+                  src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/github.svg"
+                /><a
+                  href="https://github.com/michael-klein/enthjs"
+                  target="blank"
+                  >open in github</a
+                >
+              </li>
               <li>
                 <a href="#">Intro</a>
                 <ul>

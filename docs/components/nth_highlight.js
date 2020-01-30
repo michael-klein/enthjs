@@ -127,7 +127,7 @@ function highlightCSS () {
     .hljs-quote,
     .hljs-deletion,
     .hljs-meta {
-      color: #6272a4;
+      color: #6294a4;
     }
 
     .hljs-keyword,

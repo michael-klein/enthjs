@@ -18,8 +18,10 @@ component('nth-intro', function * () {
       padding-left: 5px;
       padding-right: 5px;
       line-height: 1em;
+      background: #297491;
       a {
-        font-size: 0.8em;
+        font-size: 0.9em;
+        color:white;
       }
     }
   `;
