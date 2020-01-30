@@ -26,8 +26,9 @@ component('nth-intro', function * () {
   for (;;) {
     yield () => {
       return html`
-            <h1 >Intro</h1>
-            <p>
+        <h1>Intro</h1>
+        
+        <p>
               enthjs is a JavaScript view library that the latest(-ish) language
               features such as:
               <ul>
@@ -52,6 +53,36 @@ component('nth-intro', function * () {
                 </a></div>
               </div>
             </p>
+        <nth-anchor id="production-ready"><h2>Is this ready for production?</h2></nth-anchor>
+        <p>
+        Absolutely not!
+        </p>
+        <p>
+          The framework is neither feature complety, nor have I written a single test, yet. It should be seen as a learning excercise that I'm publishing to check out if there may be some larger interest. I intend, however, to at least use it for personal projects going forward. In other words: Feel free to play with enthjs and build things but don't expect the level of polish you'd get from react, vue & co.
+        </p>
+        <p>
+          Here's a rough list of what's missing and of net steps I intend to take with the library:
+          <ul>
+            <li>
+              Write tests - obviously.
+            </li>
+            <li>
+              Make it possible to instantiate the library with fallbacks bound to it (instead of setting global fallbacks)
+            </li>
+            <li>
+              Make state.attributes and state.properties optional
+            </li>
+            <li>
+              Correctly handle SVG
+            </li>
+            <li>
+              Add some automatic support screen readers and other assistive technologies (such as automatic "role" inheritance)
+            </li>
+            <li>
+              Create a CLI to automate some things such as project scaffolding
+            </li>
+          </ul>
+        </p>
       `;
     };
   }

@@ -78,7 +78,7 @@ component('nth-page', function * (state) {
           <nth-sidebar></nth-sidebar>
           <main>
             <div class="toggle-fallbacks">
-              use fallbacks<a href="#">?</a>
+              use fallbacks<a href="#fallbacks">?</a>
               <nth-toggle
                 .toggled="${true}"
                 ontoggled="${e => console.log(e.detail)}"

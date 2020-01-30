@@ -68,12 +68,19 @@ component('nth-sidebar', function * (state) {
         <aside class="${className}">
           <div class="logo sans">e<span class="nth">nth</span>.js</div>
           <div class="slogan">
-            Not just the nth JavaScript framework you found today! 😉
+            Not just the nth JavaScript framework you found today! ;-)
           </div>
           <nav>
             <ul>
               <li>
                 <a href="#">Intro</a>
+                <ul>
+                  <li>
+                    <a href="#production-ready"
+                      >Is this ready for production?</a
+                    >
+                  </li>
+                </ul>
               </li>
               <li>
                 <a href="#getting-started">Getting started</a>
@@ -96,8 +103,12 @@ component('nth-sidebar', function * (state) {
               <li>
                 <a href="#directives">Directives</a>
                 <ul>
-                  <li><a href="#fallbacks">Implementing directives</a></li>
-                  <li><a href="#implementing-directives">Fallbacks</a></li>
+                  <li>
+                    <a href="#implementing-directives"
+                      >Implementing directives</a
+                    >
+                  </li>
+                  <li><a href="#fallbacks">Fallbacks</a></li>
                   <li>
                     <a href="#built-in-directives">Built-in directives</a>
                   </li>

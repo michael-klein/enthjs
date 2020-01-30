@@ -1,4 +1,14 @@
-import { component, html, text } from '../../dist/src/index.js';
+import {
+  component,
+  html,
+  text,
+  attr,
+  prop,
+  sub,
+  list,
+  clss,
+  frag,
+} from '../../dist/src/index.js';
 import { css } from '../css.js';
 
 component('nth-directives', function * () {
@@ -121,6 +131,14 @@ component('nth-directives', function * () {
           automatically apply fallbacks for all default directives (see below).
           That way you can mostly concentrate on writing templates without
           typing out the directive calls all the time.
+          <nth-highlight
+            .code="${`
+                  import { applyDefaultFallback } from 'enthjs';
+                  
+                  // call this once before you define your components
+                  applyDefaultFallback();
+              `}"
+          ></nth-highlight>
         </p>
         <p>
           The reason for handling directives this way is so that developers can
@@ -132,7 +150,75 @@ component('nth-directives', function * () {
           ><h2>Built-in directives</h2></nth-anchor
         >
         <p>
-          ...
+          Enthjs exports a number of directives for the most typical use cases.
+          They are: text, list, attr, clss, frag, input, on, prop, sub, text
+        </p>
+        <p>
+          Below are some simple, commented examples of each of them:
+          <nth-highlight
+            .code="${`
+                // text will insert the provided text on each render:
+                html\`
+                  <div>$\{text(state.count)}</div>
+                \`;
+
+                // attr will set attribute values
+                // default fallback: attributeName="attributeValue"
+                html\`
+                  <div $\{attr('attributeName', 'attributeValue')}>foo</div>
+                \`;
+
+                // prop will set property values on the element instance
+                // default fallback: .propertyName="propertyValue"
+                html\`
+                  <div $\{prop('propertyName', 'propertyValue')}>foo</div>
+                \`;
+
+                // clss will set classes on the element
+                html\`
+                  <div $\{clss('some class names')}>foo</div>
+                \`;
+
+                // sub can render changing htmlResults
+                // default fallback: <div>$\{Math.random() > 0 ? html\`foo\` : html\`bar\`}</div>
+                html\`
+                  <div>
+                    $\{sub(
+                      Math.random() > 0
+                        ? html\`
+                            foo
+                          \`
+                        : html\`
+                            bar
+                          \`
+                    )}
+                    foo
+                  </div>
+                \`;
+
+                // list will intelligently update lists using the provided keys
+                // instead of rebuilding list items when the order changes, it will just change the order
+                // default fallback: <ul>$\{someArray.map(item =>html\`<li key="$\{item.key">$\{item.text}</li>\`}</ul>
+                html\`
+                  <ul>
+                    $\{list(
+                      someArray.map(
+                        item =>
+                          html\`
+                            <li $\{key(item.key)}>$\{item.text}</li>
+                          \`
+                      )
+                    )}
+                  </ul>
+                \`;
+
+                // frag will completely forgo the normal render pipeline and
+                // set innerHTML on the element it is used on
+                html\`
+                  <div $\{frag('<div>Some html</div>')}>foo</div>
+                \`;
+              `}"
+          ></nth-highlight>
         </p>
       `;
     };
