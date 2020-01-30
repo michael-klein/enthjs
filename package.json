@@ -1,6 +1,6 @@
 {
   "name": "enthjs",
-  "version": "0.2.6",
+  "version": "0.3.0",
   "license": "MIT",
   "author": "Michael Klein",
   "main": "dist/src/index.js",
@@ -25,9 +25,5 @@
     "tslib": "^1.10.0",
     "ttypescript": "^1.5.8",
     "typescript": "^3.7.2"
-  },
-  "dependencies": {
-    "immer": "^5.0.0",
-    "primjs": "^0.6.5"
   }
 }
