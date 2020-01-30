@@ -4,6 +4,7 @@
 
 # Quick Intro
 
+<a href="https://michael-klein.github.io/enthjs/">Click here to go to the documentation site, implemented with enth.js itself.</a>
 
 enthjs is a JavaScript view library that the latest(-ish) language
 features such as:
@@ -15,4 +16,3 @@ features such as:
 
 The library is written in typescript and built as es6 modules. Most parts, including all templating directives, can be loaded on a as-needed basis.
 
-<a href="https://michael-klein.github.io/enthjs/">Click here to go to the documentation site, implemented with enth.js itself.</a>
