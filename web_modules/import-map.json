@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "htm": "./htm.js?rev=d43fbd8039",
+    "incremental-dom": "./incremental-dom.js?rev=3358b51fa1"
+  }
+}
