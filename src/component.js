@@ -91,6 +91,10 @@ export function component(gen) {
       get props() {
         return state.props;
       },
+      onUnMount: () => {
+        context.sideEffects.forEach(e => e.cleanUp && e.cleanUp());
+        canSchedule = false;
+      },
       render: props => {
         canSchedule = false;
         propsChanged = false;
@@ -110,7 +114,6 @@ export function component(gen) {
           });
         }
         if (propsChanged || scheduled || !initialized) {
-          console.log("render ", propsChanged, scheduled, !initialized);
           const insertBackPointer = !initialized;
           if (!initialized) {
             setupContext = context;
@@ -126,7 +129,6 @@ export function component(gen) {
               scheduleRender();
             }
             canSchedule = true;
-            console.log(currentPointer());
             if (insertBackPointer) {
               insertMaker(currentPointer());
             }

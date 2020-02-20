@@ -9,13 +9,16 @@ const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 const Component2 = component(function*(state) {
   let i = 0;
-  sideEffect(() => {
-    const index = i++;
-    console.log("effect #" + index);
-    return () => {
-      console.log("cleanup #" + index);
-    };
-  });
+  sideEffect(
+    () => {
+      const index = i++;
+      console.log("effect #" + index);
+      return () => {
+        console.log("cleanup #" + index);
+      };
+    },
+    () => []
+  );
 
   for (;;) {
     yield html`
@@ -25,14 +28,20 @@ const Component2 = component(function*(state) {
 });
 const Component = component(function*(state) {
   state.count = 0;
+  state.showComp2 = true;
   for (;;) {
     yield html`
       <div>
         count: ${state.count}
         <button onclick="${() => state.count++}">+</button>
       </div>
-
-      <${Component2} test=${state.count} />
+      ${state.showComp2 &&
+        html`
+          <${Component2} test=${state.count} />
+        `}
+      <button onclick=${e => (state.showComp2 = !state.showComp2)}>
+        toggle sub component
+      </button>
       <div>input value:${state.input}</div>
       <input type="text" oninput="${e => (state.input = e.target.value)}" />
       <ul>

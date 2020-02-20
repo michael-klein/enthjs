@@ -51,20 +51,23 @@ function h(type, props, ...children) {
   }
 }
 
+export const html = htm.bind(h);
+const componentMap = new Map();
+const componentRenderMap = new WeakMap();
+
 notifications.nodesDeleted = function(nodes) {
   nodes.forEach(function(node) {
-    // node may be an Element or a Text
-    console.log("removed", node);
+    if (componentMap.has(node)) {
+      componentMap.get(node).onUnMount();
+      componentMap.delete(node);
+    }
   });
 };
 
-export const html = htm.bind(h);
-const componentMap = new WeakMap();
-const componentRenderMap = new WeakMap();
 function getComponent(f) {
   let pointer = currentPointer();
   let component;
-  if (!pointer || pointer.nodeType !== 8) {
+  if (!pointer || (pointer.nodeType !== 8 && !componentMap.has(pointer))) {
     const marker = insertMaker(pointer);
     pointer = marker;
 
@@ -73,7 +76,7 @@ function getComponent(f) {
     });
     component = f(state, () => {
       if (pointer.parentElement) {
-        render(pointer.parentElement, componentRenderMap.get(component));
+        render(pointer.parentElement, componentRenderMap.get(component), true);
       }
     });
     componentMap.set(pointer, component);
@@ -83,7 +86,7 @@ function getComponent(f) {
   return component;
 }
 
-function performRenderStep(renderfunctions) {
+function performRenderStep(renderfunctions, inComponent = false) {
   renderfunctions.forEach(f => {
     if (f) {
       if (Array.isArray(f)) {
@@ -92,17 +95,24 @@ function performRenderStep(renderfunctions) {
         const component = getComponent(f);
         componentRenderMap.set(component, renderfunctions);
         skipNode();
-        performRenderStep(component.render(f.props || {}));
-      } else f();
+        performRenderStep(component.render(f.props || {}), true);
+      } else {
+        const pointer = currentPointer();
+        if (componentMap.has(pointer) && !inComponent) {
+          componentMap.get(pointer).onUnMount();
+          pointer.parentElement.removeChild(pointer);
+          componentMap.delete(pointer);
+        }
+        f();
+      }
     }
   });
 }
 
-export function render(node, renderFunctions) {
-  console.log(node, renderFunctions);
+export function render(node, renderFunctions, inComponent = false) {
   schedule(() => {
     return patch(node, function() {
-      performRenderStep(renderFunctions);
+      performRenderStep(renderFunctions, inComponent);
     });
   });
 }
