@@ -8,14 +8,6 @@ function shuffle(a) {
 const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 const Component2 = component(function*(state) {
-  for (;;) {
-    yield html`
-      <div>sub: ${state.props.test}</div>
-    `;
-  }
-});
-const Component = component(function*(state) {
-  state.count = 0;
   let i = 0;
   sideEffect(() => {
     const index = i++;
@@ -25,6 +17,14 @@ const Component = component(function*(state) {
     };
   });
 
+  for (;;) {
+    yield html`
+      <div>sub: ${state.props.test}</div>
+    `;
+  }
+});
+const Component = component(function*(state) {
+  state.count = 0;
   for (;;) {
     yield html`
       <div>

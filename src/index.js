@@ -7,13 +7,13 @@ import {
   elementClose,
   patch,
   currentElement,
-  skip,
   skipNode,
   currentPointer,
   notifications
 } from "../web_modules/incremental-dom.js";
 import { IS_COMPONENT } from "./symbols.js";
 import { schedule } from "./scheduler.js";
+import { insertMaker } from "./component.js";
 export { component } from "./component.js";
 
 function h(type, props, ...children) {
@@ -65,12 +65,7 @@ function getComponent(f) {
   let pointer = currentPointer();
   let component;
   if (!pointer || pointer.nodeType !== 8) {
-    const marker = document.createComment("");
-    if (!pointer) {
-      currentElement().appendChild(marker);
-    } else {
-      pointer.parentElement.insertBefore(marker, pointer);
-    }
+    const marker = insertMaker(pointer);
     pointer = marker;
 
     const state = $state({

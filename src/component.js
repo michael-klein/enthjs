@@ -1,5 +1,11 @@
 import { IS_COMPONENT } from "./symbols.js";
 import { schedule, PriorityLevel } from "./scheduler.js";
+import {
+  skip,
+  currentPointer,
+  skipNode,
+  currentElement
+} from "../web_modules/incremental-dom.js";
 
 export function isComponent(fun) {
   return fun.is === IS_COMPONENT;
@@ -19,6 +25,15 @@ export function sideEffect(cb, getDeps = () => void 0) {
     prevDeps: INIT
   });
 }
+export function insertMaker(pointer) {
+  const marker = document.createComment("");
+  if (!pointer) {
+    currentElement().appendChild(marker);
+  } else {
+    pointer.parentElement.insertBefore(marker, pointer);
+  }
+  return marker;
+}
 export function component(gen) {
   function Component(state, requestRender) {
     let scheduled = false;
@@ -37,10 +52,37 @@ export function component(gen) {
       }
     }
 
-    let off;
-    function startListening() {
-      off = state.on(scheduleRender);
+    function scheduleSideEffect(effectData) {
+      schedule(() => {
+        const prevDeps = effectData.prevDeps;
+        const deps = effectData.getDeps();
+        let shouldRun = prevDeps === INIT || !deps;
+        if (!shouldRun && deps && deps.length > 0) {
+          if (
+            !deps ||
+            !prevDeps ||
+            deps.length !== prevDeps.length ||
+            deps.findIndex((d, i) => d !== prevDeps[i]) > -1
+          ) {
+            shouldRun = true;
+          }
+        }
+        effectData.prevDeps = deps;
+        if (shouldRun) {
+          if (effectData.cleanUp) {
+            effectData.cleanUp();
+          }
+          effectData.cleanUp = effectData.cb();
+        }
+      });
     }
+
+    let canSchedule;
+    let propsChanged;
+    state.on(() => {
+      if (canSchedule) scheduleRender();
+      propsChanged = true;
+    });
     let initialized = false;
     const context = {
       sideEffects: []
@@ -50,49 +92,63 @@ export function component(gen) {
         return state.props;
       },
       render: props => {
-        if (off) {
-          off();
+        canSchedule = false;
+        propsChanged = false;
+        if (!props) {
+          state.props = props;
+        } else {
+          const oldKeys = state.props ? Object.keys(state.props) : [];
+          Object.keys(props).forEach(key => {
+            state.props[key] = props[key];
+            const index = oldKeys.indexOf(key);
+            if (index > -1) {
+              oldKeys.splice(index, 1);
+            }
+          });
+          oldKeys.forEach(key => {
+            delete state.props[key];
+          });
         }
-        state.props = props;
-        if (!initialized) {
-          setupContext = context;
-          initialized = true;
-        }
-        let result = generator.next().value || [];
-        setupContext = void 0;
-        result.push(() => {
-          context.sideEffects.forEach(e =>
-            schedule(() => {
-              const prevDeps = e.prevDeps;
-              const deps = e.getDeps();
-              let shouldRun = prevDeps === INIT || !deps || deps.length === 0;
-              if (!shouldRun) {
-                if (
-                  !deps ||
-                  !prevDeps ||
-                  deps.length !== prevDeps.length ||
-                  deps.findIndex((d, i) => d !== prevDeps[i]) > -1
-                ) {
-                  shouldRun = true;
-                }
-              }
-              e.prevDeps = deps;
-              if (shouldRun) {
-                if (e.cleanUp) {
-                  e.cleanUp();
-                }
-                e.cleanUp = e.cb();
-              }
-            })
-          );
-          scheduled = false;
-          if (scheduleNext) {
-            scheduleNext = false;
-            scheduleRender();
+        if (propsChanged || scheduled || !initialized) {
+          console.log("render ", propsChanged, scheduled, !initialized);
+          const insertBackPointer = !initialized;
+          if (!initialized) {
+            setupContext = context;
+            initialized = true;
           }
-          startListening();
-        });
-        return result;
+          let result = generator.next().value || [];
+          setupContext = void 0;
+          result.push(() => {
+            context.sideEffects.forEach(scheduleSideEffect);
+            scheduled = false;
+            if (scheduleNext) {
+              scheduleNext = false;
+              scheduleRender();
+            }
+            canSchedule = true;
+            console.log(currentPointer());
+            if (insertBackPointer) {
+              insertMaker(currentPointer());
+            }
+            skipNode();
+          });
+          return result;
+        } else {
+          return [
+            () => {
+              let pointer = null;
+              skipNode();
+              while (pointer || pointer === null) {
+                pointer = currentPointer();
+                if (pointer && pointer.nodeType === 8) {
+                  skipNode();
+                } else {
+                  break;
+                }
+              }
+            }
+          ];
+        }
       }
     };
   }
