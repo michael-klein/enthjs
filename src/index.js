@@ -1,57 +1,21 @@
-import htm from "../web_modules/htm.js";
 export { $state, proxify } from "./reactivity.js";
 import { $state } from "./reactivity.js";
 import {
-  elementOpen,
-  text,
-  elementClose,
   patch,
-  currentElement,
   skipNode,
   currentPointer,
-  notifications
+  notifications,
+  text,
+  elementOpen,
+  elementClose
 } from "../web_modules/incremental-dom.js";
 import { IS_COMPONENT } from "./symbols.js";
 import { schedule } from "./scheduler.js";
 import { insertMaker } from "./component.js";
+import { normalizeHtmlResult } from "./html.js";
 export { component } from "./component.js";
+export { html } from "./html.js";
 
-function h(type, props, ...children) {
-  if (typeof type === "function") {
-    type.props = props;
-    return type;
-  } else {
-    return [
-      () => {
-        elementOpen(
-          type,
-          null,
-          null,
-          ...(props
-            ? Object.keys(props).flatMap(propName => {
-                if (propName === "propName") {
-                  key = props[propName];
-                }
-                return [propName, props[propName]];
-              })
-            : [])
-        );
-      },
-      children.map(child => {
-        if (typeof child === "function" && child.is !== IS_COMPONENT) {
-          return () => child();
-        } else if (typeof child === "string" || typeof child === "number") {
-          return () => text(child);
-        } else {
-          return child;
-        }
-      }),
-      () => elementClose(type)
-    ];
-  }
-}
-
-export const html = htm.bind(h);
 const componentMap = new Map();
 const componentRenderMap = new WeakMap();
 
@@ -64,7 +28,7 @@ notifications.nodesDeleted = function(nodes) {
   });
 };
 
-function getComponent(f) {
+function handleComponent(f, props) {
   let pointer = currentPointer();
   let component;
   if (!pointer || (pointer.nodeType !== 8 && !componentMap.has(pointer))) {
@@ -72,7 +36,7 @@ function getComponent(f) {
     pointer = marker;
 
     const state = $state({
-      props: f.props || {}
+      props
     });
     component = f(state, () => {
       if (pointer.parentElement) {
@@ -86,33 +50,54 @@ function getComponent(f) {
   return component;
 }
 
-function performRenderStep(renderfunctions, inComponent = false) {
-  renderfunctions.forEach(f => {
-    if (f) {
-      if (Array.isArray(f)) {
-        performRenderStep(f);
-      } else if (f.is === IS_COMPONENT) {
-        const component = getComponent(f);
-        componentRenderMap.set(component, renderfunctions);
+function performRenderStep(htmlResult, inComponent = false) {
+  htmlResult = normalizeHtmlResult(htmlResult);
+  if (typeof htmlResult === "function") {
+    htmlResult();
+  } else if (typeof htmlResult !== "object") {
+    if (htmlResult || Number(htmlResult) === htmlResult) text(htmlResult);
+  } else {
+    const { type, children, props } = htmlResult;
+    if (typeof type === "function") {
+      if (type.is === IS_COMPONENT) {
+        const component = handleComponent(type, props || {});
+        componentRenderMap.set(component, htmlResult);
         skipNode();
-        performRenderStep(component.render(f.props || {}), true);
+        performRenderStep(component.render(props || {}), true);
       } else {
-        const pointer = currentPointer();
-        if (componentMap.has(pointer) && !inComponent) {
-          componentMap.get(pointer).onUnMount();
-          pointer.parentElement.removeChild(pointer);
-          componentMap.delete(pointer);
-        }
-        f();
+        type();
+      }
+    } else {
+      if (type) {
+        elementOpen(
+          type,
+          null,
+          null,
+          ...(props
+            ? Object.keys(props).flatMap(propName => {
+                return [propName, props[propName]];
+              })
+            : [])
+        );
+      }
+      const pointer = currentPointer();
+      if (componentMap.has(pointer) && !inComponent) {
+        componentMap.get(pointer).onUnMount();
+        pointer.parentElement.removeChild(pointer);
+        componentMap.delete(pointer);
+      }
+      children.forEach(performRenderStep);
+      if (type) {
+        elementClose(type);
       }
     }
-  });
+  }
 }
 
-export function render(node, renderFunctions, inComponent = false) {
+export function render(node, htmlResult, inComponent = false) {
   schedule(() => {
     return patch(node, function() {
-      performRenderStep(renderFunctions, inComponent);
+      performRenderStep(htmlResult, inComponent);
     });
   });
 }

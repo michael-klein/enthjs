@@ -6,6 +6,7 @@ import {
   skipNode,
   currentElement
 } from "../web_modules/incremental-dom.js";
+import { normalizeHtmlResult } from "./html.js";
 
 export function isComponent(fun) {
   return fun.is === IS_COMPONENT;
@@ -119,9 +120,9 @@ export function component(gen) {
             setupContext = context;
             initialized = true;
           }
-          let result = generator.next().value || [];
+          let result = normalizeHtmlResult(generator.next().value || []);
           setupContext = void 0;
-          result.push(() => {
+          result.children.push(() => {
             context.sideEffects.forEach(scheduleSideEffect);
             scheduled = false;
             if (scheduleNext) {

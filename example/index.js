@@ -43,7 +43,13 @@ const Component = component(function*(state) {
         toggle sub component
       </button>
       <div>input value:${state.input}</div>
-      <input type="text" oninput="${e => (state.input = e.target.value)}" />
+      <input
+        type="text"
+        oninput="${e => {
+          state.input = e.target.value;
+          console.log("hi");
+        }}"
+      />
       <ul>
         ${shuffle(arr).map(a => {
           return html`
