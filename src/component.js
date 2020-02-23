@@ -1,11 +1,6 @@
 import { IS_COMPONENT } from "./symbols.js";
 import { schedule, PriorityLevel } from "./scheduler.js";
-import {
-  skip,
-  currentPointer,
-  skipNode,
-  currentElement
-} from "../web_modules/incremental-dom.js";
+import { currentElement } from "../web_modules/incremental-dom.js";
 import { normalizeHtmlResult } from "./html.js";
 import { render } from "./render.js";
 import { $state, proxify } from "./reactivity.js";
