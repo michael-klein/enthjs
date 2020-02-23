@@ -7,7 +7,7 @@ function shuffle(a) {
 }
 const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-const Component2 = component(function*(state) {
+component("test-component2", function*(state) {
   let i = 0;
   sideEffect(
     () => {
@@ -22,11 +22,11 @@ const Component2 = component(function*(state) {
 
   for (;;) {
     yield html`
-      <div>sub: ${state.props.test}</div>
+      <div>sub: ${state.attributes.test}</div>
     `;
   }
 });
-const Component = component(function*(state) {
+component("test-component", function*(state) {
   state.count = 0;
   state.showComp2 = true;
   for (;;) {
@@ -37,7 +37,7 @@ const Component = component(function*(state) {
       </div>
       ${state.showComp2 &&
         html`
-          <${Component2} test=${state.count} />
+          <test-component2 test=${state.count} />
         `}
       <button onclick=${e => (state.showComp2 = !state.showComp2)}>
         toggle sub component
@@ -64,7 +64,7 @@ const Component = component(function*(state) {
 const template = html`
   <h1>test</h1>
   <div>
-    <${Component} />
+    <test-component />
   </div>
 `;
 render(document.getElementById("app"), template);
