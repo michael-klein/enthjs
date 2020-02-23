@@ -1,9 +1,20 @@
 import { IS_COMPONENT } from "./symbols.js";
 import { schedule, PriorityLevel } from "./scheduler.js";
-import { currentElement } from "../web_modules/incremental-dom.js";
+import {
+  currentElement,
+  notifications
+} from "../web_modules/incremental-dom.js";
 import { normalizeHtmlResult } from "./html.js";
 import { render } from "./render.js";
 import { $state, proxify } from "./reactivity.js";
+
+const defaultNodesDeleted = notifications.nodesDeleted;
+notifications.nodesDeleted = function(nodes) {
+  nodes.forEach(function(element) {
+    unMount(element);
+    if (defaultNodesDeleted) defaultNodesDeleted(element);
+  });
+};
 
 export function isComponent(fun) {
   return fun.is === IS_COMPONENT;
@@ -150,8 +161,13 @@ function createAttributeProxy(element, queueRender) {
   });
   return $attributes;
 }
-
 const contextMap = new WeakMap();
+export function unMount(element) {
+  const context = contextMap.get(element);
+  if (context) {
+    context.sideEffects.forEach(e => e.cleanUp && e.cleanUp());
+  }
+}
 export function component(name, gen) {
   customElements.define(
     name,
@@ -185,7 +201,7 @@ export function component(name, gen) {
               context.init ? PriorityLevel.IMMEDIATE : PriorityLevel.NORMAL
             );
           } else {
-            scheduleNext = true;
+            if (!context.init) scheduleNext = true;
           }
         };
 

@@ -6,5 +6,9 @@ export default {
     file: "dist/enth.min.js",
     format: "es"
   },
-  plugins: [compiler()]
+  plugins: [
+    compiler({
+      compilation_level: "ADVANCED"
+    })
+  ]
 };

@@ -1,12 +1,12 @@
 import { $state } from "./reactivity.js";
 import {
   patch,
-  currentPointer,
   text,
   elementOpen,
   elementClose,
   attributes,
-  symbols
+  symbols,
+  currentElement
 } from "../web_modules/incremental-dom.js";
 import { schedule } from "./scheduler.js";
 import { normalizeHtmlResult } from "./html.js";
@@ -20,33 +20,36 @@ attributes[symbols.default] = (element, name, value) => {
   }
 };
 
-function performRenderStep(htmlResult, inComponent = false) {
-  htmlResult = normalizeHtmlResult(htmlResult);
-  if (typeof htmlResult === "function") {
-    htmlResult();
-  } else if (typeof htmlResult !== "object") {
-    if (htmlResult || Number(htmlResult) === htmlResult) text(htmlResult);
-  } else {
+function performRenderStep(htmlResult) {
+  if (htmlResult) {
+    htmlResult = normalizeHtmlResult(htmlResult);
+    if (!htmlResult.type) {
+      console.log(currentElement(), htmlResult);
+    }
     const { type, children, props } = htmlResult;
-    if (typeof type === "function") {
-      type();
-    } else {
-      if (type) {
-        elementOpen(
-          type,
-          null,
-          null,
-          ...(props
-            ? Object.keys(props).flatMap(propName => {
-                return [propName, props[propName]];
-              })
-            : [])
-        );
+    if (type) {
+      elementOpen(
+        type,
+        null,
+        null,
+        ...(props
+          ? Object.keys(props).flatMap(propName => {
+              return [propName, props[propName]];
+            })
+          : [])
+      );
+    }
+    children.forEach(child => {
+      if (!(child instanceof Object)) {
+        if (child || Number(child) === child) text(child);
+      } else if (typeof child === "function") {
+        child();
+      } else {
+        performRenderStep(child);
       }
-      children.forEach(performRenderStep);
-      if (type) {
-        elementClose(type);
-      }
+    });
+    if (type) {
+      elementClose(type);
     }
   }
 }
