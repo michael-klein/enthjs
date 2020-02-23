@@ -1,4 +1,4 @@
-import { html, render, $state, proxify, component } from "../src/index.js";
+import { html, render, component } from "../src/index.js";
 import { sideEffect } from "../src/component.js";
 
 function shuffle(a) {
@@ -45,6 +45,7 @@ const Component = component(function*(state) {
       <div>input value:${state.input}</div>
       <input
         type="text"
+        .value=${state.input}
         oninput="${e => {
           state.input = e.target.value;
           console.log("hi");

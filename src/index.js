@@ -7,7 +7,9 @@ import {
   notifications,
   text,
   elementOpen,
-  elementClose
+  elementClose,
+  attributes,
+  symbols
 } from "../web_modules/incremental-dom.js";
 import { IS_COMPONENT } from "./symbols.js";
 import { schedule } from "./scheduler.js";
@@ -15,6 +17,15 @@ import { insertMaker } from "./component.js";
 import { normalizeHtmlResult } from "./html.js";
 export { component } from "./component.js";
 export { html } from "./html.js";
+
+const defaultAttributeHandler = attributes[symbols.default];
+attributes[symbols.default] = (element, name, value) => {
+  if (name[0] === ".") {
+    if (value) element[name.substr(1)] = value;
+  } else {
+    defaultAttributeHandler(element, name, value);
+  }
+};
 
 const componentMap = new Map();
 const componentRenderMap = new WeakMap();
