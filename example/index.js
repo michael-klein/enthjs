@@ -22,7 +22,7 @@ component("test-component2", function*(state) {
 
   for (;;) {
     yield html`
-      <div>sub: ${state.attributes.test}</div>
+      <div>time two: ${state.attributes.test * 2}</div>
     `;
   }
 });
@@ -31,16 +31,35 @@ component("test-component", function*(state) {
   state.showComp2 = true;
   for (;;) {
     yield html`
+      <style>
+        test-component2 {
+          display: block;
+          transition: opacity 4s;
+          opacity: 1;
+        }
+        test-component2.transition-start {
+          opacity: 0;
+        }
+        test-component2.transition-fade-in {
+          opacity: 1;
+        }
+        test-component2.transition-fade-out {
+          opacity: 0;
+        }
+      </style>
       <div>
-        count: ${state.count}
+        <span>count: ${state.count} </span>
         <button onclick="${() => state.count++}">+</button>
       </div>
       ${state.showComp2 &&
         html`
-          <test-component2 test=${state.count} />
+          <test-component2
+            test=${state.count}
+            @transition=${{ in: 4000, out: 2000 }}
+          />
         `}
       <button onclick=${e => (state.showComp2 = !state.showComp2)}>
-        toggle sub component
+        toggle test-component2
       </button>
       <div>input value:${state.input}</div>
       <input
@@ -48,7 +67,6 @@ component("test-component", function*(state) {
         .value=${state.input}
         oninput="${e => {
           state.input = e.target.value;
-          console.log("hi");
         }}"
       />
       <ul>
