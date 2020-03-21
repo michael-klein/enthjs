@@ -1,0 +1,26 @@
+{
+  "name": "enthjs-page",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "install": "npx snowpack",
+    "prepublish": "npm run build"
+  },
+  "author": "Michael Klein",
+  "license": "ISC",
+  "devDependencies": {
+    "@ampproject/rollup-plugin-closure-compiler": "^0.22.2",
+    "rollup": "^1.31.1",
+    "servor": "^3.2.0",
+    "snowpack": "^1.2.0"
+  },
+  "snowpack": {
+    "webDependencies": [
+      "goober"
+    ]
+  },
+  "dependencies": {
+    "goober": "^1.7.1"
+  }
+}

@@ -25,11 +25,7 @@ export function proxify(obj, onChange, hooks = {}) {
       if (typeof value === "object" && !isProxyMap.has(value)) {
         value = proxify(value, onChangeWrapped);
       }
-      if (
-        (obj[prop] !== value || !initialized) &&
-        prop !== "__$p" &&
-        prop !== "on"
-      ) {
+      if (obj[prop] !== value || !initialized) {
         obj[prop] = value;
         onChangeWrapped();
       }
@@ -45,34 +41,39 @@ export function proxify(obj, onChange, hooks = {}) {
 export const $state = initialState => {
   let listeners = [];
   let canEmit = true;
-  const proxy = proxify(initialState, () => {
-    if (canEmit) {
-      listeners.forEach(l => l(proxy));
-    }
-  });
-  proxy.on = listener => {
-    listeners.push(listener);
-    return () => {
-      const index = listeners.indexOf(listener);
-      if (index > -1) {
-        listeners.splice(index, 1);
+  const proxy = proxify(
+    {
+      ...initialState,
+      on: listener => {
+        listeners.push(listener);
+        return () => {
+          const index = listeners.indexOf(listener);
+          if (index > -1) {
+            listeners.splice(index, 1);
+          }
+        };
+      },
+      merge: otherState => {
+        const performMerge = value => {
+          Object.keys(value).forEach(key => {
+            if (!["on", "merge"].includes(key)) {
+              proxy[key] = value[key];
+            }
+          });
+        };
+        otherState.on(value => {
+          performMerge(value);
+        });
+        canEmit = false;
+        performMerge(otherState);
+        canEmit = true;
       }
-    };
-  };
-  proxy.merge = otherState => {
-    const performMerge = value => {
-      Object.keys(value).forEach(key => {
-        if (!["on", "merge"].includes(key)) {
-          proxy[key] = value[key];
-        }
-      });
-    };
-    otherState.on(value => {
-      performMerge(value);
-    });
-    canEmit = false;
-    performMerge(otherState);
-    canEmit = true;
-  };
+    },
+    () => {
+      if (canEmit) {
+        listeners.forEach(l => l(proxy));
+      }
+    }
+  );
   return proxy;
 };

@@ -39,7 +39,7 @@ attributes[symbols.default] = (element, name, value) => {
       transitionNodes.set(element, transitionData);
       setTransitionState(element, TransitionState.START);
       if (transitionData.in) {
-        schedule(() => {
+        requestAnimationFrame(() => {
           setTransitionState(element, TransitionState.FADE_IN);
           transitionData.id = setTimeout(() => {
             setTransitionState(element, TransitionState.VISIBLE);
@@ -92,10 +92,10 @@ function performRenderStep(htmlResult, parent = undefined) {
           transitionData.out
         ) {
           setTransitionState(transitionNode, TransitionState.FADE_OUT);
-          schedule(() => {
+          requestAnimationFrame(() => {
             transitionData.id = setTimeout(() => {
               setTransitionState(transitionNode, TransitionState.END);
-              schedule(() => {
+              requestAnimationFrame(() => {
                 if (transitionNode.parentNode) {
                   transitionNode.parentNode.removeChild(transitionNode);
                   transitionNodes.delete(transitionNode);
@@ -119,6 +119,10 @@ function performRenderStep(htmlResult, parent = undefined) {
         }
         break;
       }
+      pointer = currentPointer();
+    }
+    while (pointer && pointer.hasAttribute("data-skip")) {
+      skipNode();
       pointer = currentPointer();
     }
     if (type) {

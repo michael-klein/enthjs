@@ -34,6 +34,18 @@ export function sideEffect(cb, getDeps = () => void 0) {
     prevDeps: INIT
   });
 }
+export function layoutEffect(cb, getDeps = () => void 0) {
+  checkContext("layoutEffect");
+  setupContext.layoutEffects.push({
+    cb,
+    getDeps,
+    prevDeps: INIT
+  });
+}
+export function getElement() {
+  checkContext("layoutEffect");
+  return setupContext.getElement();
+}
 export function insertMaker(pointer) {
   const marker = document.createComment("");
   if (!pointer) {
@@ -44,7 +56,7 @@ export function insertMaker(pointer) {
   return marker;
 }
 
-function scheduleSideEffect(effectData, init = false) {
+function scheduleSideEffect(effectData, immediate = false) {
   schedule(
     () => {
       const prevDeps = effectData.prevDeps;
@@ -68,7 +80,7 @@ function scheduleSideEffect(effectData, init = false) {
         effectData.cleanUp = effectData.cb();
       }
     },
-    init ? PriorityLevel.IMMEDIATE : PriorityLevel.NORMAL
+    immediate ? PriorityLevel.IMMEDIATE : PriorityLevel.NORMAL
   );
 }
 
@@ -166,6 +178,7 @@ export function unMount(element) {
   const context = contextMap.get(element);
   if (context) {
     context.sideEffects.forEach(e => e.cleanUp && e.cleanUp());
+    context.layoutEffects.forEach(e => e.cleanUp && e.cleanUp());
   }
 }
 export function component(name, gen) {
@@ -177,7 +190,9 @@ export function component(name, gen) {
         this.attachShadow({ mode: "open" });
         // we keep anything on the context object that we don't want to expose on the element
         const context = {
-          sideEffects: []
+          sideEffects: [],
+          layoutEffects: [],
+          getElement: () => this
         };
         // the context is stored on a weak map for future use
         contextMap.set(this, context);
@@ -219,6 +234,9 @@ export function component(name, gen) {
           result.children.push(() => {
             context.sideEffects.forEach(effectData =>
               scheduleSideEffect(effectData, context.init)
+            );
+            context.layoutEffects.forEach(effectData =>
+              scheduleSideEffect(effectData, true)
             );
             scheduled = false;
             if (context.init) {
