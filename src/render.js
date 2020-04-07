@@ -6,7 +6,7 @@ import {
   attributes,
   symbols,
   currentPointer,
-  skipNode
+  skipNode,
 } from "../web_modules/incremental-dom.js";
 import { schedule, PriorityLevel } from "./scheduler.js";
 import { normalizeHtmlResult } from "./html.js";
@@ -18,7 +18,7 @@ export const TransitionState = {
   FADE_IN: "transition-fade-in",
   VISIBLE: "transition-visibile",
   FADE_OUT: "transition-fade-out",
-  END: "transition-end"
+  END: "transition-end",
 };
 
 function setTransitionState(node, state) {
@@ -57,7 +57,7 @@ function checkIfMoved(htmlResult, parent) {
   if (parent && (props.key || props.id)) {
     if (
       parent.children.find(
-        child =>
+        (child) =>
           ((child.props.key && child.props.key === props.key) ||
             (child.props.id && child.props.id === props.id)) &&
           child.type === type
@@ -138,7 +138,7 @@ function performRenderStep(htmlResult, parent = undefined) {
           : [])
       );
     }
-    children.forEach(child => {
+    children.forEach((child) => {
       if (!(child instanceof Object)) {
         if (child || Number(child) === child) text(child);
       } else if (typeof child === "function") {
@@ -171,9 +171,7 @@ export function removeEmptyTextNodes(node) {
 
 export function render(node, htmlResult) {
   removeEmptyTextNodes(node);
-  schedule(() => {
-    patch(node, function() {
-      performRenderStep(htmlResult);
-    });
+  patch(node, function () {
+    performRenderStep(htmlResult);
   });
 }

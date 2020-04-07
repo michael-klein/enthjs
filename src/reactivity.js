@@ -1,3 +1,4 @@
+import { schedule, PriorityLevel } from "./scheduler.js";
 const isProxyMap = new WeakSet();
 export function proxify(obj, onChange, hooks = {}) {
   let initialized = false;
@@ -6,7 +7,7 @@ export function proxify(obj, onChange, hooks = {}) {
       onChange();
     }
   };
-  Object.keys(obj).forEach(key => {
+  Object.keys(obj).forEach((key) => {
     if (typeof obj[key] === "object" && !isProxyMap.has(obj[key])) {
       obj[key] = proxify(obj[key], onChange);
     }
@@ -31,20 +32,20 @@ export function proxify(obj, onChange, hooks = {}) {
       }
       obj[prop] = value;
       return true;
-    }
+    },
   });
   isProxyMap.add(proxy);
   initialized = true;
   return proxy;
 }
 
-export const $state = initialState => {
+export const $state = (initialState) => {
   let listeners = [];
   let canEmit = true;
   const proxy = proxify(
     {
       ...initialState,
-      on: listener => {
+      on: (listener) => {
         listeners.push(listener);
         return () => {
           const index = listeners.indexOf(listener);
@@ -53,25 +54,25 @@ export const $state = initialState => {
           }
         };
       },
-      merge: otherState => {
-        const performMerge = value => {
-          Object.keys(value).forEach(key => {
+      merge: (otherState) => {
+        const performMerge = (value) => {
+          Object.keys(value).forEach((key) => {
             if (!["on", "merge"].includes(key)) {
               proxy[key] = value[key];
             }
           });
         };
-        otherState.on(value => {
+        otherState.on((value) => {
           performMerge(value);
         });
         canEmit = false;
         performMerge(otherState);
         canEmit = true;
-      }
+      },
     },
     () => {
       if (canEmit) {
-        listeners.forEach(l => l(proxy));
+        listeners.forEach((l) => schedule(l, PriorityLevel.IMMEDIATE));
       }
     }
   );

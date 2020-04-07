@@ -2,15 +2,15 @@ import { IS_COMPONENT } from "./symbols.js";
 import { schedule, PriorityLevel } from "./scheduler.js";
 import {
   currentElement,
-  notifications
+  notifications,
 } from "../web_modules/incremental-dom.js";
 import { normalizeHtmlResult } from "./html.js";
 import { render } from "./render.js";
 import { $state, proxify } from "./reactivity.js";
 
 const defaultNodesDeleted = notifications.nodesDeleted;
-notifications.nodesDeleted = function(nodes) {
-  nodes.forEach(function(element) {
+notifications.nodesDeleted = function (nodes) {
+  nodes.forEach(function (element) {
     unMount(element);
     if (defaultNodesDeleted) defaultNodesDeleted(element);
   });
@@ -31,7 +31,7 @@ export function sideEffect(cb, getDeps = () => void 0) {
   setupContext.sideEffects.push({
     cb,
     getDeps,
-    prevDeps: INIT
+    prevDeps: INIT,
   });
 }
 export function layoutEffect(cb, getDeps = () => void 0) {
@@ -39,7 +39,7 @@ export function layoutEffect(cb, getDeps = () => void 0) {
   setupContext.layoutEffects.push({
     cb,
     getDeps,
-    prevDeps: INIT
+    prevDeps: INIT,
   });
 }
 export function getElement() {
@@ -57,8 +57,9 @@ export function insertMaker(pointer) {
 }
 
 function scheduleSideEffect(effectData, immediate = false) {
-  schedule(
-    () => {
+  return new Promise((resolve) => {
+    const scheduleEffect = immediate ? (cb) => cb() : setTimeout;
+    scheduleEffect(() => {
       const prevDeps = effectData.prevDeps;
       const deps = effectData.getDeps();
       let shouldRun = prevDeps === INIT || !deps;
@@ -79,16 +80,16 @@ function scheduleSideEffect(effectData, immediate = false) {
         }
         effectData.cleanUp = effectData.cb();
       }
-    },
-    immediate ? PriorityLevel.IMMEDIATE : PriorityLevel.NORMAL
-  );
+      resolve();
+    });
+  });
 }
 
 const observerMap = new WeakMap();
 
 const addObserver = (element, onChange) => {
   if (!observerMap.has(element)) {
-    const observer = new MutationObserver(mutationsList => {
+    const observer = new MutationObserver((mutationsList) => {
       for (const mutation of mutationsList) {
         if (mutation.type === "attributes") {
           onChange(
@@ -102,13 +103,13 @@ const addObserver = (element, onChange) => {
   }
 };
 
-const startObserving = element => {
+const startObserving = (element) => {
   if (observerMap.has(element)) {
     observerMap.get(element).observe(element, { attributes: true });
   }
 };
 
-const stopObserving = element => {
+const stopObserving = (element) => {
   if (observerMap.has(element)) {
     observerMap.get(element).disconnect();
   }
@@ -131,15 +132,15 @@ function createPropertyProxy(element, queueRender) {
         accessedProps.push(prop);
         Object.defineProperty(element, prop, {
           get: () => obj[prop],
-          set: value => {
+          set: (value) => {
             if (obj[prop] !== value) {
               obj[prop] = value;
               queueRender();
             }
-          }
+          },
         });
       }
-    }
+    },
   });
   return $properties;
 }
@@ -149,9 +150,7 @@ function createAttributeProxy(element, queueRender) {
   const $attributes = proxify({}, () => {}, {
     set: (obj, prop, value) => {
       if (obj[prop] !== value) {
-        schedule(() => {
-          element.setAttribute(prop, value);
-        });
+        element.setAttribute(prop, value);
         queueRender();
       }
       return value;
@@ -164,7 +163,7 @@ function createAttributeProxy(element, queueRender) {
         accessedAttributes.push(prop);
       }
       return obj[prop];
-    }
+    },
   });
   addObserver(element, (name, value) => {
     if (accessedAttributes.includes(name)) {
@@ -177,8 +176,8 @@ const contextMap = new WeakMap();
 export function unMount(element) {
   const context = contextMap.get(element);
   if (context) {
-    context.sideEffects.forEach(e => e.cleanUp && e.cleanUp());
-    context.layoutEffects.forEach(e => e.cleanUp && e.cleanUp());
+    context.sideEffects.forEach((e) => e.cleanUp && e.cleanUp());
+    context.layoutEffects.forEach((e) => e.cleanUp && e.cleanUp());
   }
 }
 export function component(name, gen) {
@@ -192,7 +191,7 @@ export function component(name, gen) {
         const context = {
           sideEffects: [],
           layoutEffects: [],
-          getElement: () => this
+          getElement: () => this,
         };
         // the context is stored on a weak map for future use
         contextMap.set(this, context);
@@ -231,12 +230,14 @@ export function component(name, gen) {
           );
           setupContext = void 0;
           // add running of sideEffects at the end of the rendering
-          result.children.push(() => {
-            context.sideEffects.forEach(effectData =>
-              scheduleSideEffect(effectData, context.init)
+          result.children.push(async () => {
+            await Promise.all(
+              context.layoutEffects.map((effectData) =>
+                scheduleSideEffect(effectData, true)
+              )
             );
-            context.layoutEffects.forEach(effectData =>
-              scheduleSideEffect(effectData, true)
+            context.sideEffects.forEach((effectData) =>
+              scheduleSideEffect(effectData, context.init)
             );
             scheduled = false;
             if (context.init) {
@@ -261,7 +262,7 @@ export function component(name, gen) {
               attributes: createAttributeProxy(this, () =>
                 context.queueRender()
               ),
-              props: createPropertyProxy(this, () => context.queueRender())
+              props: createPropertyProxy(this, () => context.queueRender()),
             });
           }
           context.connected = true;

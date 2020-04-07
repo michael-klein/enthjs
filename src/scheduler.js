@@ -5,7 +5,7 @@ export const PriorityLevel = {
   USER_BLOCKING: 250, //.25s timeout
   NORMAL: 5000, // 5s timeout
   LOW: 10000, // 10s timeout
-  IDLE: 99999999 // no timeout (run only when nothing else is scheduled)
+  IDLE: 99999999, // no timeout (run only when nothing else is scheduled)
 };
 const MAX_ELAPSED = 17;
 const immediate = [];
@@ -15,23 +15,23 @@ function processImmediate() {
     cb();
   }
 }
-const processJobQueue = (queue, now) => {
+const processJobQueue = async (queue, now) => {
   let index = 0;
   for (let length = queue.length; index < length; index++) {
     processImmediate();
     const totalElapsed = Date.now() - now;
     const [cb, latestEndTime] = queue[index];
     if (now >= latestEndTime || totalElapsed < MAX_ELAPSED) {
-      cb();
+      await cb();
     } else {
       break;
     }
   }
   return queue.slice(index);
 };
-const processScheduledJobs = () => {
+const processScheduledJobs = async () => {
   const now = Date.now();
-  scheduledJobs = processJobQueue(
+  scheduledJobs = await processJobQueue(
     scheduledJobs.sort((a, b) => (a[1] < b[1] ? -1 : 1)),
     now
   );
@@ -50,13 +50,13 @@ export const schedule = (cb, priority = PriorityLevel.NORMAL) => {
       immediate.push(cb);
     }
   } else {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       scheduledJobs.push([
         () => {
           cb();
           resolve();
         },
-        Date.now() + priority
+        Date.now() + priority,
       ]);
       if (!schedulerRunning) {
         requestAnimationFrame(processScheduledJobs);
